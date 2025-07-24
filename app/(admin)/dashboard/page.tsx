@@ -10,8 +10,8 @@ import {
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import VehicleModal from "@/components/dashboard-admin/vehicle-modal";
 import { ModeToggle } from "@/components/ui/ModeToggle";
+import { VehicleForm } from "@/components/dashboard-admin/vehicle-modal";
 
 function Page() {
   const links = [
@@ -198,7 +198,7 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
               Agregar Vehículo
             </h2>
-            <VehicleModal />
+            <VehicleForm />
           </div>
         </div>
       </div>
