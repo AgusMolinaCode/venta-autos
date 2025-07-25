@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useState } from "react";
 import { IconCar } from "@tabler/icons-react";
+import { supabase } from "@/lib/supabase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,31 +36,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { marcasAutos } from "@/constants";
+import { FormSchema } from "@/lib/validations";
 
-const FormSchema = z.object({
-  marca: z.string().min(1, {
-    message: "La marca es obligatoria.",
-  }),
-  modelo: z.string().min(1, {
-    message: "El modelo es obligatorio.",
-  }),
-  ano: z.number().min(1900, {
-    message: "El año debe ser mayor a 1900.",
-  }).max(new Date().getFullYear() + 2, {
-    message: "El año no puede ser futuro.",
-  }),
-  kilometraje: z.number().min(0, {
-    message: "El kilometraje debe ser mayor o igual a 0.",
-  }),
-  precio: z.number().min(0, {
-    message: "El precio debe ser mayor a 0.",
-  }).optional(),
-  version: z.string().optional(),
-  combustible: z.string().optional(),
-  transmision: z.string().optional(),
-  color: z.string().optional(),
-  descripcion: z.string().optional(),
-});
+
 
 export type VehicleFormData = z.infer<typeof FormSchema>;
 
@@ -71,8 +50,8 @@ export function VehicleForm() {
     defaultValues: {
       marca: "",
       modelo: "",
-      ano: new Date().getFullYear(),
-      kilometraje: 0,
+      ano: undefined,
+      kilometraje: undefined,
       precio: undefined,
       version: "",
       combustible: "",
@@ -82,13 +61,49 @@ export function VehicleForm() {
     },
   });
 
-  function onSubmit(data: VehicleFormData) {
-    console.log("Datos del vehículo:", data);
-    toast.success("Vehículo agregado correctamente", {
-      description: `${data.marca} ${data.modelo} ${data.ano}`,
-    });
-    form.reset();
-    setIsOpen(false);
+  function normalize(str: string) {
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // elimina tildes
+      .replace(/\s+/g, "-") // reemplaza espacios por guiones
+      .replace(/[^a-z0-9-]/g, ""); // elimina caracteres especiales
+  }
+
+  async function onSubmit(data: VehicleFormData) {
+    const url = `https://autos.mercadolibre.com.ar/${data.ano}/${normalize(data.marca)}-${normalize(data.modelo)}`;
+    console.log("URL generada:", url);
+
+    try {
+      const { error } = await supabase
+        .from('vehiculos')
+        .insert([
+          {
+            marca: data.marca,
+            modelo: data.modelo,
+            ano: data.ano,
+            kilometraje: data.kilometraje || null,
+            url_ml: url,
+          }
+        ]);
+
+      if (error) {
+        toast.error("Error al guardar el vehículo", {
+          description: error.message,
+        });
+        return;
+      }
+
+      toast.success("Vehículo agregado correctamente", {
+        description: `${data.marca} ${data.modelo} ${data.ano}`,
+      });
+      form.reset();
+      setIsOpen(false);
+    } catch {
+      toast.error("Error inesperado", {
+        description: "Ocurrió un error al guardar el vehículo",
+      });
+    }
   }
 
   return (
@@ -119,7 +134,7 @@ export function VehicleForm() {
                     <FormLabel>Marca *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Seleccionar marca" />
                         </SelectTrigger>
                       </FormControl>
@@ -143,7 +158,7 @@ export function VehicleForm() {
                   <FormItem>
                     <FormLabel>Modelo *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingrese el modelo" {...field} />
+                      <Input placeholder="Ingrese el modelo" className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -165,8 +180,10 @@ export function VehicleForm() {
                         min={1900}
                         max={new Date().getFullYear() + 2}
                         placeholder="Ingrese el año"
+                        className="w-full"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -179,14 +196,16 @@ export function VehicleForm() {
                 name="kilometraje"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kilometraje *</FormLabel>
+                    <FormLabel>Kilometraje</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
                         min={0}
                         placeholder="Kilometraje"
+                        className="w-full"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -207,12 +226,14 @@ export function VehicleForm() {
                       <Input 
                         type="number" 
                         min={0}
-                        placeholder="Precio en USD"
+                        placeholder="Precio"
+                        className="w-full"
                         {...field}
+                        value={field.value ?? ""}
                         onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                       />
                     </FormControl>
-                    <FormDescription>Precio en dólares americanos</FormDescription>
+                    {/* <FormDescription>Precio del vehículo</FormDescription> */}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -225,7 +246,7 @@ export function VehicleForm() {
                   <FormItem>
                     <FormLabel>Versión</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingrese la versión" {...field} />
+                      <Input placeholder="Ingrese la versión" className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -243,7 +264,7 @@ export function VehicleForm() {
                     <FormLabel>Combustible</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Seleccionar combustible" />
                         </SelectTrigger>
                       </FormControl>
@@ -268,7 +289,7 @@ export function VehicleForm() {
                     <FormLabel>Transmisión</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Seleccionar transmisión" />
                         </SelectTrigger>
                       </FormControl>
@@ -292,7 +313,7 @@ export function VehicleForm() {
                 <FormItem>
                   <FormLabel>Color</FormLabel>
                   <FormControl>
-                    <Input placeholder="Color del vehículo" {...field} />
+                    <Input placeholder="Color del vehículo" className="w-full" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -310,6 +331,7 @@ export function VehicleForm() {
                     <Textarea 
                       placeholder="Descripción detallada del vehículo..."
                       rows={4}
+                      className="w-full"
                       {...field}
                     />
                   </FormControl>
