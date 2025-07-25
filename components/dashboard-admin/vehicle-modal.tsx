@@ -118,7 +118,7 @@ export function VehicleForm() {
         <DialogHeader>
           <DialogTitle>Agregar Nuevo Vehículo</DialogTitle>
           <DialogDescription>
-            Complete la información del vehículo que desea agregar al inventario.
+            Complete la información del vehículo que desea agregar al inventario
           </DialogDescription>
         </DialogHeader>
 
