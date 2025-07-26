@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -82,6 +83,18 @@ export function VehicleForm({ onSubmit, onCancel }: VehicleFormProps) {
     })
     form.reset()
   }
+
+  // URL generation when marca, modelo, año are selected
+  const watchedValues = form.watch(["marca", "modelo", "ano"])
+  const [marca, modelo, ano] = watchedValues
+
+  // Generate URL when all three required fields are filled
+  React.useEffect(() => {
+    if (marca && modelo && ano) {
+      const url = `/vehicles/${encodeURIComponent(marca.toLowerCase())}-${encodeURIComponent(modelo.toLowerCase().replace(/\s+/g, '-'))}-${ano}`
+      console.log('Generated URL:', url)
+    }
+  }, [marca, modelo, ano])
 
   return (
     <Form {...form}>
@@ -299,16 +312,14 @@ export function VehicleForm({ onSubmit, onCancel }: VehicleFormProps) {
         />
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-border">
+        <div className="flex justify-end gap-4 pt-4">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
           )}
-          <Button type="submit">
-            Guardar Vehículo
-          </Button>
         </div>
+
       </form>
     </Form>
   )

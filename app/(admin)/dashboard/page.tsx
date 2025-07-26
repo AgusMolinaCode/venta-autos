@@ -11,7 +11,7 @@ import {
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/ui/ModeToggle";
-import { VehicleForm } from "@/components/dashboard-admin/vehicle-modal";
+import StepForm from "@/components/dashboard-admin/step-form";
 
 function Page() {
   const links = [
@@ -63,8 +63,7 @@ function Page() {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <div className="flex justify-center">
-            </div>
+            <div className="flex justify-center"></div>
             <ModeToggle />
             <SidebarLink
               link={{
@@ -72,11 +71,11 @@ function Page() {
                 href: "#",
                 icon: (
                   <img
-                  src="https://assets.aceternity.com/manu.png"
-                  className="h-7 w-7 shrink-0 rounded-full"
-                  width={50}
-                  height={50}
-                  alt="Avatar"
+                    src="https://assets.aceternity.com/manu.png"
+                    className="h-7 w-7 shrink-0 rounded-full"
+                    width={50}
+                    height={50}
+                    alt="Avatar"
                   />
                 ),
               }}
@@ -120,10 +119,10 @@ export const LogoIcon = () => {
 const Dashboard = () => {
   return (
     <div className="flex flex-1">
-      <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 md:p-10 dark:border-zinc-700 dark:bg-slate-900">
+      <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 md:p-10 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="flex gap-2">
           {/* Card 1: Total de Vehículos */}
-          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-600">
+          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-800">
             <span className="text-xs text-zinc-400">Total de Vehículos</span>
             <span className="text-2xl font-bold">127</span>
             <span className="text-xs text-green-400 mt-1">
@@ -134,7 +133,7 @@ const Dashboard = () => {
             </div>
           </div>
           {/* Card 2: Consultas Pendientes */}
-          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-600">
+          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-800">
             <span className="text-xs text-zinc-400">Consultas Pendientes</span>
             <span className="text-2xl font-bold">23</span>
             <span className="text-xs text-green-400 mt-1">
@@ -145,7 +144,7 @@ const Dashboard = () => {
             </div>
           </div>
           {/* Card 3: Ventas del Mes */}
-          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-600">
+          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-800">
             <span className="text-xs text-zinc-400">Ventas del Mes</span>
             <span className="text-2xl font-bold">18</span>
             <span className="text-xs text-green-400 mt-1">
@@ -169,7 +168,7 @@ const Dashboard = () => {
             </div>
           </div>
           {/* Card 4: Ingresos del Mes */}
-          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-600">
+          <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-800">
             <span className="text-xs text-zinc-400">Ingresos del Mes</span>
             <span className="text-2xl font-bold">$2.8M</span>
             <span className="text-xs text-green-400 mt-1">
@@ -194,11 +193,11 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="flex flex-1 gap-2">
-          <div className="flex-1 rounded-lg bg-slate-100 p-6 border border-zinc-200 dark:bg-slate-800 dark:border-zinc-700">
+          <div className="flex-1 rounded-lg bg-slate-100 p-6 border border-zinc-800 dark:bg-zinc-900 dark:border-zinc-900">
             <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
               Agregar Vehículo
             </h2>
-            <VehicleForm />
+            <StepForm />
           </div>
         </div>
       </div>
