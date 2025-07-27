@@ -1,12 +1,15 @@
+import { lazy, Suspense } from "react";
 import Header from "@/components/landing/header/Header";
 import Hero from "@/components/landing/hero/Hero";
 import Search from "@/components/landing/search/Search";
-import TopCars from "@/components/landing/top-cars/TopCars";
-import TopBrands from "@/components/landing/top-brands/TopBrands";
-import Services from "@/components/landing/services/Services";
-import Testimonials from "@/components/landing/testimonials/Testimonials";
-import Cta from "@/components/landing/cta/Cta";
-import Footer from "@/components/landing/footer/Footer";
+
+// Lazy load below-the-fold components
+const TopCars = lazy(() => import("@/components/landing/top-cars/TopCars"));
+const TopBrands = lazy(() => import("@/components/landing/top-brands/TopBrands"));
+const Services = lazy(() => import("@/components/landing/services/Services"));
+const Testimonials = lazy(() => import("@/components/landing/testimonials/Testimonials"));
+const Cta = lazy(() => import("@/components/landing/cta/Cta"));
+const Footer = lazy(() => import("@/components/landing/footer/Footer"));
 
 export default function Home() {
   return (
@@ -14,12 +17,24 @@ export default function Home() {
       <Header />
       <Hero />
       <Search />
-      <TopCars />
-      <TopBrands />
-      <Services />
-      <Testimonials />
-      <Cta />
-      <Footer />
+      <Suspense fallback={<div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />}>
+        <TopCars />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />}>
+        <TopBrands />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />}>
+        <Services />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />}>
+        <Testimonials />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />}>
+        <Cta />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

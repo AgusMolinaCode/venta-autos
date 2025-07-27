@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const Hero: React.FC = () => {
+const Hero = memo(function Hero() {
   return (
     <section className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-800 text-white">
       <div className="container mx-auto px-4 py-20 md:py-32">
@@ -23,6 +23,6 @@ const Hero: React.FC = () => {
       </div>
     </section>
   );
-};
+});
 
 export default Hero;

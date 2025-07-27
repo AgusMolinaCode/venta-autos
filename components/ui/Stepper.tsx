@@ -1,10 +1,10 @@
 import React, {
     useState,
     Children,
-    useRef,
-    useLayoutEffect,
     HTMLAttributes,
     ReactNode,
+    memo,
+    useCallback,
   } from "react";
   import { motion, AnimatePresence, Variants } from "framer-motion";
   
@@ -22,6 +22,7 @@ import React, {
     backButtonText?: string;
     nextButtonText?: string;
     disableStepIndicators?: boolean;
+    onValidationError?: () => void; // Moved to top-level prop
     renderStepIndicator?: (props: {
       step: number;
       currentStep: number;
@@ -29,7 +30,7 @@ import React, {
     }) => ReactNode;
   }
   
-  export default function Stepper({
+  const Stepper = memo(function Stepper({
     children,
     initialStep = 1,
     onStepChange = () => {},
@@ -43,6 +44,7 @@ import React, {
     backButtonText = "Back",
     nextButtonText = "Continue",
     disableStepIndicators = false,
+    onValidationError,
     renderStepIndicator,
     ...rest
   }: StepperProps) {
@@ -53,33 +55,42 @@ import React, {
     const isCompleted = currentStep > totalSteps;
     const isLastStep = currentStep === totalSteps;
   
-    const updateStep = (newStep: number) => {
+    const updateStep = useCallback((newStep: number) => {
       setCurrentStep(newStep);
       if (newStep > totalSteps) {
         onFinalStepCompleted();
       } else {
         onStepChange(newStep);
       }
-    };
+    }, [totalSteps, onFinalStepCompleted, onStepChange]);
   
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
       if (currentStep > 1) {
         setDirection(-1);
         updateStep(currentStep - 1);
       }
-    };
+    }, [currentStep, updateStep]);
   
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
+      // Check if next button is disabled and show validation errors
+      if (nextButtonProps.disabled) {
+        // Trigger validation errors for required fields
+        if (onValidationError) {
+          onValidationError();
+        }
+        return;
+      }
+      
       if (!isLastStep) {
         setDirection(1);
         updateStep(currentStep + 1);
       }
-    };
+    }, [nextButtonProps.disabled, onValidationError, isLastStep, currentStep, updateStep]);
   
-    const handleComplete = () => {
+    const handleComplete = useCallback(() => {
       setDirection(1);
       updateStep(totalSteps + 1);
-    };
+    }, [totalSteps, updateStep]);
   
     return (
       <div
@@ -88,7 +99,7 @@ import React, {
       >
         <div
           className={`mx-auto w-full max-w-2xl rounded-4xl shadow-xl flex flex-col h-full ${stepCircleContainerClassName}`}
-          style={{ border: "1px solid #222" }}
+          style={stepperContainerStyle}
         >
           <div
             className={`${stepContainerClassName} flex w-full items-center sm:p-8 p-2`}
@@ -168,7 +179,12 @@ import React, {
         </div>
       </div>
     );
-  }
+  });
+
+  // Memoized styles to prevent re-renders
+  const stepperContainerStyle = { border: "1px solid #222" };
+
+  export default Stepper;
   
   interface StepContentWrapperProps {
     isCompleted: boolean;
@@ -194,7 +210,6 @@ import React, {
             <SlideTransition
               key={currentStep}
               direction={direction}
-              onHeightReady={() => {}}
             >
               {children}
             </SlideTransition>
@@ -207,13 +222,11 @@ import React, {
   interface SlideTransitionProps {
     children: ReactNode;
     direction: number;
-    onHeightReady: (height: number) => void;
   }
   
   function SlideTransition({
     children,
     direction,
-    onHeightReady,
   }: SlideTransitionProps) {
     return (
       <motion.div
@@ -260,7 +273,7 @@ import React, {
     disableStepIndicators?: boolean;
   }
   
-  function StepIndicator({
+  const StepIndicator = memo(function StepIndicator({
     step,
     currentStep,
     onClickStep,
@@ -305,13 +318,13 @@ import React, {
         </motion.div>
       </motion.div>
     );
-  }
+  });
   
   interface StepConnectorProps {
     isComplete: boolean;
   }
   
-  function StepConnector({ isComplete }: StepConnectorProps) {
+  const StepConnector = memo(function StepConnector({ isComplete }: StepConnectorProps) {
     const lineVariants: Variants = {
       incomplete: { width: 0, backgroundColor: "transparent" },
       complete: { width: "100%", backgroundColor: "#5227FF" },
@@ -328,9 +341,11 @@ import React, {
         />
       </div>
     );
-  }
+  });
   
-  interface CheckIconProps extends React.SVGProps<SVGSVGElement> {}
+  interface CheckIconProps extends React.SVGProps<SVGSVGElement> {
+    className?: string;
+  }
   
   function CheckIcon(props: CheckIconProps) {
     return (

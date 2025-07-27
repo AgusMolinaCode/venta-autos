@@ -7,11 +7,14 @@ import {
   IconCar,
   IconSettings,
   IconUserBolt,
+  IconPlus,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/ui/ModeToggle";
+import { Button } from "@/components/ui/button";
 import StepForm from "@/components/dashboard-admin/step-form";
+import { AddCarModal } from "@/components/dashboard-admin/add-car-modal";
 
 function Page() {
   const links = [
@@ -70,13 +73,9 @@ function Page() {
                 label: "Manu Arora",
                 href: "#",
                 icon: (
-                  <img
-                    src="https://assets.aceternity.com/manu.png"
-                    className="h-7 w-7 shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
+                  <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-xs text-white font-bold">
+                    MA
+                  </div>
                 ),
               }}
             />
@@ -87,7 +86,7 @@ function Page() {
     </div>
   );
 }
-export const Logo = () => {
+const Logo = () => {
   return (
     <a
       href="#"
@@ -104,7 +103,7 @@ export const Logo = () => {
     </a>
   );
 };
-export const LogoIcon = () => {
+const LogoIcon = () => {
   return (
     <a
       href="#"
@@ -117,9 +116,42 @@ export const LogoIcon = () => {
 
 // Dummy dashboard component with content
 const Dashboard = () => {
+  const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
+
+  const handleCarSubmit = (formData: {
+    marca: string;
+    modelo: string;
+    ano: number;
+    kilometraje?: number;
+    version?: string;
+    combustible?: string;
+    transmision?: string;
+    color?: string;
+    descripcion?: string;
+    precio?: number;
+    moneda?: "ARS" | "USD";
+  }) => {
+    console.log("Nuevo auto agregado:", formData);
+    // Aquí puedes manejar el envío de datos (API, base de datos, etc.)
+  };
+
   return (
     <div className="flex flex-1">
       <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 md:p-10 dark:border-zinc-700 dark:bg-zinc-900">
+        {/* Header con botón para agregar auto */}
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
+            Dashboard de Vehículos
+          </h1>
+          <Button
+            onClick={() => setIsAddCarModalOpen(true)}
+            className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
+          >
+            <IconPlus className="h-4 w-4 mr-2" />
+            Agregar Auto
+          </Button>
+        </div>
+        
         <div className="flex gap-2">
           {/* Card 1: Total de Vehículos */}
           <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-800">
@@ -200,6 +232,13 @@ const Dashboard = () => {
             <StepForm />
           </div>
         </div>
+
+        {/* Modal para agregar auto */}
+        <AddCarModal
+          isOpen={isAddCarModalOpen}
+          onClose={() => setIsAddCarModalOpen(false)}
+          onSubmit={handleCarSubmit}
+        />
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ const Testimonials: React.FC = () => {
                 </div>
               </div>
             </div>
-            <p className="text-gray-600 italic">"{testimonial.comment}"</p>
+            <p className="text-gray-600 italic">&ldquo;{testimonial.comment}&rdquo;</p>
           </div>
         ))}
       </div>
