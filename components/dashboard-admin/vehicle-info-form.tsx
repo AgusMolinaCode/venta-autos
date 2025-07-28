@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { marcasAutos } from "@/constants";
 import { z } from "zod";
 import { VehicleFormInputSchema } from "@/lib/validations";
+import { COMBUSTIBLES, TRANSMISIONES, FORM_CONFIG } from "./constants";
 
 type VehicleFormData = z.infer<typeof VehicleFormInputSchema> & {
   ano: number;
@@ -19,8 +20,6 @@ interface VehicleInfoFormProps {
   onSubmit: (data: VehicleFormData) => void;
 }
 
-const combustibles = ["Nafta", "Diesel", "GNC", "Eléctrico", "Híbrido"];
-const transmisiones = ["Manual", "Automática", "CVT"];
 
 export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
   return (
@@ -75,7 +74,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                   <FormLabel className="text-gray-700 dark:text-zinc-300">Modelo *</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ej: Corolla, Civic, Focus"
+                      placeholder={FORM_CONFIG.placeholders.modelo}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
                       {...field}
                     />
@@ -97,9 +96,9 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                   <FormControl>
                     <Input
                       type="number"
-                      min={1970}
-                      max={2025}
-                      placeholder="2020"
+                      min={FORM_CONFIG.minYear}
+                      max={FORM_CONFIG.maxYear}
+                      placeholder={FORM_CONFIG.placeholders.ano}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
                       {...field}
                       value={field.value?.toString() ?? ""}
@@ -125,7 +124,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                     <Input
                       type="number"
                       min={0}
-                      placeholder="50000"
+                      placeholder={FORM_CONFIG.placeholders.kilometraje}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
                       {...field}
                       value={field.value?.toString() ?? ""}
@@ -157,7 +156,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 w-full">
-                      {combustibles.map((combustible) => (
+                      {COMBUSTIBLES.map((combustible) => (
                         <SelectItem key={combustible} value={combustible} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700">
                           {combustible}
                         </SelectItem>
@@ -182,7 +181,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 w-full">
-                      {transmisiones.map((transmision) => (
+                      {TRANSMISIONES.map((transmision) => (
                         <SelectItem key={transmision} value={transmision} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700">
                           {transmision}
                         </SelectItem>
@@ -205,7 +204,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                   <FormLabel className="text-gray-700 dark:text-zinc-300">Versión</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ej: LT, EX, Sport"
+                      placeholder={FORM_CONFIG.placeholders.version}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
                       {...field}
                     />
@@ -223,7 +222,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                   <FormLabel className="text-gray-700 dark:text-zinc-300">Color</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ej: Blanco, Negro, Gris"
+                      placeholder={FORM_CONFIG.placeholders.color}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
                       {...field}
                     />
@@ -243,7 +242,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                 <FormLabel className="text-gray-700 dark:text-zinc-300">Descripción</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Describe las características, estado y detalles importantes del vehículo..."
+                    placeholder={FORM_CONFIG.placeholders.descripcion}
                     rows={5}
                     cols={50}
                     className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white resize-none"

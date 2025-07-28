@@ -1,22 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { MODAL_STEPS } from "./constants";
 
 interface ProgressBarProps {
   currentStep: number;
   totalSteps?: number;
 }
 
-const steps = [
-  { step: 1, title: "Información", subtitle: "Datos del vehículo" },
-  { step: 2, title: "Precio", subtitle: "Valor de venta" },
-  { step: 3, title: "Fotos", subtitle: "Imágenes" }
-];
-
 export function ProgressBar({ currentStep, totalSteps = 3 }: ProgressBarProps) {
   return (
     <div className="flex items-center justify-center mb-8 max-w-2xl mx-auto">
-      {steps.map((item, index) => (
+      {MODAL_STEPS.map((item, index) => (
         <div key={item.step} className="flex items-center">
           <div className="flex flex-col items-center">
             <motion.div
@@ -45,7 +40,7 @@ export function ProgressBar({ currentStep, totalSteps = 3 }: ProgressBarProps) {
               </p>
             </div>
           </div>
-          {index < totalSteps - 1 && (
+          {index < MODAL_STEPS.length - 1 && (
             <div className="w-16 sm:w-24 mx-3">
               <motion.div
                 className={`h-1 rounded-full transition-all duration-500 ${

@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriceSchema } from "@/lib/validations";
+import { FORM_CONFIG } from "./constants";
 
 export type PriceFormData = z.infer<typeof PriceSchema>;
 
@@ -50,7 +51,7 @@ export function PriceForm({ onSubmit, onCancel, defaultValues }: PriceFormProps)
                   <Input
                     type="number"
                     min={0}
-                    placeholder="Precio"
+                    placeholder={FORM_CONFIG.placeholders.precio}
                     className="w-full"
                     {...field}
                     value={field.value ?? ""}

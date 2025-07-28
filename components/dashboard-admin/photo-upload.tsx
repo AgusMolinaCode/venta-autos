@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Upload, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FORM_CONFIG } from "./constants";
 
 interface PhotoUploadProps {
   uploadedFiles: File[];
@@ -16,7 +17,7 @@ export function PhotoUpload({
   uploadedFiles, 
   onFileUpload, 
   onRemoveFile, 
-  maxFiles = 10 
+  maxFiles = FORM_CONFIG.maxFiles 
 }: PhotoUploadProps) {
   return (
     <motion.div 
@@ -33,7 +34,7 @@ export function PhotoUpload({
         <input
           type="file"
           multiple
-          accept="image/*"
+          accept={FORM_CONFIG.imageFormats}
           onChange={onFileUpload}
           className="hidden"
           id="file-upload"

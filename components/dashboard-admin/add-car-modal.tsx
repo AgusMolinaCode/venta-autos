@@ -1,21 +1,18 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { VehicleFormInputSchema, PriceSchema } from "@/lib/validations";
 import { z } from "zod";
-import { toast } from "sonner";
+import { VehicleFormInputSchema, PriceSchema } from "@/lib/validations";
 import { ProgressBar } from "./progress-bar";
 import { VehicleInfoForm } from "./vehicle-info-form";
-import { PriceFormModal } from "./price-form-modal";
 import { PhotoUpload } from "./photo-upload";
 import { ModalNavigation } from "./modal-navigation";
+import { PriceFormModal } from "./price-form-modal";
+import { useCarFormState } from "./hooks/use-car-form-state";
 
 interface AddCarModalProps {
   isOpen: boolean;
@@ -23,120 +20,40 @@ interface AddCarModalProps {
   onSubmit?: (data: CombinedFormData) => void;
 }
 
-// Simplified schema for AddCarModal - only marca, modelo, año required
-const AddCarStep1Schema = VehicleFormInputSchema.extend({
-  ano: z.number().min(1970, {
-    message: "El año debe ser mayor a 1970.",
-  }).max(2025, {
-    message: "El año no puede ser mayor a 2025.",
-  }),
-});
-
-type VehicleFormData = z.infer<typeof AddCarStep1Schema>;
-
-// Step 2: Price Information
-const Step2Schema = PriceSchema;
-type PriceFormData = z.infer<typeof Step2Schema>;
-
-// Combined data type for the callback
+// Types
+type VehicleFormData = z.infer<typeof VehicleFormInputSchema> & { ano: number };
+type PriceFormData = z.infer<typeof PriceSchema>;
 type CombinedFormData = VehicleFormData & PriceFormData;
 
 
 
 export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [step1Data, setStep1Data] = useState<VehicleFormData | null>(null);
-
-  // Form for Step 1 - Vehicle Information
-  const vehicleForm = useForm<VehicleFormData>({
-    resolver: zodResolver(AddCarStep1Schema),
-    defaultValues: {
-      marca: "",
-      modelo: "",
-      ano: undefined,
-      kilometraje: undefined,
-      version: "",
-      combustible: "",
-      transmision: "",
-      color: "",
-      descripcion: "",
-    },
-  });
-
-  // Form for Step 2 - Price Information
-  const priceForm = useForm<PriceFormData>({
-    resolver: zodResolver(Step2Schema),
-    defaultValues: {
-      precio: undefined,
-      moneda: "ARS",
-    },
-  });
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    if (uploadedFiles.length + files.length > 10) {
-      toast.error("Máximo 10 fotos permitidas");
-      return;
-    }
-    setUploadedFiles((prev) => [...prev, ...files]);
-  };
-
-  const removeFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleStep1Submit = (data: VehicleFormData) => {
-    // Only validate required fields: marca, modelo, año
-    if (!data.marca || !data.modelo || !data.ano) {
-      toast.error("Complete los campos obligatorios: marca, modelo y año");
-      return;
-    }
-    
-    const dataWithDefaults = data;
-    
-    console.log("Step 1 data validated:", dataWithDefaults);
-    setStep1Data(dataWithDefaults);
-    setCurrentStep(2);
-    // toast.success("Información del vehículo guardada ✓");
-  };
-
-  const handleStep2Submit = (data: PriceFormData) => {
-    if (!step1Data) {
-      toast.error("Error: datos del paso 1 no encontrados");
-      return;
-    }
-
-    const finalData = { ...step1Data, ...data } as CombinedFormData;
-    console.log("Datos completos del formulario:", finalData);
-    console.log("Archivos subidos:", uploadedFiles);
-    
-    if (onSubmit) {
-      onSubmit(finalData);
-    }
-    
-    // Reset forms and state
-    vehicleForm.reset();
-    priceForm.reset();
-    setStep1Data(null);
-    setUploadedFiles([]);
-    setCurrentStep(1);
-    
-    // toast.success("Vehículo agregado exitosamente");
-    onClose();
-  };
-
+  const {
+    // Estado
+    currentStep,
+    step1Data,
+    uploadedFiles,
+    // Forms
+    vehicleForm,
+    priceForm,
+    // Acciones
+    setCurrentStep,
+    handleStep1Submit,
+    handleStep2Submit,
+    handleFinalSubmit,
+    handleFileUpload,
+    removeFile,
+    resetForm,
+    // Validaciones
+    canProceedToNextStep,
+  } = useCarFormState(onSubmit, onClose);
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const handleModalClose = () => {
-    vehicleForm.reset();
-    priceForm.reset();
-    setStep1Data(null);
-    setUploadedFiles([]);
-    setCurrentStep(1);
+    resetForm();
     onClose();
   };
 
@@ -176,7 +93,7 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
             {currentStep === 1 && (
               <VehicleInfoForm 
                 form={vehicleForm} 
-                onSubmit={handleStep1Submit} 
+                onSubmit={handleStep1Submit}
               />
             )}
 
@@ -204,33 +121,8 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
               onClose={handleModalClose}
               onNextStep={currentStep === 1 ? vehicleForm.handleSubmit(handleStep1Submit) : 
                         currentStep === 2 ? priceForm.handleSubmit(handleStep2Submit) : undefined}
-              onSubmit={currentStep === 3 ? () => {
-                if (!step1Data) {
-                  toast.error("Error: datos del vehículo no encontrados");
-                  setCurrentStep(1);
-                  return;
-                }
-                
-                const priceData = priceForm.getValues();
-                const finalData = { ...step1Data, ...priceData } as CombinedFormData;
-                console.log("Datos completos del formulario:", finalData);
-                console.log("Archivos subidos:", uploadedFiles);
-                
-                if (onSubmit) {
-                  onSubmit(finalData);
-                }
-                
-                // Reset forms and state
-                vehicleForm.reset();
-                priceForm.reset();
-                setStep1Data(null);
-                setUploadedFiles([]);
-                setCurrentStep(1);
-                
-                toast.success("Vehículo agregado exitosamente");
-                handleModalClose();
-              } : undefined}
-              isValid={currentStep === 1 ? vehicleForm.formState.isValid : true}
+              onSubmit={currentStep === 3 ? handleFinalSubmit : undefined}
+              isValid={canProceedToNextStep(currentStep)}
               isLastStep={currentStep === 3}
               nextButtonText={currentStep === 2 ? "Continuar a Fotos →" : "Siguiente →"}
             />

@@ -8,6 +8,7 @@ import {
   IconSettings,
   IconUserBolt,
   IconPlus,
+  IconSearch,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -117,6 +118,11 @@ const LogoIcon = () => {
 // Dummy dashboard component with content
 const Dashboard = () => {
   const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
+  const [liveVehicleData, setLiveVehicleData] = useState<{
+    marca?: string;
+    modelo?: string;
+    ano?: number;
+  } | null>(null);
 
   const handleCarSubmit = (formData: {
     marca: string;
@@ -143,15 +149,17 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
             Dashboard de Vehículos
           </h1>
-          <Button
-            onClick={() => setIsAddCarModalOpen(true)}
-            className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
-          >
-            <IconPlus className="h-4 w-4 mr-2" />
-            Agregar Auto
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setIsAddCarModalOpen(true)}
+              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
+            >
+              <IconPlus className="h-4 w-4 mr-2" />
+              Agregar Auto
+            </Button>
+          </div>
         </div>
-        
+
         <div className="flex gap-2">
           {/* Card 1: Total de Vehículos */}
           <div className="flex flex-col flex-1 rounded-lg bg-zinc-800 p-4 text-white border border-zinc-800">
@@ -226,10 +234,7 @@ const Dashboard = () => {
         </div>
         <div className="flex flex-1 gap-2">
           <div className="flex-1 rounded-lg bg-slate-100 p-6 border border-zinc-800 dark:bg-zinc-900 dark:border-zinc-900">
-            <h2 className="text-xl font-semibold text-zinc-800 dark:text-zinc-200 mb-4">
-              Agregar Vehículo
-            </h2>
-            <StepForm />
+            {/* <StepForm onDataChange={setLiveVehicleData} /> */}
           </div>
         </div>
 

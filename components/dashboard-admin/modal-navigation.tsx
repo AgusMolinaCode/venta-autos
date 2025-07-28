@@ -55,7 +55,7 @@ export function ModalNavigation({
                 : "bg-gray-400 dark:bg-zinc-600 text-gray-300 dark:text-zinc-400 cursor-not-allowed"
             }`}
           >
-            {isValid ? nextButtonText : "Complete los campos *"}
+{isValid ? nextButtonText : "Complete los campos obligatorios *"}
           </Button>
         )}
 

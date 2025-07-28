@@ -12,8 +12,15 @@ const nextConfig: NextConfig = {
       'lucide-react',
       '@tabler/icons-react'
     ],
-    // Enable modern optimizations
+    // Enable modern optimizations (but disable for Turbopack)
     webpackBuildWorker: true,
+  },
+  
+  // Turbopack-specific configuration (moved from experimental)
+  turbopack: {
+    resolveAlias: {
+      // Add any specific aliases if needed
+    },
   },
   
   // Optimize images
@@ -26,29 +33,36 @@ const nextConfig: NextConfig = {
   // Compress output
   compress: true,
   
-  // Bundle analyzer (disabled by default)
-  webpack: (config, { dev, isServer }) => {
-    // Optimize bundle size
-    if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
+  // Conditional webpack configuration (only for non-Turbopack builds)
+  ...(!process.env.TURBOPACK && {
+    webpack: (config, { dev, isServer }) => {
+      // Prevent cache conflicts between bundlers
+      if (dev) {
+        config.cache = false;
+      }
+      
+      // Only apply webpack optimizations for production builds
+      if (!dev && !isServer) {
+        config.optimization.splitChunks = {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+            framerMotion: {
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              name: 'framer-motion',
+              chunks: 'all',
+            },
           },
-          framerMotion: {
-            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-            name: 'framer-motion',
-            chunks: 'all',
-          },
-        },
-      };
-    }
-    
-    return config;
-  },
+        };
+      }
+      
+      return config;
+    },
+  }),
 };
 
 export default nextConfig;
