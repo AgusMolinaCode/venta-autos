@@ -37,7 +37,7 @@ export const FORM_CONFIG = {
     combustible: "Seleccionar combustible",
     transmision: "Seleccionar transmisión",
     precio: "15000000",
-    descripcion: "Describe las características, estado y detalles importantes del vehículo..."
+    descripcion: "Describe las características, estado y detalles importantes del vehículo.."
   }
 } as const;
 
