@@ -55,11 +55,10 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    console.log(`Fetching price reference for: ${marca} ${modelo} ${ano}`);
     
-    // Fetch from external API
-    const externalResponse = await fetch(
-      'https://primary-production-1e497.up.railway.app/webhook/b9c2fb0f-5b6d-407b-b19a-0561b22b98c4',
+    // Use local scraping API instead of external webhook
+    const scrapingResponse = await fetch(
+      `${request.nextUrl.origin}/api/mercadolibre-scraping`,
       {
         method: 'POST',
         headers: {
@@ -73,15 +72,15 @@ export async function POST(request: NextRequest) {
       }
     );
     
-    if (!externalResponse.ok) {
-      console.error(`External API error: ${externalResponse.status} ${externalResponse.statusText}`);
+    if (!scrapingResponse.ok) {
+      console.error(`Scraping API error: ${scrapingResponse.status} ${scrapingResponse.statusText}`);
       return NextResponse.json(
         { error: 'Error al obtener datos de precios de referencia' },
         { status: 502 }
       );
     }
     
-    const externalData = await externalResponse.json();
+    const externalData = await scrapingResponse.json();
     
     // Validate external response structure
     if (!Array.isArray(externalData) || externalData.length === 0) {

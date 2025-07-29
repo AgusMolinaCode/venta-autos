@@ -31,7 +31,6 @@ export interface CarValuationResponse {
 }
 
 const SCRAPING_API_URL = '/api/mercadolibre-scraping';
-const FALLBACK_WEBHOOK_URL = 'https://primary-production-1e497.up.railway.app/webhook/b9c2fb0f-5b6d-407b-b19a-0561b22b98c4';
 
 export class CarValuationService {
   static async getCarValuation(data: CarValuationRequest): Promise<CarValuationResponse[]> {
@@ -51,34 +50,12 @@ export class CarValuationService {
       if (scrapingResponse.ok) {
         const result = await scrapingResponse.json();
         if (Array.isArray(result) && result.length > 0) {
-          console.log('✅ [CAR VALUATION] Success with scraping API');
           return result;
         }
       }
 
-      // Fallback to webhook API if scraping fails
-      console.log('⚠️ [CAR VALUATION] Scraping failed, falling back to webhook...');
-      
-      const webhookResponse = await fetch(FALLBACK_WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!webhookResponse.ok) {
-        throw new Error(`Webhook API error! status: ${webhookResponse.status}`);
-      }
-
-      const webhookResult = await webhookResponse.json();
-      
-      if (!Array.isArray(webhookResult) || webhookResult.length === 0) {
-        throw new Error('No data available from both scraping and webhook APIs');
-      }
-
-      console.log('✅ [CAR VALUATION] Success with fallback webhook');
-      return webhookResult;
+      // If scraping fails, throw error
+      throw new Error('No data available from scraping API');
 
     } catch (error) {
       console.error('❌ [CAR VALUATION] Error fetching car valuation:', error);

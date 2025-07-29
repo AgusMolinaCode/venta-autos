@@ -36,7 +36,7 @@ __tests__/
 
 ### Endpoint
 ```
-POST https://primary-production-1e497.up.railway.app/webhook/b9c2fb0f-5b6d-407b-b19a-0561b22b98c4
+POST /api/mercadolibre-scraping
 ```
 
 ### Request Format

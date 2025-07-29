@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoLibreScraper } from '@/lib/services/mercadolibre-scraper';
+import { DolarService } from '@/lib/services/dolar-service';
 import { z } from 'zod';
 
 // Request validation schema
@@ -32,10 +33,13 @@ function rateLimit(ip: string): boolean {
   return false;
 }
 
-function generateMockScrapingResult(marca: string, modelo: string, ano: number) {
+async function generateMockScrapingResult(marca: string, modelo: string, ano: number) {
   const basePrice = 15000000; // Base price in ARS
   const variation = 0.3; // 30% variation
-  const exchangeRate = 1300;
+  
+  // Get real-time exchange rate from API
+  const dolarService = DolarService.getInstance();
+  const exchangeRate = await dolarService.getBlueDollarRate();
   
   // Generate random prices with variation
   const prices = Array.from({ length: 25 }, () => {
@@ -130,26 +134,21 @@ export async function POST(request: NextRequest) {
     
     const { ano, marca, modelo } = validation.data;
     
-    console.log(`[SCRAPER] Starting scraping for: ${marca} ${modelo} ${ano}`);
-    console.log(`[SCRAPER] Generated URL will be tested...`);
     
     // Check if we should use mock data (only when explicitly enabled)
     const useMockData = process.env.USE_MOCK_SCRAPING === 'true';
     
     let result;
     if (useMockData) {
-      console.log(`[SCRAPER] Using mock data (USE_MOCK_SCRAPING=true)`);
       // Generate realistic mock data
-      result = generateMockScrapingResult(marca, modelo, ano);
+      result = await generateMockScrapingResult(marca, modelo, ano);
     } else {
-      console.log(`[SCRAPER] Using real scraping for: ${marca} ${modelo} ${ano}`);
       // Initialize scraper and perform scraping
       const scraper = new MercadoLibreScraper();
       result = await scraper.scrapeVehicleData(ano, marca, modelo);
     }
     
     const executionTime = Date.now() - startTime;
-    console.log(`[SCRAPER] Scraping completed in ${executionTime}ms`);
     
     // Return results in the same format as the original webhook
     return NextResponse.json([result], {

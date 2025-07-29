@@ -137,7 +137,6 @@ const Dashboard = () => {
     precio?: number;
     moneda?: "ARS" | "USD";
   }) => {
-    console.log("Nuevo auto agregado:", formData);
     // Aquí puedes manejar el envío de datos (API, base de datos, etc.)
   };
 

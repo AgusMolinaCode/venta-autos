@@ -1,6 +1,7 @@
 import { chromium, Browser } from 'playwright';
 import * as cheerio from 'cheerio';
 import { generateMercadoLibreURL } from '@/lib/utils/url-normalizer';
+import { DolarService } from './dolar-service';
 
 export interface ScrapingResult {
   total_vehiculos: number;
@@ -38,7 +39,7 @@ export interface PriceStats {
 
 export class MercadoLibreScraper {
   private browser: Browser | null = null;
-  private readonly defaultExchangeRate = 1300; // Default ARS/USD rate
+  private readonly defaultExchangeRate = DolarService.getInstance().getBlueDollarRate(); // Default ARS/USD rate
 
   constructor() {}
 
@@ -130,7 +131,6 @@ export class MercadoLibreScraper {
         await page.waitForSelector('.ui-search-results__element, .ui-search-result, .andes-card', { timeout: 15000 });
       } catch {
         // If no listings found, still continue to get content for analysis
-        console.warn('No listings selector found, but continuing...');
       }
       
       return await page.content();
@@ -209,7 +209,6 @@ export class MercadoLibreScraper {
               !imageUrl.includes('data:image/svg') &&
               !imageUrl.includes('base64') && 
               (imageUrl.includes('mlstatic') || imageUrl.startsWith('http') || imageUrl.startsWith('//'))) {
-            console.log(`[SCRAPER] Found image with selector ${selector}: ${imageUrl}`);
             break;
           }
         }
@@ -229,7 +228,6 @@ export class MercadoLibreScraper {
         for (const selector of urlSelectors) {
           listingUrl = $element.find(selector).first().attr('href') || '';
           if (listingUrl && listingUrl.includes('MLA-')) {
-            console.log(`[SCRAPER] Found URL with selector ${selector}: ${listingUrl}`);
             break;
           }
         }
@@ -283,7 +281,6 @@ export class MercadoLibreScraper {
               finalUrl = searchUrl;
             }
             
-            console.log(`[SCRAPER] Final URL for ${name}: ${finalUrl}`);
             
             listings.push({
               name,
@@ -311,7 +308,7 @@ export class MercadoLibreScraper {
     const usdPrices = listings.filter(l => l.currency === 'USD').map(l => l.price);
     
     // Convert all prices to both currencies for comparison
-    const exchangeRate = this.getExchangeRate();
+    const exchangeRate = await this.getExchangeRate();
     const allPricesARS = [...arsPrices, ...usdPrices.map(p => p * exchangeRate)];
     const allPricesUSD = [...usdPrices, ...arsPrices.map(p => p / exchangeRate)];
 
@@ -422,10 +419,10 @@ export class MercadoLibreScraper {
   }
 
   /**
-   * Get current exchange rate (could be fetched from API in production)
+   * Get current exchange rate from API
    */
-  private getExchangeRate(): number {
-    return this.defaultExchangeRate;
+  private async getExchangeRate(): Promise<number> {
+    return await DolarService.getInstance().getBlueDollarRate();  
   }
 
   /**

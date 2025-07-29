@@ -58,6 +58,7 @@ export function PriceFormModal({
   // Show valuation results if available
   if (data && data[0]) {
     const results = data[0];
+
     
     return (
       <motion.div

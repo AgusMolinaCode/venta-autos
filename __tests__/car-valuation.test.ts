@@ -37,7 +37,7 @@ describe('CarValuationService', () => {
   ];
 
   describe('getCarValuation', () => {
-    it('should successfully fetch car valuation data', async () => {
+    it('should successfully fetch car valuation data from scraping API', async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
@@ -52,7 +52,7 @@ describe('CarValuationService', () => {
       const result = await CarValuationService.getCarValuation(request);
 
       expect(fetch).toHaveBeenCalledWith(
-        'https://primary-production-1e497.up.railway.app/webhook/b9c2fb0f-5b6d-407b-b19a-0561b22b98c4',
+        'http://localhost/api/mercadolibre-scraping',
         {
           method: 'POST',
           headers: {
@@ -65,7 +65,7 @@ describe('CarValuationService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should throw error when API returns error status', async () => {
+    it('should throw error when scraping API fails', async () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -79,7 +79,7 @@ describe('CarValuationService', () => {
 
       await expect(CarValuationService.getCarValuation(request))
         .rejects
-        .toThrow('HTTP error! status: 400');
+        .toThrow('No data available from scraping API');
     });
 
     it('should throw error when fetch fails', async () => {
@@ -93,7 +93,7 @@ describe('CarValuationService', () => {
 
       await expect(CarValuationService.getCarValuation(request))
         .rejects
-        .toThrow('Failed to fetch car valuation data');
+        .toThrow('Network error');
     });
   });
 

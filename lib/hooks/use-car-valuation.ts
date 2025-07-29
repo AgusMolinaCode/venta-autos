@@ -15,18 +15,13 @@ export const useCarValuation = (options?: UseCarValuationOptions) => {
   const mutation = useMutation({
     mutationFn: CarValuationService.getCarValuation,
     onMutate: (variables) => {
-      console.log('🎯 [HOOK] Starting car valuation mutation with data:', variables);
     },
     onSuccess: (data, variables) => {
-      console.log('✅ [HOOK] Car valuation mutation successful!');
-      console.log('📊 [HOOK] Received data:', data);
       
       setLastRequest(variables);
       // Cache the result for potential reuse
       queryClient.setQueryData(['car-valuation', variables], data);
       
-      console.log('💾 [HOOK] Data cached with key:', ['car-valuation', variables]);
-      console.log('🎉 [HOOK] Calling onSuccess callback...');
       
       options?.onSuccess?.(data);
     },

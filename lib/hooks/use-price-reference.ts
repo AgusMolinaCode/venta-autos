@@ -63,7 +63,6 @@ export function usePriceReference(vehicle: VehicleData | null) {
       const searchKey = `${vehicle.marca}-${vehicle.modelo}-${vehicle.ano}`;
       setLastSearched(searchKey);
       
-      console.log('Fetching price reference for:', vehicle);
       
       const response = await fetch('/api/price-reference', {
         method: 'POST',
