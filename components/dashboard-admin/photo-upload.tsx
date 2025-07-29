@@ -17,7 +17,7 @@ export function PhotoUpload({
   uploadedFiles, 
   onFileUpload, 
   onRemoveFile, 
-  maxFiles = FORM_CONFIG.maxFiles 
+  maxFiles = 3 
 }: PhotoUploadProps) {
   return (
     <motion.div 
@@ -34,6 +34,7 @@ export function PhotoUpload({
         <input
           type="file"
           multiple
+          max={maxFiles}
           accept={FORM_CONFIG.imageFormats}
           onChange={onFileUpload}
           className="hidden"
