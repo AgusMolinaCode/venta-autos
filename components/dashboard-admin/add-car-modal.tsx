@@ -124,7 +124,7 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
               onSubmit={currentStep === 3 ? handleFinalSubmit : undefined}
               isValid={canProceedToNextStep(currentStep)}
               isLastStep={currentStep === 3}
-              nextButtonText={currentStep === 2 ? "Continuar a Fotos →" : "Siguiente →"}
+              nextButtonText={currentStep === 2 ? "Continuar a Fotos →" : "Siguiente. →"}
             />
           </CardContent>
         </Card>
