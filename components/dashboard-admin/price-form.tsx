@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriceSchema } from "@/lib/validations";
-import { FORM_CONFIG } from "./constants";
+import { FORM_CONFIG } from "@/constants";
 
 export type PriceFormData = z.infer<typeof PriceSchema>;
 

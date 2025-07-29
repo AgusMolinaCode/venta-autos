@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MODAL_STEPS } from "./constants";
+import { MODAL_STEPS } from "@/constants";
 
 interface ProgressBarProps {
   currentStep: number;

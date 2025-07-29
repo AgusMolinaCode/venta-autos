@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { marcasAutos } from "@/constants";
 import { z } from "zod";
 import { VehicleFormInputSchema } from "@/lib/validations";
-import { COMBUSTIBLES, TRANSMISIONES, FORM_CONFIG } from "./constants";
+import { COMBUSTIBLES, TRANSMISIONES, FORM_CONFIG } from "@/constants";
 
 type VehicleFormData = z.infer<typeof VehicleFormInputSchema> & {
   ano: number;

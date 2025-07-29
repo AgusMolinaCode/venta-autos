@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Upload, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FORM_CONFIG } from "./constants";
+import { FORM_CONFIG } from "@/constants";
 
 interface PhotoUploadProps {
   uploadedFiles: File[];

@@ -236,10 +236,9 @@ const Dashboard = () => {
             {/* <StepForm onDataChange={setLiveVehicleData} /> */}
           </div>
         </div>
-        {/* TODO: Agregar usar precio, lo tome */}
+
         {/* TODO: maximo 3 fotos */}
         {/* TODO: mostrar publicacion */}
-
 
         {/* Modal para agregar auto */}
         <AddCarModal

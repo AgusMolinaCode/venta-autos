@@ -41,6 +41,7 @@ export function PriceFormModal({
   const handlePriceSelect = (price: number, currency: "ARS" | "USD") => {
     form.setValue("precio", price);
     form.setValue("moneda", currency);
+    form.trigger(); // Force form validation after programmatic value setting
   };
 
   useEffect(() => {
