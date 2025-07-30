@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { Button } from "@/components/ui/button";
 import StepForm from "@/components/dashboard-admin/step-form";
-import { AddCarModal } from "@/components/dashboard-admin/add-car-modal";
+import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 
 
@@ -164,7 +164,7 @@ const Dashboard = () => {
           
         <div className="flex flex-1 gap-2">
           <div className="flex-1 rounded-lg bg-slate-100 p-6 border border-zinc-800 dark:bg-zinc-900 dark:border-zinc-900">
-            {/* <StepForm onDataChange={setLiveVehicleData} /> */}
+            <StepForm />
           </div>
         </div>
 

@@ -145,9 +145,12 @@ export class VehiculoService {
       }
 
       console.log('📁 Storage Bucket:', STORAGE_CONFIG.BUCKET_NAME);
-      console.log('🔗 URLs públicas de fotos:', fotosSubidas.map(foto => 
-        `${supabase.supabaseUrl}/storage/v1/object/public/${STORAGE_CONFIG.BUCKET_NAME}/${foto.storage_path}`
-      ));
+      console.log('🔗 URLs públicas de fotos:', fotosSubidas.map(foto => {
+        const { data } = supabase.storage
+          .from(STORAGE_CONFIG.BUCKET_NAME)
+          .getPublicUrl(foto.storage_path);
+        return data.publicUrl;
+      }));
 
       console.log('📈 Resumen de la operación:', {
         vehiculo_creado: true,
@@ -286,7 +289,7 @@ export class VehiculoService {
         errors.push(`Foto "${file.name}" excede el tamaño máximo de 5MB`);
       }
       
-      if (!STORAGE_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+      if (!STORAGE_CONFIG.ALLOWED_TYPES.includes(file.type as typeof STORAGE_CONFIG.ALLOWED_TYPES[number])) {
         errors.push(`Tipo de archivo "${file.type}" no permitido para "${file.name}"`);
       }
     }

@@ -13,11 +13,14 @@ import { PhotoUpload } from "./photo-upload";
 import { ModalNavigation } from "./modal-navigation";
 import { PriceFormModal } from "./price-form-modal";
 import { useCarFormState } from "./hooks/use-car-form-state";
+import { VehiculoConFotos } from "@/lib/supabase";
 
 interface AddCarModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (data: CombinedFormData) => void;
+  onSuccess?: () => void;
+  editingVehicle?: VehiculoConFotos;
 }
 
 // Types
@@ -27,7 +30,7 @@ type CombinedFormData = VehicleFormData & PriceFormData;
 
 
 
-export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
+function AddCarModal({ isOpen, onClose, onSubmit, onSuccess, editingVehicle }: AddCarModalProps) {
   const {
     // Estado
     currentStep,
@@ -47,7 +50,7 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
     resetForm,
     // Validaciones
     canProceedToNextStep,
-  } = useCarFormState(onSubmit, onClose);
+  } = useCarFormState(onSubmit, onSuccess || onClose, editingVehicle);
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
@@ -79,7 +82,9 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
         <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700">
           <CardHeader className="flex flex-row items-center justify-between border-b border-gray-200 dark:border-zinc-700">
             <div>
-              <CardTitle className="text-xl text-gray-900 dark:text-white">Agregar Nuevo Auto</CardTitle>
+              <CardTitle className="text-xl text-gray-900 dark:text-white">
+                {editingVehicle ? 'Editar Vehículo' : 'Agregar Nuevo Auto'}
+              </CardTitle>
               <p className="text-gray-600 dark:text-zinc-400 mt-1">Paso {currentStep} de 3</p>
             </div>
             <Button variant="ghost" size="icon" onClick={handleModalClose} className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">
@@ -135,3 +140,5 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
     </motion.div>
   );
 }
+
+export default AddCarModal;

@@ -41,7 +41,7 @@ export class SupabaseStorageService {
           STORAGE_CONFIG.BUCKET_NAME,
           {
             public: true,
-            allowedMimeTypes: STORAGE_CONFIG.ALLOWED_TYPES,
+            allowedMimeTypes: [...STORAGE_CONFIG.ALLOWED_TYPES],
             fileSizeLimit: STORAGE_CONFIG.MAX_FILE_SIZE
           }
         )
@@ -203,7 +203,7 @@ export class SupabaseStorageService {
     }
 
     // Validar tipo MIME
-    if (!STORAGE_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+    if (!STORAGE_CONFIG.ALLOWED_TYPES.includes(file.type as typeof STORAGE_CONFIG.ALLOWED_TYPES[number])) {
       return {
         isValid: false,
         error: `Tipo de archivo no permitido. Tipos permitidos: ${STORAGE_CONFIG.ALLOWED_TYPES.join(', ')}`

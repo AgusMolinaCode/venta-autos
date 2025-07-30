@@ -3,13 +3,13 @@
  * Centraliza la lógica de estado y validación
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { VehicleFormInputSchema, PriceSchema } from "@/lib/validations";
 import { VehiculoService, VehiculoSubmissionData } from "@/lib/services/vehicle-service";
-import { VehiculoInput } from "@/lib/supabase";
+import { VehiculoInput, VehiculoConFotos } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // Schemas extendidos
@@ -47,7 +47,8 @@ export interface UseCarFormStateReturn {
 
 export function useCarFormState(
   onSubmit?: (data: CombinedFormData) => void,
-  onClose?: () => void
+  onClose?: () => void,
+  editingVehicle?: VehiculoConFotos
 ): UseCarFormStateReturn {
   // Estado local
   const [currentStep, setCurrentStep] = useState(1);
@@ -55,29 +56,64 @@ export function useCarFormState(
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Forms
+  // Forms with conditional default values
   const vehicleForm = useForm<VehicleFormData>({
     resolver: zodResolver(VehicleStep1Schema),
     defaultValues: {
-      marca: "",
-      modelo: "",
-      ano: undefined,
-      kilometraje: undefined,
-      version: "",
-      combustible: "",
-      transmision: "",
-      color: "",
-      descripcion: "",
+      marca: editingVehicle?.marca || "",
+      modelo: editingVehicle?.modelo || "",
+      ano: editingVehicle?.ano || undefined,
+      kilometraje: editingVehicle?.kilometraje || undefined,
+      version: editingVehicle?.version || "",
+      combustible: editingVehicle?.combustible || "",
+      transmision: editingVehicle?.transmision || "",
+      color: editingVehicle?.color || "",
+      descripcion: editingVehicle?.descripcion || "",
     },
   });
 
   const priceForm = useForm<PriceFormData>({
     resolver: zodResolver(PriceSchema),
     defaultValues: {
-      precio: undefined,
-      moneda: "ARS",
+      precio: editingVehicle?.precio || undefined,
+      moneda: editingVehicle?.moneda || "ARS",
     },
   });
+
+  // Reset form values when editingVehicle changes
+  useEffect(() => {
+    if (editingVehicle) {
+      vehicleForm.reset({
+        marca: editingVehicle.marca,
+        modelo: editingVehicle.modelo,
+        ano: editingVehicle.ano,
+        kilometraje: editingVehicle.kilometraje || undefined,
+        version: editingVehicle.version || "",
+        combustible: editingVehicle.combustible || "",
+        transmision: editingVehicle.transmision || "",
+        color: editingVehicle.color || "",
+        descripcion: editingVehicle.descripcion || "",
+      });
+      
+      priceForm.reset({
+        precio: editingVehicle.precio,
+        moneda: editingVehicle.moneda,
+      });
+      
+      // Pre-populate step1Data for editing flow
+      setStep1Data({
+        marca: editingVehicle.marca,
+        modelo: editingVehicle.modelo,
+        ano: editingVehicle.ano,
+        kilometraje: editingVehicle.kilometraje || undefined,
+        version: editingVehicle.version || "",
+        combustible: editingVehicle.combustible || "",
+        transmision: editingVehicle.transmision || "",
+        color: editingVehicle.color || "",
+        descripcion: editingVehicle.descripcion || "",
+      });
+    }
+  }, [editingVehicle, vehicleForm, priceForm]);
 
   // Handlers
   const handleStep1Submit = useCallback(async (data: VehicleFormData) => {
