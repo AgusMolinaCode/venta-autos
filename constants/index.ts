@@ -75,7 +75,7 @@ export const MONEDAS = ["ARS", "USD"] as const;
 
 // Configuraciones de formulario
 export const FORM_CONFIG = {
-  maxFiles: 10,
+  maxFiles: 3,
   minYear: 1970,
   maxYear: 2025,
   minPrice: 1,

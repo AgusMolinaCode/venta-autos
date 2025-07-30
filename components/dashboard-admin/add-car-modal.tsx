@@ -33,6 +33,7 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
     currentStep,
     step1Data,
     uploadedFiles,
+    isSubmitting,
     // Forms
     vehicleForm,
     priceForm,
@@ -112,6 +113,7 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
                 uploadedFiles={uploadedFiles}
                 onFileUpload={handleFileUpload}
                 onRemoveFile={removeFile}
+                maxFiles={3}
               />
             )}
 
@@ -124,6 +126,7 @@ export function AddCarModal({ isOpen, onClose, onSubmit }: AddCarModalProps) {
               onSubmit={currentStep === 3 ? handleFinalSubmit : undefined}
               isValid={canProceedToNextStep(currentStep)}
               isLastStep={currentStep === 3}
+              isSubmitting={isSubmitting}
               nextButtonText={currentStep === 2 ? "Continuar a Fotos →" : "Siguiente →"}
             />
           </CardContent>

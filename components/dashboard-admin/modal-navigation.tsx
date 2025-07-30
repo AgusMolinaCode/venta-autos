@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface ModalNavigationProps {
   currentStep: number;
@@ -10,6 +11,7 @@ interface ModalNavigationProps {
   onSubmit?: () => void;
   isValid?: boolean;
   isLastStep?: boolean;
+  isSubmitting?: boolean;
   nextButtonText?: string;
   submitButtonText?: string;
 }
@@ -22,6 +24,7 @@ export function ModalNavigation({
   onSubmit,
   isValid = true,
   isLastStep = false,
+  isSubmitting = false,
   nextButtonText = "Siguiente →",
   submitButtonText = "Guardar Auto"
 }: ModalNavigationProps) {
@@ -62,9 +65,23 @@ export function ModalNavigation({
         {isLastStep && onSubmit && (
           <Button
             onClick={onSubmit}
-            className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
+            disabled={!isValid || isSubmitting}
+            className={`transition-all duration-300 ${
+              isValid && !isSubmitting
+                ? "bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white shadow-lg"
+                : "bg-gray-400 dark:bg-zinc-600 text-gray-300 dark:text-zinc-400 cursor-not-allowed"
+            }`}
           >
-            {submitButtonText}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Guardando...
+              </>
+            ) : !isValid ? (
+              "Suba al menos 1 imagen"
+            ) : (
+              submitButtonText
+            )}
           </Button>
         )}
       </div>

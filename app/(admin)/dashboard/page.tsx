@@ -237,9 +237,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* TODO: maximo 3 fotos */}
-        {/* TODO: mostrar publicacion */}
-
         {/* Modal para agregar auto */}
         <AddCarModal
           isOpen={isAddCarModalOpen}

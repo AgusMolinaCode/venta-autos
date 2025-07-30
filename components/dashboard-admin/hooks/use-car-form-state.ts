@@ -26,6 +26,7 @@ export interface UseCarFormStateReturn {
   currentStep: number;
   step1Data: VehicleFormData | null;
   uploadedFiles: File[];
+  isSubmitting: boolean;
   
   // Forms
   vehicleForm: ReturnType<typeof useForm<VehicleFormData>>;
@@ -35,8 +36,8 @@ export interface UseCarFormStateReturn {
   setCurrentStep: (step: number) => void;
   handleStep1Submit: (data: VehicleFormData) => Promise<void>;
   handleStep2Submit: (data: PriceFormData) => void;
-  handleFinalSubmit: () => void;
-  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFinalSubmit: () => Promise<void>;
+  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>, maxFiles?: number) => void;
   removeFile: (index: number) => void;
   resetForm: () => void;
   
@@ -52,6 +53,7 @@ export function useCarFormState(
   const [currentStep, setCurrentStep] = useState(1);
   const [step1Data, setStep1Data] = useState<VehicleFormData | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Forms
   const vehicleForm = useForm<VehicleFormData>({
@@ -105,6 +107,7 @@ export function useCarFormState(
     setStep1Data(null);
     setUploadedFiles([]);
     setCurrentStep(1);
+    setIsSubmitting(false);
   }, [vehicleForm, priceForm]);
 
   const handleFinalSubmit = useCallback(async () => {
@@ -113,6 +116,13 @@ export function useCarFormState(
       setCurrentStep(1);
       return;
     }
+    
+    if (uploadedFiles.length === 0) {
+      toast.error("Debe subir al menos 1 imagen del vehículo");
+      return;
+    }
+    
+    setIsSubmitting(true);
     
     const finalData = step1Data as CombinedFormData;
     
@@ -204,22 +214,27 @@ export function useCarFormState(
           toast.warning(`Algunas fotos no se pudieron subir: ${result.details.fotosFallidas.join(', ')}`);
         }
         
-        if (onClose) {
-          onClose();
-        }
+        // Cerrar modal después de un breve delay para mostrar el toast
+        setTimeout(() => {
+          if (onClose) {
+            onClose();
+          }
+        }, 1500);
       } else {
         toast.error(`Error al crear vehículo: ${result.error}`);
       }
     } catch (error) {
       console.error('Error en handleFinalSubmit:', error);
       toast.error('Error inesperado al procesar el vehículo');
+    } finally {
+      setIsSubmitting(false);
     }
   }, [step1Data, uploadedFiles, onSubmit, onClose, resetForm]);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>, maxFiles: number = 10) => {
     const files = Array.from(event.target.files || []);
-    if (uploadedFiles.length + files.length > 10) {
-      toast.error("Máximo 10 fotos permitidas");
+    if (uploadedFiles.length + files.length > maxFiles) {
+      toast.error(`Máximo ${maxFiles} fotos permitidas`);
       return;
     }
     setUploadedFiles(prev => [...prev, ...files]);
@@ -235,16 +250,19 @@ export function useCarFormState(
         return vehicleForm.formState.isValid;
       case 2:
         return priceForm.formState.isValid && !!priceForm.watch("precio");
+      case 3:
+        return uploadedFiles.length >= 1 && uploadedFiles.length <= 3;
       default:
         return true;
     }
-  }, [vehicleForm.formState.isValid, priceForm.formState.isValid, priceForm]);
+  }, [vehicleForm.formState.isValid, priceForm.formState.isValid, priceForm, uploadedFiles.length]);
 
   return {
     // Estado
     currentStep,
     step1Data,
     uploadedFiles,
+    isSubmitting,
     
     // Forms
     vehicleForm,
