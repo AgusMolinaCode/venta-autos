@@ -150,15 +150,7 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
             Dashboard de Vehículos
           </h1>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setIsAddCarModalOpen(true)}
-              className="bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white"
-            >
-              <IconPlus className="h-4 w-4 mr-2" />
-              Agregar Auto
-            </Button>
-          </div>
+          
         </div>
         <MainInfo />  
           
