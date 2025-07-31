@@ -54,14 +54,14 @@ function VehicleTableRow({ vehicle, onEdit, onDelete, onViewDetails }: VehicleTa
 
   const getStatusBadge = () => {
     // Hardcoded statuses for demo purposes
-    const statuses = ['Preparación', 'Publicado', 'Pausado'] as const;
+    const statuses = ['En Preparación', 'Publicado', 'Pausado'] as const;
     type StatusType = typeof statuses[number];
     const randomStatus: StatusType = vehicle.id
       ? statuses[vehicle.id.charCodeAt(0) % statuses.length]
       : statuses[0];
     
     const statusColors: Record<StatusType, string> = {
-      'Preparación': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      'En Preparación': 'bg-yellow-100 text-yellow-800 border-yellow-200',
       'Publicado': 'bg-green-100 text-green-800 border-green-200',
       'Pausado': 'bg-gray-100 text-gray-800 border-gray-200'
     };
