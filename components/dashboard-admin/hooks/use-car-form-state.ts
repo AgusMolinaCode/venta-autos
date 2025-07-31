@@ -24,7 +24,8 @@ type CombinedFormData = VehicleFormData & PriceFormData;
 export interface UseCarFormStateReturn {
   // Estado
   currentStep: number;
-  step1Data: VehicleFormData | null;
+  priceData: PriceFormData | null;
+  vehicleData: VehicleFormData | null;
   uploadedFiles: File[];
   isSubmitting: boolean;
   
@@ -34,7 +35,7 @@ export interface UseCarFormStateReturn {
   
   // Acciones
   setCurrentStep: (step: number) => void;
-  handleStep1Submit: (data: VehicleFormData) => Promise<void>;
+  handleStep1Submit: (data: VehicleFormData) => void;
   handleStep2Submit: (data: PriceFormData) => void;
   handleFinalSubmit: () => Promise<void>;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>, maxFiles?: number) => void;
@@ -47,12 +48,13 @@ export interface UseCarFormStateReturn {
 
 export function useCarFormState(
   onSubmit?: (data: CombinedFormData) => void,
-  onClose?: () => void,
+  onSuccess?: (updatedVehicle?: VehiculoConFotos) => void,
   editingVehicle?: VehiculoConFotos
 ): UseCarFormStateReturn {
   // Estado local
   const [currentStep, setCurrentStep] = useState(1);
-  const [step1Data, setStep1Data] = useState<VehicleFormData | null>(null);
+  const [priceData, setPriceData] = useState<PriceFormData | null>(null);
+  const [vehicleData, setVehicleData] = useState<VehicleFormData | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -100,8 +102,13 @@ export function useCarFormState(
         moneda: editingVehicle.moneda,
       });
       
-      // Pre-populate step1Data for editing flow
-      setStep1Data({
+      // Pre-populate data for editing flow
+      setPriceData({
+        precio: editingVehicle.precio,
+        moneda: editingVehicle.moneda,
+      });
+      
+      setVehicleData({
         marca: editingVehicle.marca,
         modelo: editingVehicle.modelo,
         ano: editingVehicle.ano,
@@ -116,38 +123,38 @@ export function useCarFormState(
   }, [editingVehicle, vehicleForm, priceForm]);
 
   // Handlers
-  const handleStep1Submit = useCallback(async (data: VehicleFormData) => {
+  const handleStep1Submit = useCallback((data: VehicleFormData) => {
     if (!data.marca || !data.modelo || !data.ano) {
       toast.error("Complete los campos obligatorios: marca, modelo y año");
       return;
     }
-    
-    setStep1Data(data);
+
+    setVehicleData(data);
     setCurrentStep(2);
   }, []);
 
   const handleStep2Submit = useCallback((data: PriceFormData) => {
-    if (!step1Data) {
-      toast.error("Error: datos del paso 1 no encontrados");
+    if (!data.precio) {
+      toast.error("Complete el precio de venta");
       return;
     }
-
-    const updatedStep1Data = { ...step1Data, ...data };
-    setStep1Data(updatedStep1Data);
+    
+    setPriceData(data);
     setCurrentStep(3);
-  }, [step1Data]);
+  }, []);
 
   const resetForm = useCallback(() => {
     vehicleForm.reset();
     priceForm.reset();
-    setStep1Data(null);
+    setPriceData(null);
+    setVehicleData(null);
     setUploadedFiles([]);
     setCurrentStep(1);
     setIsSubmitting(false);
   }, [vehicleForm, priceForm]);
 
   const handleFinalSubmit = useCallback(async () => {
-    if (!step1Data) {
+    if (!priceData || !vehicleData) {
       toast.error("Error: datos del vehículo no encontrados");
       setCurrentStep(1);
       return;
@@ -160,7 +167,7 @@ export function useCarFormState(
     
     setIsSubmitting(true);
     
-    const finalData = step1Data as CombinedFormData;
+    const finalData = { ...vehicleData, ...priceData } as CombinedFormData;
     
     // Preparar datos para el servicio
     const datosSubmision: VehiculoSubmissionData = {
@@ -232,8 +239,16 @@ export function useCarFormState(
     console.groupEnd();
 
     try {
-      // Llamar al servicio para crear el vehículo
-      const result = await VehiculoService.crearVehiculoConFotos(datosSubmision);
+      let result;
+      
+      // Determinar si es creación o actualización
+      if (editingVehicle?.id) {
+        // Modo edición: actualizar vehículo existente
+        result = await VehiculoService.actualizarVehiculoConFotos(editingVehicle.id, datosSubmision);
+      } else {
+        // Modo creación: crear nuevo vehículo
+        result = await VehiculoService.crearVehiculoConFotos(datosSubmision);
+      }
       
       if (result.success) {
         if (onSubmit) {
@@ -241,8 +256,13 @@ export function useCarFormState(
         }
         
         resetForm();
+        
+        const successMessage = editingVehicle 
+          ? 'Vehículo actualizado exitosamente'
+          : 'Vehículo agregado exitosamente';
+        
         toast.success(
-          `Vehículo agregado exitosamente${result.details?.fotosSubidas ? 
+          `${successMessage}${result.details?.fotosSubidas ? 
             ` con ${result.details.fotosSubidas} foto(s)` : ''}`
         );
         
@@ -250,14 +270,22 @@ export function useCarFormState(
           toast.warning(`Algunas fotos no se pudieron subir: ${result.details.fotosFallidas.join(', ')}`);
         }
         
+        // Llamar al callback de success con el vehículo actualizado
+        if (onSuccess && result.data) {
+          onSuccess(result.data);
+        }
+        
         // Cerrar modal después de un breve delay para mostrar el toast
         setTimeout(() => {
-          if (onClose) {
-            onClose();
+          if (onSuccess && !result.data) {
+            onSuccess();
           }
         }, 1500);
       } else {
-        toast.error(`Error al crear vehículo: ${result.error}`);
+        const errorMessage = editingVehicle 
+          ? 'Error al actualizar vehículo'
+          : 'Error al crear vehículo';
+        toast.error(`${errorMessage}: ${result.error}`);
       }
     } catch (error) {
       console.error('Error en handleFinalSubmit:', error);
@@ -265,7 +293,7 @@ export function useCarFormState(
     } finally {
       setIsSubmitting(false);
     }
-  }, [step1Data, uploadedFiles, onSubmit, onClose, resetForm]);
+  }, [priceData, vehicleData, uploadedFiles, onSubmit, onSuccess, resetForm, editingVehicle]);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>, maxFiles: number = 10) => {
     const files = Array.from(event.target.files || []);
@@ -287,16 +315,22 @@ export function useCarFormState(
       case 2:
         return priceForm.formState.isValid && !!priceForm.watch("precio");
       case 3:
+        // En modo edición, si hay fotos existentes, no se requieren nuevas fotos
+        if (editingVehicle?.fotos && editingVehicle.fotos.length > 0) {
+          return uploadedFiles.length <= 3; // Solo validar que no exceda el máximo
+        }
+        // En modo creación, se requiere al menos 1 foto
         return uploadedFiles.length >= 1 && uploadedFiles.length <= 3;
       default:
         return true;
     }
-  }, [vehicleForm.formState.isValid, priceForm.formState.isValid, priceForm, uploadedFiles.length]);
+  }, [vehicleForm.formState.isValid, priceForm.formState.isValid, priceForm, uploadedFiles.length, editingVehicle?.fotos]);
 
   return {
     // Estado
     currentStep,
-    step1Data,
+    priceData,
+    vehicleData,
     uploadedFiles,
     isSubmitting,
     

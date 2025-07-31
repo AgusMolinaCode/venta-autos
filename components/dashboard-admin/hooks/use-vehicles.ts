@@ -10,6 +10,7 @@ interface UseVehiclesReturn {
   error: string | null;
   refetch: () => Promise<void>;
   deleteVehicle: (vehicleId: string) => Promise<boolean>;
+  updateVehicle: (vehicleId: string, updatedVehicle: VehiculoConFotos) => void;
 }
 
 export function useVehicles(): UseVehiclesReturn {
@@ -100,6 +101,12 @@ export function useVehicles(): UseVehiclesReturn {
     }
   }, []);
 
+  const updateVehicle = useCallback((vehicleId: string, updatedVehicle: VehiculoConFotos) => {
+    setVehicles(prev => prev.map(vehicle => 
+      vehicle.id === vehicleId ? updatedVehicle : vehicle
+    ));
+  }, []);
+
   const refetch = useCallback(async () => {
     await fetchVehicles();
   }, [fetchVehicles]);
@@ -113,6 +120,7 @@ export function useVehicles(): UseVehiclesReturn {
     loading,
     error,
     refetch,
-    deleteVehicle
+    deleteVehicle,
+    updateVehicle
   };
 }

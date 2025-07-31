@@ -301,6 +301,194 @@ export class VehiculoService {
   }
 
   /**
+   * Actualiza un vehículo existente con sus fotos en Supabase
+   */
+  static async actualizarVehiculoConFotos(
+    vehiculoId: string,
+    datosSubmision: VehiculoSubmissionData
+  ): Promise<VehiculoServiceResult> {
+    console.group('🔄 ACTUALIZANDO VEHÍCULO EN SUPABASE');
+    
+    try {
+      const { vehiculoData, fotos } = datosSubmision;
+      
+      // Log de datos de entrada
+      console.log('📋 Datos del Vehículo a actualizar:', {
+        id: vehiculoId,
+        id_type: typeof vehiculoId,
+        id_length: vehiculoId?.length,
+        ...vehiculoData,
+        precio_formateado: `${vehiculoData.moneda} ${vehiculoData.precio.toLocaleString()}`
+      });
+      
+      console.log('📸 Nuevas Fotos:', {
+        cantidad: fotos.length,
+        archivos: fotos.map((file, index) => ({
+          index,
+          nombre: file.name,
+          tamaño: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          tipo: file.type
+        }))
+      });
+
+      // Validaciones
+      const validationResult = this.validarSubmision(vehiculoData, fotos);
+      if (!validationResult.isValid) {
+        console.error('❌ Validación fallida:', validationResult.errors);
+        console.groupEnd();
+        return {
+          success: false,
+          error: `Errores de validación: ${validationResult.errors.join(', ')}`
+        };
+      }
+
+      console.log('✅ Validación exitosa');
+
+      // 1. Verificar que el vehículo existe
+      console.log('🔍 Verificando que el vehículo existe...');
+      const { data: existingVehicle, error: checkError } = await supabase
+        .from('vehiculos')
+        .select('id')
+        .eq('id', vehiculoId)
+        .single();
+
+      if (checkError || !existingVehicle) {
+        console.error('❌ Vehículo no encontrado:', checkError);
+        console.groupEnd();
+        return {
+          success: false,
+          error: `Vehículo no encontrado con ID: ${vehiculoId}`
+        };
+      }
+
+      // 2. Actualizar registro del vehículo
+      console.log('🔄 Actualizando vehículo en base de datos...');
+      const { data: vehiculo, error: vehiculoError } = await supabase
+        .from('vehiculos')
+        .update(vehiculoData)
+        .eq('id', vehiculoId)
+        .select()
+        .single();
+
+      if (vehiculoError) {
+        console.error('❌ Error al actualizar vehículo:', vehiculoError);
+        console.groupEnd();
+        return {
+          success: false,
+          error: `Error al actualizar vehículo: ${vehiculoError.message}`
+        };
+      }
+
+      console.log('✅ Vehículo actualizado:', {
+        id: vehiculo.id,
+        marca: vehiculo.marca,
+        modelo: vehiculo.modelo,
+        ano: vehiculo.ano
+      });
+
+      // 2. Gestionar fotos si se proporcionaron nuevas
+      let fotosActuales: VehiculoFoto[] = [];
+      
+      if (fotos.length > 0) {
+        console.log('🔄 Gestionando fotos...');
+        
+        // Obtener fotos actuales
+        const { data: fotosExistentes, error: fotosError } = await supabase
+          .from('vehiculo_fotos')
+          .select('*')
+          .eq('vehiculo_id', vehiculoId);
+
+        if (fotosError) {
+          console.warn('⚠️ No se pudieron obtener fotos existentes:', fotosError);
+        }
+
+        // Eliminar fotos existentes del storage si hay nuevas fotos
+        if (fotosExistentes && fotosExistentes.length > 0) {
+          console.log('🗑️ Eliminando fotos existentes...');
+          
+          const storagePaths = fotosExistentes.map(foto => foto.storage_path);
+          const { error: storageError } = await supabase.storage
+            .from(STORAGE_CONFIG.BUCKET_NAME)
+            .remove(storagePaths);
+
+          if (storageError) {
+            console.warn('⚠️ Error al eliminar fotos del storage:', storageError);
+          }
+
+          // Eliminar registros de fotos existentes
+          const { error: deletePhotosError } = await supabase
+            .from('vehiculo_fotos')
+            .delete()
+            .eq('vehiculo_id', vehiculoId);
+
+          if (deletePhotosError) {
+            console.warn('⚠️ Error al eliminar registros de fotos:', deletePhotosError);
+          }
+        }
+
+        // Subir nuevas fotos
+        const fotosSubidas: VehiculoFoto[] = [];
+        const fotosFallidas: string[] = [];
+        
+        for (let i = 0; i < fotos.length; i++) {
+          const file = fotos[i];
+          const fotoResult = await this.subirFoto(vehiculo.id, file, i === 0, i);
+          
+          if (fotoResult.success && fotoResult.data) {
+            fotosSubidas.push(fotoResult.data);
+            console.log(`✅ Foto ${i + 1}/${fotos.length} subida:`, fotoResult.data.file_name);
+          } else {
+            fotosFallidas.push(file.name);
+            console.error(`❌ Error foto ${i + 1}:`, fotoResult.error);
+          }
+        }
+        
+        fotosActuales = fotosSubidas;
+      } else {
+        // Si no se proporcionaron nuevas fotos, obtener las existentes
+        const { data: fotosExistentes } = await supabase
+          .from('vehiculo_fotos')
+          .select('*')
+          .eq('vehiculo_id', vehiculoId);
+        
+        fotosActuales = fotosExistentes || [];
+      }
+
+      // Resultado final
+      const resultadoFinal: VehiculoConFotos = {
+        ...vehiculo,
+        fotos: fotosActuales
+      };
+
+      console.log('📈 Resumen de la actualización:', {
+        vehiculo_actualizado: true,
+        fotos_actuales: fotosActuales.length,
+        total_fotos_procesadas: fotos.length
+      });
+
+      console.groupEnd();
+
+      return {
+        success: true,
+        data: resultadoFinal,
+        details: {
+          vehiculoId: vehiculo.id,
+          fotosSubidas: fotos.length > 0 ? fotosActuales.length : undefined,
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ Error general en actualizarVehiculoConFotos:', error);
+      console.groupEnd();
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      };
+    }
+  }
+
+  /**
    * Obtiene un vehículo con sus fotos
    */
   static async obtenerVehiculoConFotos(vehiculoId: string): Promise<VehiculoServiceResult> {

@@ -34,7 +34,8 @@ function AddCarModal({ isOpen, onClose, onSubmit, onSuccess, editingVehicle }: A
   const {
     // Estado
     currentStep,
-    step1Data,
+    priceData,
+    vehicleData,
     uploadedFiles,
     isSubmitting,
     // Forms
@@ -108,7 +109,7 @@ function AddCarModal({ isOpen, onClose, onSubmit, onSuccess, editingVehicle }: A
               <PriceFormModal 
                 form={priceForm} 
                 onSubmit={handleStep2Submit}
-                vehicleData={step1Data}
+                vehicleData={vehicleData}
               />
             )}
 
@@ -119,6 +120,8 @@ function AddCarModal({ isOpen, onClose, onSubmit, onSuccess, editingVehicle }: A
                 onFileUpload={handleFileUpload}
                 onRemoveFile={removeFile}
                 maxFiles={3}
+                existingPhotos={editingVehicle?.fotos}
+                isEditMode={!!editingVehicle}
               />
             )}
 
