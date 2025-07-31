@@ -29,7 +29,7 @@ dashboard-admin/
 ### **Eliminados (Legacy)**
 - ❌ `vehicle-form.tsx` (duplicado)
 - ❌ `vehicle-modal.tsx` (legacy)
-- ❌ `calculadora-form.tsx` (vacío
+- ❌ `calculadora-form.tsx` (vacío)
 
 ---
 
