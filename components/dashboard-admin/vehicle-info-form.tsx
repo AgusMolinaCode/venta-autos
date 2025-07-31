@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { UseFormReturn } from "react-hook-form";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,6 +23,23 @@ interface VehicleInfoFormProps {
 
 
 export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
+  // Estado local para manejar valores de input durante edición
+  const [localAno, setLocalAno] = useState(form.getValues("ano")?.toString() ?? "");
+  const [localKilometraje, setLocalKilometraje] = useState(form.getValues("kilometraje")?.toString() ?? "");
+
+  // Sincronizar estado local cuando cambian los valores del form
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "ano" || !name) {
+        setLocalAno(value.ano?.toString() ?? "");
+      }
+      if (name === "kilometraje" || !name) {
+        setLocalKilometraje(value.kilometraje?.toString() ?? "");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: 20 }} 
@@ -100,13 +118,18 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                       max={FORM_CONFIG.maxYear}
                       placeholder={FORM_CONFIG.placeholders.ano}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
-                      {...field}
-                      value={field.value?.toString() ?? ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? parseInt(e.target.value) : undefined
-                        )
-                      }
+                      value={localAno}
+                      onChange={(e) => {
+                        setLocalAno(e.target.value);
+                      }}
+                      onBlur={() => {
+                        if (localAno === '') {
+                          field.onChange(undefined);
+                        } else {
+                          const numValue = parseInt(localAno);
+                          field.onChange(isNaN(numValue) ? undefined : numValue);
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-500 dark:text-red-400" />
@@ -126,13 +149,18 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                       min={0}
                       placeholder={FORM_CONFIG.placeholders.kilometraje}
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
-                      {...field}
-                      value={field.value?.toString() ?? ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? parseInt(e.target.value) : undefined
-                        )
-                      }
+                      value={localKilometraje}
+                      onChange={(e) => {
+                        setLocalKilometraje(e.target.value);
+                      }}
+                      onBlur={() => {
+                        if (localKilometraje === '') {
+                          field.onChange(undefined);
+                        } else {
+                          const numValue = parseInt(localKilometraje);
+                          field.onChange(isNaN(numValue) ? undefined : numValue);
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage className="text-red-500 dark:text-red-400" />

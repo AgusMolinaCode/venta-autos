@@ -160,9 +160,23 @@ export function useCarFormState(
       return;
     }
     
-    if (uploadedFiles.length === 0) {
-      toast.error("Debe subir al menos 1 imagen del vehículo");
-      return;
+    // Validar fotos: diferentes reglas para creación vs edición
+    const isEditMode = !!editingVehicle?.id;
+    const hasExistingPhotos = editingVehicle?.fotos && Array.isArray(editingVehicle.fotos) && editingVehicle.fotos.length > 0;
+    const hasNewPhotos = uploadedFiles.length > 0;
+    
+    if (isEditMode) {
+      // Modo edición: OK si tiene fotos existentes O nuevas fotos
+      if (!hasExistingPhotos && !hasNewPhotos) {
+        toast.error("Debe subir al menos 1 imagen del vehículo");
+        return;
+      }
+    } else {
+      // Modo creación: siempre requiere nuevas fotos
+      if (!hasNewPhotos) {
+        toast.error("Debe subir al menos 1 imagen del vehículo");
+        return;
+      }
     }
     
     setIsSubmitting(true);
@@ -315,16 +329,21 @@ export function useCarFormState(
       case 2:
         return priceForm.formState.isValid && !!priceForm.watch("precio");
       case 3:
-        // En modo edición, si hay fotos existentes, no se requieren nuevas fotos
-        if (editingVehicle?.fotos && editingVehicle.fotos.length > 0) {
-          return uploadedFiles.length <= 3; // Solo validar que no exceda el máximo
+        const isEditing = !!editingVehicle?.id;
+        const hasNewPhotos = uploadedFiles.length > 0;
+        
+        if (isEditing) {
+          // Modo edición: válido si hay fotos existentes O nuevas (máximo 3 nuevas)
+          const editHasExistingPhotos = editingVehicle?.fotos && Array.isArray(editingVehicle.fotos) && editingVehicle.fotos.length > 0;
+          return (editHasExistingPhotos || hasNewPhotos) && uploadedFiles.length <= 3;
+        } else {
+          // Modo creación: requiere al menos 1 nueva foto, máximo 3
+          return hasNewPhotos && uploadedFiles.length <= 3;
         }
-        // En modo creación, se requiere al menos 1 foto
-        return uploadedFiles.length >= 1 && uploadedFiles.length <= 3;
       default:
         return true;
     }
-  }, [vehicleForm.formState.isValid, priceForm.formState.isValid, priceForm, uploadedFiles.length, editingVehicle?.fotos]);
+  }, [vehicleForm.formState.isValid, priceForm.formState.isValid, priceForm, uploadedFiles.length, editingVehicle?.fotos, editingVehicle?.id]);
 
   return {
     // Estado
