@@ -134,7 +134,7 @@ function AddCarModal({
               onClick={handleModalClose}
               className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
             >
-              <X className="h-4 w-4" />
+              {/*<X className="h-4 w-4" />*/}
             </Button>
           </CardHeader>
 
