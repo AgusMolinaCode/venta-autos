@@ -1,23 +1,22 @@
 "use client";
 import React, { useState } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarBody,
+  SidebarLink,
+} from "@/components/ui/sidebar";
 import {
   IconArrowLeft,
   IconBrandTabler,
-  IconCar,
   IconSettings,
   IconUserBolt,
-  IconPlus,
-  IconSearch,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/ui/ModeToggle";
-import { Button } from "@/components/ui/button";
 import StepForm from "@/components/dashboard-admin/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
-
 
 function Page() {
   const links = [
@@ -50,26 +49,41 @@ function Page() {
       ),
     },
   ];
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] =
+    useState(false);
   return (
     <div
       className={cn(
         "mx-auto flex w-full flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
-        "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
+        "h-screen", // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >
-      <Sidebar open={open} setOpen={setOpen}>
+      <Sidebar
+        open={open}
+        setOpen={setOpen}
+      >
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            {open ? <Logo /> : <LogoIcon />}
+            {open ? (
+              <Logo />
+            ) : (
+              <LogoIcon />
+            )}
             <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
+              {links.map(
+                (link, idx) => (
+                  <SidebarLink
+                    key={idx}
+                    link={link}
+                  />
+                ),
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <div className="flex justify-center"></div>
+            <div className="flex justify-center">
+              {" "}
+            </div>
             <ModeToggle />
             <SidebarLink
               link={{
@@ -119,8 +133,14 @@ const LogoIcon = () => {
 
 // Dummy dashboard component with content
 const Dashboard = () => {
-  const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
-  const [liveVehicleData, setLiveVehicleData] = useState<{
+  const [
+    isAddCarModalOpen,
+    setIsAddCarModalOpen,
+  ] = useState(false);
+  const [
+    liveVehicleData,
+    setLiveVehicleData,
+  ] = useState<{
     marca?: string;
     modelo?: string;
     ano?: number;
@@ -150,10 +170,9 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
             Dashboard de Vehículos
           </h1>
-          
         </div>
-        <MainInfo />  
-          
+        <MainInfo />
+
         <div className="flex flex-1 gap-2">
           <div className="flex-1 rounded-lg bg-slate-100 p-6 border border-zinc-800 dark:bg-zinc-900 dark:border-zinc-900">
             <StepForm />
@@ -163,7 +182,9 @@ const Dashboard = () => {
         {/* Modal para agregar auto */}
         <AddCarModal
           isOpen={isAddCarModalOpen}
-          onClose={() => setIsAddCarModalOpen(false)}
+          onClose={() =>
+            setIsAddCarModalOpen(false)
+          }
           onSubmit={handleCarSubmit}
         />
       </div>
