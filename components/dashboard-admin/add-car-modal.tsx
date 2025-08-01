@@ -20,7 +20,7 @@ import { VehicleInfoForm } from "./vehicle-info-form";
 import { PhotoUpload } from "./photo-upload";
 import { ModalNavigation } from "./modal-navigation";
 import { PriceFormModal } from "./price-form-modal";
-import { useCarFormState } from "./hooks/use-car-form-state";
+import { useCarFormState } from "../../hooks/use-car-form-state";
 import { VehiculoConFotos } from "@/lib/supabase";
 
 interface AddCarModalProps {
