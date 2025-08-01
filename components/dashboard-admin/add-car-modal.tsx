@@ -60,7 +60,6 @@ function AddCarModal({
     // Forms
     vehicleForm,
     priceForm,
-    // Acciones
     setCurrentStep,
     handleStep1Submit,
     handleStep2Submit,
