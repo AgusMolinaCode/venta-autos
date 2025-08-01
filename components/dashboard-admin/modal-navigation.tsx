@@ -19,14 +19,13 @@ interface ModalNavigationProps {
 export function ModalNavigation({
   currentStep,
   onPrevStep,
-  onClose,
   onNextStep,
   onSubmit,
   isValid = true,
   isLastStep = false,
   isSubmitting = false,
   nextButtonText = "Siguiente →",
-  submitButtonText = "Guardar Auto"
+  submitButtonText = "Guardar Auto",
 }: ModalNavigationProps) {
   return (
     <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-zinc-700">
@@ -58,14 +57,18 @@ export function ModalNavigation({
                 : "bg-gray-400 dark:bg-zinc-600 text-gray-300 dark:text-zinc-400 cursor-not-allowed"
             }`}
           >
-{isValid ? nextButtonText : "Complete los campos obligatorios *"}
+            {isValid
+              ? nextButtonText
+              : "Complete los campos obligatorios *"}
           </Button>
         )}
 
         {isLastStep && onSubmit && (
           <Button
             onClick={onSubmit}
-            disabled={!isValid || isSubmitting}
+            disabled={
+              !isValid || isSubmitting
+            }
             className={`transition-all duration-300 ${
               isValid && !isSubmitting
                 ? "bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white shadow-lg"

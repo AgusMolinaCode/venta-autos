@@ -67,7 +67,6 @@ function AddCarModal({
     handleFileUpload,
     removeFile,
     resetForm,
-    // Validaciones
     canProceedToNextStep,
   } = useCarFormState(
     onSubmit,
