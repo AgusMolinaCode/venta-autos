@@ -255,21 +255,31 @@ function VehicleDetailsModal({ vehicle, isOpen, onClose }: {
             <h3 className="font-semibold text-lg">Fotos</h3>
             {vehicle.fotos && vehicle.fotos.length > 0 ? (
               <div className="grid grid-cols-2 gap-2">
-                {vehicle.fotos.map((foto, index) => (
-                  <div key={foto.id} className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                    <img
-                      src={`/api/storage/image?path=${foto.storage_path}`}
-                      alt={`${vehicle.marca} ${vehicle.modelo} - Foto ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    {foto.is_primary && (
-                      <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-                        Principal
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {vehicle.fotos.map(
+                  (foto, index) => (
+                    <div
+                      key={foto.id}
+                      className="relative aspect-video rounded-lg overflow-hidden bg-muted"
+                    >
+                      <Image
+                        src={`/api/storage/image?path=${foto.storage_path}`}
+                        alt={`${vehicle.marca} ${vehicle.modelo} - Foto ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        priority={
+                          foto.is_primary
+                        }
+                        width={300}
+                        height={200}
+                      />
+                      {foto.is_primary && (
+                        <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                          Principal
+                        </div>
+                      )}
+                    </div>
+                  ),
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-center h-48 bg-muted rounded-lg">
