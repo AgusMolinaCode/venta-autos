@@ -521,4 +521,77 @@ export class VehiculoService {
       };
     }
   }
+
+  /**
+   * DISABLED: Estado is managed via localStorage, not database
+   * Actualiza solo el estado de un vehículo
+   */
+  /*
+  static async actualizarEstadoVehiculo(
+    vehiculoId: string,
+    nuevoEstado: 'preparación' | 'publicado' | 'pausado' | 'vendido'
+  ): Promise<VehiculoServiceResult> {
+    try {
+      console.log(`🔄 Actualizando estado del vehículo ${vehiculoId} a: ${nuevoEstado}`);
+
+      // 1. Verificar que el vehículo existe
+      const { data: existingVehicle, error: checkError } = await supabase
+        .from('vehiculos')
+        .select('id, marca, modelo, ano')
+        .eq('id', vehiculoId)
+        .single();
+
+      if (checkError || !existingVehicle) {
+        console.error('❌ Vehículo no encontrado:', checkError);
+        return {
+          success: false,
+          error: `Vehículo no encontrado con ID: ${vehiculoId}`
+        };
+      }
+
+      // 2. Actualizar solo el estado
+      const { data: vehiculo, error: updateError } = await supabase
+        .from('vehiculos')
+        .update({ estado: nuevoEstado })
+        .eq('id', vehiculoId)
+        .select(`
+          *,
+          fotos:vehiculo_fotos(*)
+        `)
+        .single();
+
+      if (updateError) {
+        console.error('❌ Error al actualizar estado:', {
+          error: updateError,
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint,
+          code: updateError.code
+        });
+        return {
+          success: false,
+          error: `Error al actualizar estado: ${updateError.message || updateError.code || 'Error desconocido'}`
+        };
+      }
+
+      console.log('✅ Estado actualizado exitosamente:', {
+        id: vehiculo.id,
+        vehiculo: `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.ano}`,
+        nuevoEstado: vehiculo.estado
+      });
+
+      return {
+        success: true,
+        data: vehiculo
+      };
+
+    } catch (error) {
+      console.error('❌ Error inesperado al actualizar estado:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error desconocido al actualizar estado'
+      };
+    }
+  }
+  */
 }

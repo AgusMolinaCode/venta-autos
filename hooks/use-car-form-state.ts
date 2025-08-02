@@ -13,8 +13,16 @@ import { VehiculoInput, VehiculoConFotos } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // Schemas extendidos
-const VehicleStep1Schema = VehicleFormInputSchema.extend({
+const VehicleStep1Schema = z.object({
+  marca: z.string().min(1, { message: "La marca es obligatoria." }),
+  modelo: z.string().min(1, { message: "El modelo es obligatorio." }),
   ano: z.number().min(1970).max(2025),
+  kilometraje: z.number().min(0).optional(),
+  version: z.string().optional(),
+  combustible: z.string().optional(),
+  transmision: z.string().optional(),
+  color: z.string().optional(),
+  descripcion: z.string().optional(),
 });
 
 type VehicleFormData = z.infer<typeof VehicleStep1Schema>;
@@ -60,7 +68,7 @@ export function useCarFormState(
 
   // Forms with conditional default values
   const vehicleForm = useForm<VehicleFormData>({
-    resolver: zodResolver(VehicleStep1Schema),
+    resolver: zodResolver(VehicleStep1Schema) as any,
     defaultValues: {
       marca: editingVehicle?.marca || "",
       modelo: editingVehicle?.modelo || "",

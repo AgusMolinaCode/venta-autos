@@ -19,6 +19,9 @@ import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 
 function Page() {
+  const [open, setOpen] = useState(false);
+  const [activeView, setActiveView] = useState<"dashboard" | "vehicles">("dashboard");
+
   const links = [
     {
       label: "Dashboard",
@@ -26,13 +29,17 @@ function Page() {
       icon: (
         <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
+      onClick: () => setActiveView("dashboard"),
+      isActive: activeView === "dashboard"
     },
     {
-      label: "Profile",
+      label: "Listado de Autos",
       href: "#",
       icon: (
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
+      onClick: () => setActiveView("vehicles"),
+      isActive: activeView === "vehicles"
     },
     {
       label: "Settings",
@@ -49,8 +56,6 @@ function Page() {
       ),
     },
   ];
-  const [open, setOpen] =
-    useState(false);
   return (
     <div
       className={cn(
@@ -99,7 +104,7 @@ function Page() {
           </div>
         </SidebarBody>
       </Sidebar>
-      <Dashboard />
+      <Dashboard activeView={activeView} />
     </div>
   );
 }
@@ -131,8 +136,8 @@ const LogoIcon = () => {
   );
 };
 
-// Dummy dashboard component with content
-const Dashboard = () => {
+// Dashboard component with conditional content
+const Dashboard = ({ activeView }: { activeView: "dashboard" | "vehicles" }) => {
   const [
     isAddCarModalOpen,
     setIsAddCarModalOpen,
@@ -162,22 +167,39 @@ const Dashboard = () => {
     // Aquí puedes manejar el envío de datos (API, base de datos, etc.)
   };
 
+  const getPageTitle = () => {
+    switch (activeView) {
+      case "dashboard":
+        return "Dashboard de Vehículos";
+      case "vehicles":
+        return "Listado de Vehículos";
+      default:
+        return "Dashboard";
+    }
+  };
+
   return (
     <div className="flex flex-1">
       <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 md:p-10 dark:border-zinc-700 dark:bg-zinc-900">
-        {/* Header con botón para agregar auto */}
+        {/* Header dinámico */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
-            Dashboard de Vehículos
+            {getPageTitle()}
           </h1>
         </div>
-        <MainInfo />
 
-        <div className="flex flex-1 gap-2">
-          <div className="flex-1 rounded-lg bg-slate-100 p-6 border border-zinc-800 dark:bg-zinc-900 dark:border-zinc-900">
-            <StepForm />
+        {/* Contenido condicional basado en la vista activa */}
+        {activeView === "dashboard" && (
+          <MainInfo />
+        )}
+        
+        {activeView === "vehicles" && (
+          <div className="flex flex-1 gap-2">
+            <div className="flex-1 rounded-lg bg-zinc-100 p-6 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-900">
+              <StepForm />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Modal para agregar auto */}
         <AddCarModal

@@ -73,6 +73,13 @@ export const TRANSMISIONES = [
 
 export const MONEDAS = ["ARS", "USD"] as const;
 
+export const ESTADOS = [
+  "preparación",
+  "publicado", 
+  "pausado",
+  "vendido"
+] as const;
+
 // Configuraciones de formulario
 export const FORM_CONFIG = {
   maxFiles: 3,
@@ -89,6 +96,7 @@ export const FORM_CONFIG = {
     color: "Ej: Blanco, Negro, Gris",
     combustible: "Seleccionar combustible",
     transmision: "Seleccionar transmisión",
+    estado: "Seleccionar estado",
     precio: "15000000",
     descripcion: "Describe las características, estado y detalles importantes del vehículo..."
   }
@@ -120,4 +128,5 @@ export const MODAL_STEPS = [
 export type CombustibleType = typeof COMBUSTIBLES[number];
 export type TransmisionType = typeof TRANSMISIONES[number];
 export type MonedaType = typeof MONEDAS[number];
+export type EstadoType = typeof ESTADOS[number];
 export type StepKey = typeof MODAL_STEPS[number]["key"];

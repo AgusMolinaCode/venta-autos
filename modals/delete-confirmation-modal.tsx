@@ -23,29 +23,45 @@ export function DeleteConfirmationModal({
   onClose,
   onConfirm,
   vehicleName,
-  isDeleting = false
+  isDeleting = false,
 }: DeleteConfirmationModalProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onClose}
+    >
+      <DialogContent className="bg-card border p-4 rounded-2xl">
         <DialogHeader>
-          <DialogTitle>¿Eliminar vehículo?</DialogTitle>
+          <DialogTitle>
+            ¿Eliminar vehículo?
+          </DialogTitle>
           <DialogDescription>
-            ¿Estás seguro de que deseas eliminar el vehículo{" "}
-            <strong>{vehicleName}</strong>? Esta acción no se puede deshacer y se
-            eliminarán todas las fotos asociadas.
+            ¿Estás seguro de que deseas
+            eliminar el vehículo{" "}
+            <strong>
+              {vehicleName}
+            </strong>
+            ? Esta acción no se puede
+            deshacer y se eliminarán
+            todas las fotos asociadas.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isDeleting}>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isDeleting}
+          >
             Cancelar
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={onConfirm}
             disabled={isDeleting}
           >
-            {isDeleting ? "Eliminando..." : "Eliminar"}
+            {isDeleting
+              ? "Eliminando..."
+              : "Eliminar"}
           </Button>
         </DialogFooter>
       </DialogContent>

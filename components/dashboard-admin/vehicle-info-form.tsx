@@ -261,6 +261,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
             />
           </div>
 
+
           {/* Descripción */}
           <FormField
             control={form.control}

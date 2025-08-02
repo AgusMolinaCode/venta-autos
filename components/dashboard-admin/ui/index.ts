@@ -2,6 +2,9 @@
 export { VehicleCard } from "./vehicle-card";
 export { VehicleImage } from "./vehicle-image";
 export { StatusBadge } from "./status-badge";
+export { StatusDropdown } from "./status-dropdown";
+export { StatusCacheStats } from "./status-cache-stats";
+export { StatusFilterButtons } from "./status-filter-buttons";
 export { PriceDisplay } from "./price-display";
 export { VehicleActionsMenu } from "./vehicle-actions-menu";
 export { VehicleTableRow } from "./vehicle-table-row";

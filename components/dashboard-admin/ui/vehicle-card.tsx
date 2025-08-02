@@ -5,6 +5,7 @@ import { VehicleImage } from "./vehicle-image";
 import { StatusBadge } from "./status-badge";
 import { PriceDisplay } from "./price-display";
 import { VehicleActionsMenu } from "./vehicle-actions-menu";
+import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 
 interface VehicleCardProps {
   vehicle: VehiculoConFotos;
@@ -19,6 +20,11 @@ export function VehicleCard({
   onDelete, 
   onViewDetails 
 }: VehicleCardProps) {
+  const { getVehicleStatus } = useVehicleStatusCache();
+  
+  // Obtener el estado actual desde el cache
+  const currentStatus = getVehicleStatus(vehicle.id!);
+  
   return (
     <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 p-4 hover:shadow-md transition-shadow">
       <div className="flex gap-4">
@@ -42,7 +48,7 @@ export function VehicleCard({
                 {vehicle.ano} • {vehicle.version || "Sin versión"}
               </p>
             </div>
-            <StatusBadge vehicleId={vehicle.id} />
+            <StatusBadge status={currentStatus} />
           </div>
           
           <div className="flex items-center justify-between">

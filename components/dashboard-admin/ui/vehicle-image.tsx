@@ -3,6 +3,7 @@
 import { IconCar } from "@tabler/icons-react";
 import { VehiculoConFotos } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { getImageUrl } from "@/lib/image-utils";
 
 interface VehicleImageProps {
   vehicle: VehiculoConFotos;
@@ -33,7 +34,7 @@ export function VehicleImage({
 }: VehicleImageProps) {
   const primaryPhoto = vehicle.fotos?.find(foto => foto.is_primary) || vehicle.fotos?.[0];
   const photoUrl = primaryPhoto 
-    ? `/api/storage/image?path=${primaryPhoto.storage_path}`
+    ? getImageUrl(primaryPhoto.storage_path)
     : null;
 
   return (

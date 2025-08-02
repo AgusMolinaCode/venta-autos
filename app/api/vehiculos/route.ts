@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       combustible: formData.get('combustible') as string || undefined,
       transmision: formData.get('transmision') as string || undefined,
       color: formData.get('color') as string || undefined,
+      estado: (formData.get('estado') as 'preparación' | 'publicado' | 'pausado' | 'vendido') || 'preparación',
       descripcion: formData.get('descripcion') as string || undefined,
       precio: parseFloat(formData.get('precio') as string),
       moneda: formData.get('moneda') as 'ARS' | 'USD',

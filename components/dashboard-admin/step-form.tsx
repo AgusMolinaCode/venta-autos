@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { IconPlus } from "@tabler/icons-react";
 import { useVehicles } from "../../hooks/use-vehicles";
-import { VehiculoConFotos } from "@/lib/supabase";
 import AddCarModal from "./add-car-modal";
 import {
   Table,
@@ -15,14 +14,22 @@ import {
 } from "@/components/ui/table";
 import {
   VehicleTableRow,
-  VehicleTableRowSkeleton,
   EmptyState,
+  StatusFilterButtons,
 } from "./ui";
 import {
   VehicleDetailsModal,
   DeleteConfirmationModal,
 } from "../../modals";
-import { formatVehicleName } from "@/utils";
+import LoadingStepForm from "./ui/LoadingStepForm";
+import {
+  useStepFormHandlers,
+  useSortableTable,
+  useStatusFilter,
+} from "./step-form-handlers";
+import { SortableHeader } from "@/components/ui/sortable-header";
+import { ColumnDef } from "@tanstack/react-table";
+import { VehiculoConFotos } from "@/lib/supabase";
 
 interface StepFormProps {
   onClick?: () => void;
@@ -43,165 +50,64 @@ const StepForm = ({
     refetch,
     deleteVehicle,
   } = useVehicles();
-  const [
+
+  const {
     isAddModalOpen,
-    setIsAddModalOpen,
-  ] = useState(false);
-  const [
     editingVehicle,
-    setEditingVehicle,
-  ] = useState<VehiculoConFotos | null>(
-    null,
-  );
-  const [
     viewingVehicle,
-    setViewingVehicle,
-  ] = useState<VehiculoConFotos | null>(
-    null,
-  );
-  const [
     deleteDialog,
-    setDeleteDialog,
-  ] = useState<{
-    open: boolean;
-    vehicleId: string | null;
-    vehicleName: string;
-  }>({
-    open: false,
-    vehicleId: null,
-    vehicleName: "",
+    isDeleting,
+    handleAddVehicle,
+    handleEditVehicle,
+    handleViewDetails,
+    handleDeleteVehicle,
+    confirmDelete,
+    closeDeleteDialog,
+    closeAddModal,
+    closeEditModal,
+    closeViewModal,
+    onAddSuccess,
+    onEditSuccess,
+  } = useStepFormHandlers({
+    onClick,
+    vehicles,
+    deleteVehicle,
+    refetch,
   });
-  const [isDeleting, setIsDeleting] =
-    useState(false);
 
-  const handleAddVehicle = () => {
-    if (onClick) {
-      onClick();
-    } else {
-      setIsAddModalOpen(true);
-    }
-  };
+  // Hook de filtrado por estado
+  const {
+    activeFilter,
+    setActiveFilter,
+    filteredVehicles,
+  } = useStatusFilter({ vehicles });
 
-  const handleEditVehicle = (
-    vehicle: VehiculoConFotos,
-  ) => {
-    setEditingVehicle(vehicle);
-  };
+  // Definir columnas para el sorting
+  const columns: ColumnDef<VehiculoConFotos>[] =
+    [
+      {
+        accessorKey: "marca",
+        id: "marca",
+      },
+      {
+        accessorKey: "kilometraje",
+        id: "kilometraje",
+      },
+    ];
 
-  const handleViewDetails = (
-    vehicle: VehiculoConFotos,
-  ) => {
-    setViewingVehicle(vehicle);
-  };
+  // Hook de sorting (aplicado a vehículos filtrados)
+  const { getSortedData, table } =
+    useSortableTable({
+      data: filteredVehicles,
+      columns,
+    });
 
-  const handleDeleteVehicle = (
-    vehicleId: string,
-  ) => {
-    const vehicle = vehicles.find(
-      (v) => v.id === vehicleId,
-    );
-    if (vehicle) {
-      setDeleteDialog({
-        open: true,
-        vehicleId,
-        vehicleName: formatVehicleName(
-          vehicle.marca,
-          vehicle.modelo,
-          vehicle.ano,
-        ),
-      });
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (deleteDialog.vehicleId) {
-      setIsDeleting(true);
-      try {
-        await deleteVehicle(
-          deleteDialog.vehicleId,
-        );
-        setDeleteDialog({
-          open: false,
-          vehicleId: null,
-          vehicleName: "",
-        });
-      } finally {
-        setIsDeleting(false);
-      }
-    }
-  };
-
-  const closeDeleteDialog = () => {
-    if (!isDeleting) {
-      setDeleteDialog({
-        open: false,
-        vehicleId: null,
-        vehicleName: "",
-      });
-    }
-  };
+  // Obtener datos ordenados y filtrados
+  const sortedAndFilteredVehicles =
+    getSortedData();
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">
-            Vehículos
-          </h2>
-          <Button
-            disabled
-            className="flex items-center gap-2"
-          >
-            <IconPlus className="h-4 w-4" />
-            Agregar vehículo
-          </Button>
-        </div>
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">
-                  Foto
-                </TableHead>
-                <TableHead className="w-32">
-                  Marca
-                </TableHead>
-                <TableHead className="w-40">
-                  Modelo
-                </TableHead>
-                <TableHead className="w-32">
-                  Versión
-                </TableHead>
-                <TableHead className="w-20 text-center">
-                  Año
-                </TableHead>
-                <TableHead className="w-32 text-right">
-                  Precio
-                </TableHead>
-                <TableHead className="w-32 text-right">
-                  Kilometraje
-                </TableHead>
-                <TableHead className="w-24 text-center">
-                  Estado
-                </TableHead>
-                <TableHead className="w-16 text-right">
-                  Acciones
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({
-                length: 8,
-              }).map((_, i) => (
-                <VehicleTableRowSkeleton
-                  key={i}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
+    return <LoadingStepForm />;
   }
 
   return (
@@ -212,27 +118,38 @@ const StepForm = ({
             Vehículos
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
+            {filteredVehicles.length} de{" "}
             {vehicles.length} vehículo
             {vehicles.length !== 1
               ? "s"
-              : ""}{" "}
-            registrado
-            {vehicles.length !== 1
-              ? "s"
               : ""}
+            {activeFilter !== "all" && (
+              <span className="ml-1 font-medium">
+                ({activeFilter})
+              </span>
+            )}
           </p>
         </div>
-        <Button
-          onClick={handleAddVehicle}
-          disabled={disabled}
-          className="flex items-center gap-2"
-        >
-          <IconPlus className="h-4 w-4" />
-          Agregar vehículo
-        </Button>
+        <div className="flex items-center gap-4">
+          <StatusFilterButtons
+            activeFilter={activeFilter}
+            onFilterChange={
+              setActiveFilter
+            }
+          />
+          <Button
+            onClick={handleAddVehicle}
+            disabled={disabled}
+            className="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700"
+          >
+            <IconPlus className="h-4 w-4" />
+            Agregar vehículo
+          </Button>
+        </div>
       </div>
 
-      {vehicles.length === 0 ? (
+      {sortedAndFilteredVehicles.length ===
+      0 ? (
         <EmptyState
           onAddVehicle={
             handleAddVehicle
@@ -247,7 +164,15 @@ const StepForm = ({
                   Foto
                 </TableHead>
                 <TableHead className="w-32">
-                  Marca
+                  <SortableHeader
+                    column={
+                      table.getColumn(
+                        "marca",
+                      )!
+                    }
+                  >
+                    Marca
+                  </SortableHeader>
                 </TableHead>
                 <TableHead className="w-40">
                   Modelo
@@ -262,18 +187,26 @@ const StepForm = ({
                   Precio
                 </TableHead>
                 <TableHead className="w-32 text-right">
-                  Kilometraje
+                  <SortableHeader
+                    column={
+                      table.getColumn(
+                        "kilometraje",
+                      )!
+                    }
+                  >
+                    Kilometraje
+                  </SortableHeader>
                 </TableHead>
                 <TableHead className="w-24 text-center">
                   Estado
                 </TableHead>
-                <TableHead className="w-16 text-right">
+                <TableHead className="w-24 text-right">
                   Acciones
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {vehicles.map(
+              {sortedAndFilteredVehicles.map(
                 (vehicle) => (
                   <VehicleTableRow
                     key={vehicle.id}
@@ -287,6 +220,9 @@ const StepForm = ({
                     onViewDetails={
                       handleViewDetails
                     }
+                    onStatusChange={() => {
+                      // No hacer refetch, el cache ya maneja el estado
+                    }}
                   />
                 ),
               )}
@@ -298,35 +234,23 @@ const StepForm = ({
       {/* Add Modal */}
       <AddCarModal
         isOpen={isAddModalOpen}
-        onClose={() =>
-          setIsAddModalOpen(false)
-        }
-        onSuccess={() => {
-          setIsAddModalOpen(false);
-          refetch();
-        }}
+        onClose={closeAddModal}
+        onSuccess={onAddSuccess}
       />
 
       {/* Vehicle Details Modal */}
       <VehicleDetailsModal
         vehicle={viewingVehicle}
         isOpen={!!viewingVehicle}
-        onClose={() =>
-          setViewingVehicle(null)
-        }
+        onClose={closeViewModal}
       />
 
       {/* Edit Modal */}
       {editingVehicle && (
         <AddCarModal
           isOpen={true}
-          onClose={() =>
-            setEditingVehicle(null)
-          }
-          onSuccess={() => {
-            setEditingVehicle(null);
-            refetch();
-          }}
+          onClose={closeEditModal}
+          onSuccess={onEditSuccess}
           editingVehicle={
             editingVehicle
           }

@@ -16,6 +16,7 @@ export type Vehiculo = {
   combustible?: string
   transmision?: string
   color?: string
+  estado: 'preparación' | 'publicado' | 'pausado' | 'vendido'
   descripcion?: string
   precio: number
   moneda: 'ARS' | 'USD'
@@ -38,7 +39,7 @@ export type VehiculoFoto = {
 }
 
 // Input Types (from forms)
-export type VehiculoInput = Omit<Vehiculo, 'id' | 'created_at' | 'updated_at' | 'user_id'>
+export type VehiculoInput = Omit<Vehiculo, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'estado'>
 
 export type PhotoUploadInput = {
   file: File
