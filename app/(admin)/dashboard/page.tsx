@@ -14,13 +14,17 @@ import {
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/ui/ModeToggle";
-import StepForm from "@/components/dashboard-admin/step-form";
+import StepForm from "@/components/dashboard-admin/main/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 
 function Page() {
-  const [open, setOpen] = useState(false);
-  const [activeView, setActiveView] = useState<"dashboard" | "vehicles">("dashboard");
+  const [open, setOpen] =
+    useState(false);
+  const [activeView, setActiveView] =
+    useState<"dashboard" | "vehicles">(
+      "dashboard",
+    );
 
   const links = [
     {
@@ -29,8 +33,10 @@ function Page() {
       icon: (
         <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
-      onClick: () => setActiveView("dashboard"),
-      isActive: activeView === "dashboard"
+      onClick: () =>
+        setActiveView("dashboard"),
+      isActive:
+        activeView === "dashboard",
     },
     {
       label: "Listado de Autos",
@@ -38,8 +44,10 @@ function Page() {
       icon: (
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
-      onClick: () => setActiveView("vehicles"),
-      isActive: activeView === "vehicles"
+      onClick: () =>
+        setActiveView("vehicles"),
+      isActive:
+        activeView === "vehicles",
     },
     {
       label: "Settings",
@@ -104,7 +112,9 @@ function Page() {
           </div>
         </SidebarBody>
       </Sidebar>
-      <Dashboard activeView={activeView} />
+      <Dashboard
+        activeView={activeView}
+      />
     </div>
   );
 }
@@ -137,7 +147,11 @@ const LogoIcon = () => {
 };
 
 // Dashboard component with conditional content
-const Dashboard = ({ activeView }: { activeView: "dashboard" | "vehicles" }) => {
+const Dashboard = ({
+  activeView,
+}: {
+  activeView: "dashboard" | "vehicles";
+}) => {
   const [
     isAddCarModalOpen,
     setIsAddCarModalOpen,
@@ -192,7 +206,7 @@ const Dashboard = ({ activeView }: { activeView: "dashboard" | "vehicles" }) => 
         {activeView === "dashboard" && (
           <MainInfo />
         )}
-        
+
         {activeView === "vehicles" && (
           <div className="flex flex-1 gap-2">
             <div className="flex-1 rounded-lg bg-zinc-100 p-6 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-900">
