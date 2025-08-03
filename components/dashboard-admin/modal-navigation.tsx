@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
 
 interface ModalNavigationProps {
   currentStep: number;
@@ -9,6 +9,7 @@ interface ModalNavigationProps {
   onClose: () => void;
   onNextStep?: () => void;
   onSubmit?: () => void;
+  onReset?: () => void;
   isValid?: boolean;
   isLastStep?: boolean;
   isSubmitting?: boolean;
@@ -21,6 +22,7 @@ export function ModalNavigation({
   onPrevStep,
   onNextStep,
   onSubmit,
+  onReset,
   isValid = true,
   isLastStep = false,
   isSubmitting = false,
@@ -29,14 +31,24 @@ export function ModalNavigation({
 }: ModalNavigationProps) {
   return (
     <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-zinc-700">
-      <Button
-        variant="outline"
-        onClick={onPrevStep}
-        disabled={currentStep === 1}
-        className="border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 bg-transparent"
-      >
-        Anterior
-      </Button>
+      {currentStep === 1 ? (
+        <Button
+          variant="outline"
+          onClick={onReset}
+          className="border-orange-300 dark:border-orange-600 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 bg-transparent"
+        >
+          <RotateCcw className="h-4 w-4 mr-2" />
+          Reset
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          onClick={onPrevStep}
+          className="border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 bg-transparent"
+        >
+          Anterior
+        </Button>
+      )}
 
       <div className="flex gap-3">
         {/* <Button

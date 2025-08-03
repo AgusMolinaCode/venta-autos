@@ -16,7 +16,7 @@ import {
   PriceSchema,
 } from "@/lib/validations";
 import { ProgressBar } from "./progress-bar";
-import { VehicleInfoForm } from "./vehicle-info-form";
+import { VehicleInfoForm } from "./VehicleInfoFormComponents/VehicleInfoForm";
 import { PhotoUpload } from "./photo-upload";
 import { ModalNavigation } from "./modal-navigation";
 import { PriceFormModal } from "./price-form-modal";
@@ -143,6 +143,13 @@ function AddCarModal({
               currentStep={currentStep}
             />
 
+            {/*TODO descripcion AI*/}
+            {/*TODO scraper auto cosmos si es por select o manual*/}
+            {/*TODO boton motos o autos/camionetas*/}
+            {/*TODO buscador de autos*/}
+            {/*TODO boton para default autos o default motos*/}
+            {/*TODO refactorizar y hacer pruebas*/}
+
             {/* Step 1: Vehicle Information */}
             {currentStep === 1 && (
               <VehicleInfoForm
@@ -192,6 +199,7 @@ function AddCarModal({
               currentStep={currentStep}
               onPrevStep={prevStep}
               onClose={handleModalClose}
+              onReset={resetForm}
               onNextStep={
                 currentStep === 1
                   ? vehicleForm.handleSubmit(

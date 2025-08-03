@@ -1,6 +1,6 @@
 import { chromium, Browser } from 'playwright';
 import * as cheerio from 'cheerio';
-import { generateMercadoLibreURL } from '@/lib/utils/url-normalizer';
+import { generateMercadoLibreURL } from '@/utils/url-normalizer';
 import { DolarService } from './dolar-service';
 
 export interface ScrapingResult {

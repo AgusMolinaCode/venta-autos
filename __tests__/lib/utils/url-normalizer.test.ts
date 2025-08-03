@@ -1,4 +1,4 @@
-import { normalize, generateMercadoLibreURL, isValidMercadoLibreURL } from '@/lib/utils/url-normalizer';
+import { normalize, generateMercadoLibreURL, isValidMercadoLibreURL } from '@/utils/url-normalizer';
 
 describe('URL Normalizer', () => {
   describe('normalize', () => {
