@@ -23,6 +23,7 @@ const VehicleStep1Schema = z.object({
   transmision: z.string().optional(),
   color: z.string().optional(),
   descripcion: z.string().optional(),
+  tipo_vehiculo: z.enum(["autos/camionetas", "motos"]).default("autos/camionetas"),
 });
 
 type VehicleFormData = z.infer<typeof VehicleStep1Schema>;
@@ -79,6 +80,7 @@ export function useCarFormState(
       transmision: editingVehicle?.transmision || "",
       color: editingVehicle?.color || "",
       descripcion: editingVehicle?.descripcion || "",
+      tipo_vehiculo: (editingVehicle?.tipo_vehiculo as "autos/camionetas" | "motos") || "autos/camionetas",
     },
   });
 
@@ -103,6 +105,7 @@ export function useCarFormState(
         transmision: editingVehicle.transmision || "",
         color: editingVehicle.color || "",
         descripcion: editingVehicle.descripcion || "",
+        tipo_vehiculo: (editingVehicle.tipo_vehiculo as "autos/camionetas" | "motos") || "autos/camionetas",
       });
       
       priceForm.reset({
@@ -126,6 +129,7 @@ export function useCarFormState(
         transmision: editingVehicle.transmision || "",
         color: editingVehicle.color || "",
         descripcion: editingVehicle.descripcion || "",
+        tipo_vehiculo: (editingVehicle.tipo_vehiculo as "autos/camionetas" | "motos") || "autos/camionetas",
       });
     }
   }, [editingVehicle, vehicleForm, priceForm]);
@@ -208,6 +212,7 @@ export function useCarFormState(
       transmision: finalData.transmision,
       color: finalData.color,
       descripcion: finalData.descripcion,
+      tipo_vehiculo: finalData.tipo_vehiculo,
       precio: finalData.precio,
       moneda: finalData.moneda
     });
@@ -234,6 +239,7 @@ export function useCarFormState(
       transmision: finalData.transmision || null,
       color: finalData.color || null,
       descripcion: finalData.descripcion || null,
+      tipo_vehiculo: finalData.tipo_vehiculo,
       precio: finalData.precio,
       moneda: finalData.moneda
     });

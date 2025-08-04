@@ -24,6 +24,7 @@ export const VehicleFormInputSchema = z.object({
   transmision: z.string().optional(),
   color: z.string().optional(),
   descripcion: z.string().optional(),
+  tipo_vehiculo: z.enum(["autos/camionetas", "motos"]).default("autos/camionetas"),
 });
 
 // Processed data schema (what gets saved/validated)

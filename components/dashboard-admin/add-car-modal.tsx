@@ -122,7 +122,7 @@ function AddCarModal({
               <CardTitle className="text-xl text-gray-900 dark:text-white">
                 {editingVehicle
                   ? "Editar Vehículo"
-                  : "Agregar Nuevo Auto"}
+                  : `Agregar ${vehicleForm.watch("tipo_vehiculo") === "motos" ? "nueva moto" : "nuevo auto"}`}
               </CardTitle>
               <p className="text-gray-600 dark:text-zinc-400 mt-1">
                 Paso {currentStep} de 3
@@ -144,10 +144,7 @@ function AddCarModal({
             />
 
             {/*TODO descripcion AI*/}
-            {/*TODO scraper auto cosmos si es por select o manual*/}
-            {/*TODO boton motos o autos/camionetas*/}
             {/*TODO buscador de autos*/}
-            {/*TODO boton para default autos o default motos*/}
             {/*TODO refactorizar y hacer pruebas*/}
 
             {/* Step 1: Vehicle Information */}

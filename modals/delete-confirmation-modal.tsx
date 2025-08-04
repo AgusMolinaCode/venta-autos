@@ -30,7 +30,7 @@ export function DeleteConfirmationModal({
       open={isOpen}
       onOpenChange={onClose}
     >
-      <DialogContent className="bg-card border p-4 rounded-2xl">
+      <DialogContent className="bg-card border p-4 rounded-2xl max-w-[320px] md:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             ¿Eliminar vehículo?
