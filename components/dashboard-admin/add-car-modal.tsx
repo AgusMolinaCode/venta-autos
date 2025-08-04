@@ -143,7 +143,6 @@ function AddCarModal({
               currentStep={currentStep}
             />
 
-            {/*TODO descripcion AI*/}
             {/*TODO buscador de autos*/}
             {/*TODO refactorizar y hacer pruebas*/}
 

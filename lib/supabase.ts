@@ -18,6 +18,7 @@ export type Vehiculo = {
   color?: string
   estado: 'preparación' | 'publicado' | 'pausado' | 'vendido'
   descripcion?: string
+  tipo_vehiculo: 'autos/camionetas' | 'motos'
   precio: number
   moneda: 'ARS' | 'USD'
   created_at?: string

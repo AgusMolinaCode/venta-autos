@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       color: formData.get('color') as string || undefined,
       estado: (formData.get('estado') as 'preparación' | 'publicado' | 'pausado' | 'vendido') || 'preparación',
       descripcion: formData.get('descripcion') as string || undefined,
+      tipo_vehiculo: (formData.get('tipo_vehiculo') as 'autos/camionetas' | 'motos') || 'autos/camionetas',
       precio: parseFloat(formData.get('precio') as string),
       moneda: formData.get('moneda') as 'ARS' | 'USD',
     }
