@@ -149,7 +149,7 @@ export default function Buscador({
       </div>
 
       {isSearching && (
-        <div className="ml-2 absolute right-7">
+        <div className="ml-2 absolute right-8">
           <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full" />
         </div>
       )}
