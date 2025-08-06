@@ -69,7 +69,7 @@ export function useCarFormState(
 
   // Forms with conditional default values
   const vehicleForm = useForm<VehicleFormData>({
-    resolver: zodResolver(VehicleStep1Schema) as any,
+    resolver: zodResolver(VehicleStep1Schema),
     defaultValues: {
       marca: editingVehicle?.marca || "",
       modelo: editingVehicle?.modelo || "",

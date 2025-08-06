@@ -1,5 +1,5 @@
 import { supabase, Vehiculo, VehiculoFoto, VehiculoInput, PhotoUploadInput, VehiculoConFotos, STORAGE_CONFIG } from '@/lib/supabase'
-import { v4 as uuidv4 } from 'uuid'
+import { logger } from '@/lib/logger'
 
 export interface VehiculoSubmissionData {
   vehiculoData: VehiculoInput
@@ -24,18 +24,18 @@ export class VehiculoService {
   static async crearVehiculoConFotos(
     datosSubmision: VehiculoSubmissionData
   ): Promise<VehiculoServiceResult> {
-    console.group('🚗 PROCESANDO DATOS PARA SUPABASE');
+    logger.info('Processing vehicle data for Supabase', { vehicleCount: 1, photosCount: datosSubmision.fotos.length }, 'VEHICLE_SERVICE');
     
     try {
       const { vehiculoData, fotos } = datosSubmision;
       
-      // Log de datos de entrada
-      console.log('📋 Datos del Vehículo:', {
+      // Log vehicle and photo data
+      logger.debug('Vehicle data received', {
         ...vehiculoData,
         precio_formateado: `${vehiculoData.moneda} ${vehiculoData.precio.toLocaleString()}`
-      });
+      }, 'VEHICLE_SERVICE');
       
-      console.log('📸 Archivos de Fotos:', {
+      logger.debug('Photo files received', {
         cantidad: fotos.length,
         archivos: fotos.map((file, index) => ({
           index,
@@ -43,7 +43,7 @@ export class VehiculoService {
           tamaño: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
           tipo: file.type
         }))
-      });
+      }, 'VEHICLE_SERVICE');
 
       // Validaciones
       const validationResult = this.validarSubmision(vehiculoData, fotos);

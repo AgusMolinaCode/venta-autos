@@ -21,7 +21,7 @@ export interface AutocosmosPriceServiceOptions {
 export interface AutocosmosPriceServiceError {
   code: 'NETWORK_ERROR' | 'INVALID_VEHICLE' | 'NO_DATA_FOUND' | 'RATE_LIMITED' | 'TIMEOUT' | 'UNKNOWN_ERROR';
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 /**

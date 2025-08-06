@@ -15,7 +15,7 @@ export interface ErrorHandlerOptions {
 export interface ErrorContext {
   operation: string;
   provider: string;
-  data?: any;
+  data?: Record<string, unknown>;
   attempt?: number;
   timestamp: Date;
 }
@@ -23,7 +23,7 @@ export interface ErrorContext {
 export interface FallbackStrategy {
   name: string;
   canHandle: (error: Error, context: ErrorContext) => boolean;
-  execute: (error: Error, context: ErrorContext) => Promise<any>;
+  execute: (error: Error, context: ErrorContext) => Promise<unknown>;
   priority: number;
 }
 
@@ -192,7 +192,7 @@ export class AutocosmosErrorHandler {
   /**
    * Genera datos de precio por defecto como último recurso
    */
-  private generateDefaultPriceData(vehicleData: any): any {
+  private generateDefaultPriceData(vehicleData: Record<string, unknown>): Record<string, unknown> {
     // Generar estimaciones básicas basadas en año y marca
     const currentYear = new Date().getFullYear();
     const vehicleAge = currentYear - (vehicleData?.ano || currentYear);

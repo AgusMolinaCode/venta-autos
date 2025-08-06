@@ -337,14 +337,31 @@ export class PriceAggregatorService {
       avgResponseTime?: number;
     };
   }> {
-    const stats: any = {};
+    interface ProviderStats {
+      reliability: number;
+      priority: number;
+      isEnabled: boolean;
+      runtime: {
+        requests: number;
+        errors: number;
+        lastUsed: Date | null;
+        averageResponseTime: number;
+      };
+    }
+    
+    const stats: Record<string, ProviderStats> = {};
     
     for (const [name, provider] of this.providers) {
       stats[name] = {
         reliability: provider.reliability,
         priority: provider.priority,
-        isEnabled: provider.isEnabled
-        // TODO: Implementar métricas de runtime
+        isEnabled: provider.isEnabled,
+        runtime: {
+          requests: provider.requestCount || 0,
+          errors: provider.errorCount || 0,
+          lastUsed: provider.lastUsed || null,
+          averageResponseTime: provider.averageResponseTime || 0
+        }
       };
     }
     

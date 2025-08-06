@@ -5,6 +5,7 @@
 
 import { VehicleBrand, VehicleModel, VehicleYear, PriceGuide } from '@/domain/entities';
 import { PriceRange } from '@/domain/value-objects';
+import { DolarService } from '@/lib/services/dolar-service';
 import type {
   AutocosmosPriceService,
   AutocosmosPriceServiceRequest,
@@ -292,12 +293,28 @@ export class AutocosmosHttpClient implements AutocosmosPriceService {
         reliability: 0.85 // Alta confiabilidad para Autocosmos
       };
 
+      // Convert ARS to USD
+      let priceRangeUSD = priceRangeARS;
+      try {
+        const dolarService = DolarService.getInstance();
+        const dolarBlue = await dolarService.getBlueRate();
+        if (dolarBlue > 0) {
+          priceRangeUSD = new PriceRange(
+            Math.round(priceRangeARS.min / dolarBlue),
+            Math.round(priceRangeARS.max / dolarBlue)
+          );
+        }
+      } catch (error) {
+        // Keep ARS prices if USD conversion fails
+        priceRangeUSD = priceRangeARS;
+      }
+
       return new PriceGuide(
         brand,
         model,
         year,
         priceRangeARS,
-        priceRangeARS, // TODO: Implementar conversión USD
+        priceRangeUSD,
         source
       );
 

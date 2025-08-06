@@ -143,9 +143,6 @@ function AddCarModal({
               currentStep={currentStep}
             />
 
-            {/*TODO buscador de autos*/}
-            {/*TODO refactorizar y hacer pruebas*/}
-
             {/* Step 1: Vehicle Information */}
             {currentStep === 1 && (
               <VehicleInfoForm

@@ -31,7 +31,7 @@ const VALIDATION_RULES = {
 interface ApiError {
   error: string;
   code: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -49,7 +49,7 @@ interface ApiResponse<T> {
 /**
  * Valida los datos de entrada
  */
-function validateRequest(data: any): { isValid: boolean; errors: string[] } {
+function validateRequest(data: Record<string, unknown>): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   // Validar marca
@@ -108,9 +108,9 @@ function validateRequest(data: any): { isValid: boolean; errors: string[] } {
 /**
  * Maneja errores y los convierte a formato estándar
  */
-function handleError(error: any, code: string = 'INTERNAL_ERROR'): ApiError {
+function handleError(error: unknown, code: string = 'INTERNAL_ERROR'): ApiError {
   let message = 'Internal server error';
-  let details: any = undefined;
+  let details: Record<string, unknown> | undefined = undefined;
 
   if (error instanceof Error) {
     message = error.message;
@@ -147,7 +147,7 @@ function handleError(error: any, code: string = 'INTERNAL_ERROR'): ApiError {
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  let requestData: any;
+  let requestData: Record<string, unknown>;
 
   try {
     // Parsear body de la request

@@ -23,7 +23,6 @@ export type Vehiculo = {
   moneda: 'ARS' | 'USD'
   created_at?: string
   updated_at?: string
-  user_id?: string
 }
 
 export type VehiculoFoto = {
@@ -40,7 +39,7 @@ export type VehiculoFoto = {
 }
 
 // Input Types (from forms)
-export type VehiculoInput = Omit<Vehiculo, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'estado'>
+export type VehiculoInput = Omit<Vehiculo, 'id' | 'created_at' | 'updated_at' | 'estado'>
 
 export type PhotoUploadInput = {
   file: File

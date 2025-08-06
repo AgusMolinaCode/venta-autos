@@ -105,10 +105,7 @@ export function VehicleInfoForm({
 
             // Reset model and year fields
             form.setValue("modelo", "");
-            form.setValue(
-              "ano",
-              null as unknown as number,
-            );
+            form.setValue("ano", 0); // Reset to 0 instead of null
             resetAllManualStates();
 
             // Only fetch models if brand is not manual
@@ -149,10 +146,7 @@ export function VehicleInfoForm({
             selectedModel.trim() !== ""
           ) {
             // Reset year field
-            form.setValue(
-              "ano",
-              null as unknown as number,
-            );
+            form.setValue("ano", 0); // Reset to 0 instead of null
             setManualState((prev) => ({
               ...prev,
               showManualYear: false,
