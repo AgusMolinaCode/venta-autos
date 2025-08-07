@@ -46,16 +46,8 @@ export default function RootLayout({
             <AuthProvider>
               <div className="min-h-screen bg-gray-50">
                 {/* Header with Authentication */}
-                <header className="bg-white shadow-sm border-b">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-6">
-                      <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Ventas-Autos</h1>
-                        <p className="text-sm text-gray-600">Compra tu auto de forma rápida y segura</p>
-                      </div>
-                      <UserMenu />
-                    </div>
-                  </div>
+                <header className="bg-zinc-300 shadow-sm border-b">
+                  
                 </header>
 
                 {/* Main Content */}
