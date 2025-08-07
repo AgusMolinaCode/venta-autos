@@ -11,6 +11,7 @@ import { VehicleFormInputSchema, PriceSchema } from "@/lib/validations";
 import { VehiculoService, VehiculoSubmissionData } from "@/lib/services/vehicle-service";
 import { VehiculoInput, VehiculoConFotos } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth/auth-provider";
 
 // Schemas extendidos
 const VehicleStep1Schema = z.object({
@@ -60,6 +61,7 @@ export function useCarFormState(
   onSuccess?: (updatedVehicle?: VehiculoConFotos) => void,
   editingVehicle?: VehiculoConFotos
 ): UseCarFormStateReturn {
+  const { user } = useAuth();
   // Estado local
   const [currentStep, setCurrentStep] = useState(1);
   const [priceData, setPriceData] = useState<PriceFormData | null>(null);
@@ -172,6 +174,12 @@ export function useCarFormState(
       return;
     }
     
+    // Validar que el usuario esté autenticado
+    if (!user) {
+      toast.error("Debe estar autenticado para crear un vehículo");
+      return;
+    }
+    
     // Validar fotos: diferentes reglas para creación vs edición
     const isEditMode = !!editingVehicle?.id;
     const hasExistingPhotos = editingVehicle?.fotos && Array.isArray(editingVehicle.fotos) && editingVehicle.fotos.length > 0;
@@ -198,10 +206,15 @@ export function useCarFormState(
     // Preparar datos para el servicio
     const datosSubmision: VehiculoSubmissionData = {
       vehiculoData: finalData as VehiculoInput,
-      fotos: uploadedFiles
+      fotos: uploadedFiles,
+      userId: user.id
     };
 
     console.group('🚗 DATOS FINALES ANTES DE ENVIAR A SUPABASE');
+    console.log('👤 Usuario Autenticado:', {
+      id: user.id,
+      email: user.email
+    });
     console.log('📋 Información del Vehículo:', {
       marca: finalData.marca,
       modelo: finalData.modelo,
@@ -214,7 +227,8 @@ export function useCarFormState(
       descripcion: finalData.descripcion,
       tipo_vehiculo: finalData.tipo_vehiculo,
       precio: finalData.precio,
-      moneda: finalData.moneda
+      moneda: finalData.moneda,
+      user_id: user.id  // Mostrar que se incluirá el user_id
     });
     
     console.log('📸 Archivos de Fotos:', {
@@ -321,7 +335,7 @@ export function useCarFormState(
     } finally {
       setIsSubmitting(false);
     }
-  }, [priceData, vehicleData, uploadedFiles, onSubmit, onSuccess, resetForm, editingVehicle]);
+  }, [priceData, vehicleData, uploadedFiles, onSubmit, onSuccess, resetForm, editingVehicle, user]);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>, maxFiles: number = 10) => {
     const files = Array.from(event.target.files || []);

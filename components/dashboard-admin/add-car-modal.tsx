@@ -141,7 +141,7 @@ function AddCarModal({
           <CardContent className="p-6">
             <ProgressBar
               currentStep={currentStep}
-            />
+            />  
 
             {/* Step 1: Vehicle Information */}
             {currentStep === 1 && (

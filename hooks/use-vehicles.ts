@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, VehiculoConFotos } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useAuth } from '@/components/auth/auth-provider';
 
 interface UseVehiclesReturn {
   vehicles: VehiculoConFotos[];
@@ -14,11 +15,18 @@ interface UseVehiclesReturn {
 }
 
 export function useVehicles(): UseVehiclesReturn {
+  const { user } = useAuth();
   const [vehicles, setVehicles] = useState<VehiculoConFotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchVehicles = useCallback(async () => {
+    if (!user) {
+      setVehicles([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -29,6 +37,7 @@ export function useVehicles(): UseVehiclesReturn {
           *,
           fotos:vehiculo_fotos(*)
         `)
+        .eq('user_id', user.id)  // Filtrar por usuario autenticado
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -45,7 +54,7 @@ export function useVehicles(): UseVehiclesReturn {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const deleteVehicle = useCallback(async (vehicleId: string): Promise<boolean> => {
     try {

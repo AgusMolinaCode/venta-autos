@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger'
 export interface VehiculoSubmissionData {
   vehiculoData: VehiculoInput
   fotos: File[]
+  userId: string  // ID del usuario autenticado
 }
 
 export interface VehiculoServiceResult {
@@ -27,7 +28,7 @@ export class VehiculoService {
     logger.info('Processing vehicle data for Supabase', { vehicleCount: 1, photosCount: datosSubmision.fotos.length }, 'VEHICLE_SERVICE');
     
     try {
-      const { vehiculoData, fotos } = datosSubmision;
+      const { vehiculoData, fotos, userId } = datosSubmision;
       
       // Log vehicle and photo data
       logger.debug('Vehicle data received', {
@@ -58,11 +59,16 @@ export class VehiculoService {
 
       console.log('✅ Validación exitosa');
 
-      // 1. Crear registro del vehículo
+      // 1. Crear registro del vehículo con user_id
       console.log('🔄 Insertando vehículo en base de datos...');
+      const vehiculoConUserId = {
+        ...vehiculoData,
+        user_id: userId
+      };
+      
       const { data: vehiculo, error: vehiculoError } = await supabase
         .from('vehiculos')
-        .insert([vehiculoData])
+        .insert([vehiculoConUserId])
         .select()
         .single();
 

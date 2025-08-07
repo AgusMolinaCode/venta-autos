@@ -50,14 +50,22 @@ export function YearSelector({
   const handleManualSubmit = (
     value: string,
   ) => {
-    const yearValue = parseInt(
-      value.trim(),
-    );
+    const cleanValue = value.trim();
+    
+    // Verificar que no esté vacío y no sea solo ceros
+    if (!cleanValue || cleanValue === "0" || cleanValue === "00" || cleanValue === "000") {
+      return;
+    }
+    
+    const yearValue = parseInt(cleanValue, 10);
+    
+    // Validación más estricta
     if (
       !isNaN(yearValue) &&
-      yearValue >=
-        FORM_CONFIG.minYear &&
-      yearValue <= FORM_CONFIG.maxYear
+      yearValue > 0 &&
+      yearValue >= FORM_CONFIG.minYear &&
+      yearValue <= FORM_CONFIG.maxYear &&
+      yearValue.toString() === cleanValue // Asegurar que no hay caracteres extra
     ) {
       form.setValue("ano", yearValue);
       setManualState((prev) => ({
@@ -96,13 +104,12 @@ export function YearSelector({
       return;
     }
 
-    if (
-      value !== "manual-brand-message"
-    ) {
-      form.setValue(
-        "ano",
-        parseInt(value),
-      );
+    // Validate and set year value
+    if (value !== "manual-brand-message" && value !== "") {
+      const yearValue = parseInt(value, 10);
+      if (!isNaN(yearValue) && yearValue >= FORM_CONFIG.minYear && yearValue <= FORM_CONFIG.maxYear) {
+        form.setValue("ano", yearValue);
+      }
     }
   };
 
@@ -213,8 +220,9 @@ export function YearSelector({
                 handleSelectChange
               }
               value={
-                field.value?.toString() ||
-                ""
+                field.value && !isNaN(field.value) && field.value > 0 
+                  ? field.value.toString() 
+                  : ""
               }
               disabled={
                 yearsLoading ||
@@ -226,6 +234,8 @@ export function YearSelector({
             >
               {/* Show manual value if exists and not in years list */}
               {field.value &&
+                !isNaN(field.value) &&
+                field.value > 0 &&
                 hasYears &&
                 years.length > 0 &&
                 !years.some(
@@ -247,6 +257,8 @@ export function YearSelector({
 
               {/* Show manual value when no years loaded */}
               {field.value &&
+                !isNaN(field.value) &&
+                field.value > 0 &&
                 (!hasYears ||
                   years.length === 0) &&
                 !yearsLoading && (
@@ -277,16 +289,23 @@ export function YearSelector({
                 years.length > 0 ? (
                 <>
                   {years.map(
-                    (year, index) => (
-                      <SelectItem
-                        key={`${year.brandSlug}-${year.modelSlug}-${year.year}-${index}`}
-                        value={year.year.toString()}
-                        className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700"
-                      >
-                        {year.getDisplayText()}
-                      </SelectItem>
-                    ),
-                  )}
+                    (year, index) => {
+                      // Validar que el año sea válido antes de renderizar
+                      if (!year.year || isNaN(year.year) || year.year <= 0) {
+                        return null;
+                      }
+                      
+                      return (
+                        <SelectItem
+                          key={`${year.brandSlug}-${year.modelSlug}-${year.year}-${index}`}
+                          value={year.year.toString()}
+                          className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700"
+                        >
+                          {year.getDisplayText()}
+                        </SelectItem>
+                      );
+                    },
+                  ).filter(Boolean)}
 
                   {/* Refetch button */}
                   <Separator className="my-1" />
@@ -375,32 +394,39 @@ export function YearSelector({
                       placeholder="Escribir año manualmente"
                       className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
                       value={localAno}
-                      onChange={(e) =>
-                        setLocalAno(
-                          e.target
-                            .value,
-                        )
-                      }
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        // Solo permitir números y evitar valores como 00
+                        if (inputValue === "" || (/^\d{1,4}$/.test(inputValue) && parseInt(inputValue, 10) > 0)) {
+                          setLocalAno(inputValue);
+                        }
+                      }}
                       onBlur={() => {
                         if (
-                          localAno ===
-                          ""
+                          localAno === "" ||
+                          localAno === "0" ||
+                          localAno === "00"
                         ) {
                           field.onChange(
                             undefined,
                           );
+                          setLocalAno("");
                         } else {
                           const numValue =
                             parseInt(
                               localAno,
+                              10
                             );
-                          field.onChange(
-                            isNaN(
-                              numValue,
-                            )
-                              ? undefined
-                              : numValue,
-                          );
+                          if (
+                            !isNaN(numValue) &&
+                            numValue >= FORM_CONFIG.minYear &&
+                            numValue <= FORM_CONFIG.maxYear
+                          ) {
+                            field.onChange(numValue);
+                          } else {
+                            field.onChange(undefined);
+                            setLocalAno("");
+                          }
                         }
                       }}
                     />

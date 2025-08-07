@@ -1,10 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarBody,
   SidebarLink,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/components/auth/auth-provider";
+import { useRouter } from "next/navigation";
 import {
   IconArrowLeft,
   IconBrandTabler,
@@ -19,12 +21,32 @@ import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 
 function Page() {
+  const { user, loading, signOut } = useAuth();
+  const router = useRouter();
   const [open, setOpen] =
     useState(false);
   const [activeView, setActiveView] =
     useState<"dashboard" | "vehicles">(
       "dashboard",
     );
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to login
+  }
 
   const links = [
     {
@@ -62,6 +84,10 @@ function Page() {
       icon: (
         <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
+      onClick: async () => {
+        await signOut();
+        router.push('/');
+      },
     },
   ];
   return (
@@ -100,11 +126,11 @@ function Page() {
             <ModeToggle />
             <SidebarLink
               link={{
-                label: "Manu Arora",
+                label: user?.email || "Usuario",
                 href: "#",
                 icon: (
                   <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-xs text-white font-bold">
-                    MA
+                    {user?.email?.charAt(0).toUpperCase() || "U"}
                   </div>
                 ),
               }}
