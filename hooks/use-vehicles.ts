@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase, VehiculoConFotos } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/auth/auth-provider';
@@ -14,47 +15,66 @@ interface UseVehiclesReturn {
   updateVehicle: (vehicleId: string, updatedVehicle: VehiculoConFotos) => void;
 }
 
+// Query key generator
+const getVehiclesQueryKey = (userId: string | undefined) => ['vehicles', userId];
+
+// Fetch function for React Query
+async function fetchVehicles(userId: string): Promise<VehiculoConFotos[]> {
+  const { data, error: fetchError } = await supabase
+    .from('vehiculos')
+    .select(`
+      *,
+      fotos:vehiculo_fotos(*)
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (fetchError) {
+    throw new Error(`Error al cargar vehículos: ${fetchError.message}`);
+  }
+
+  return data || [];
+}
+
 export function useVehicles(): UseVehiclesReturn {
   const { user } = useAuth();
-  const [vehicles, setVehicles] = useState<VehiculoConFotos[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  
+  // Page Visibility API to prevent refetch on tab changes
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
-  const fetchVehicles = useCallback(async () => {
-    if (!user) {
-      setVehicles([]);
-      setLoading(false);
-      return;
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  const {
+    data: vehicles = [],
+    isLoading: loading,
+    error,
+    refetch: reactQueryRefetch,
+  } = useQuery({
+    queryKey: getVehiclesQueryKey(user?.id),
+    queryFn: () => fetchVehicles(user!.id),
+    enabled: !!user && isPageVisible, // Only fetch if user exists and page is visible
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes  
+    refetchOnWindowFocus: false, // Prevent refetch on tab focus
+    refetchOnMount: false, // Don't refetch on mount if we have data
+    retry: 2,
+  });
+
+  const refetch = useCallback(async () => {
+    if (user) {
+      await reactQueryRefetch();
     }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .from('vehiculos')
-        .select(`
-          *,
-          fotos:vehiculo_fotos(*)
-        `)
-        .eq('user_id', user.id)  // Filtrar por usuario autenticado
-        .order('created_at', { ascending: false });
-
-      if (fetchError) {
-        throw new Error(`Error al cargar vehículos: ${fetchError.message}`);
-      }
-
-      setVehicles(data || []);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      setError(errorMessage);
-      toast.error('Error al cargar vehículos', {
-        description: errorMessage
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  }, [user, reactQueryRefetch]);
 
   const deleteVehicle = useCallback(async (vehicleId: string): Promise<boolean> => {
     try {
@@ -96,8 +116,10 @@ export function useVehicles(): UseVehiclesReturn {
         throw new Error(`Error al eliminar vehículo: ${vehicleError.message}`);
       }
 
-      // Update local state
-      setVehicles(prev => prev.filter(vehicle => vehicle.id !== vehicleId));
+      // Invalidate React Query cache to refetch data
+      await queryClient.invalidateQueries({
+        queryKey: getVehiclesQueryKey(user?.id)
+      });
       
       toast.success('Vehículo eliminado correctamente');
       return true;
@@ -108,26 +130,25 @@ export function useVehicles(): UseVehiclesReturn {
       });
       return false;
     }
-  }, []);
+  }, [queryClient, user?.id]);
 
   const updateVehicle = useCallback((vehicleId: string, updatedVehicle: VehiculoConFotos) => {
-    setVehicles(prev => prev.map(vehicle => 
-      vehicle.id === vehicleId ? updatedVehicle : vehicle
-    ));
-  }, []);
-
-  const refetch = useCallback(async () => {
-    await fetchVehicles();
-  }, [fetchVehicles]);
-
-  useEffect(() => {
-    fetchVehicles();
-  }, [fetchVehicles]);
+    // Update cache optimistically
+    queryClient.setQueryData(
+      getVehiclesQueryKey(user?.id),
+      (oldVehicles: VehiculoConFotos[] | undefined) => {
+        if (!oldVehicles) return [];
+        return oldVehicles.map(vehicle => 
+          vehicle.id === vehicleId ? updatedVehicle : vehicle
+        );
+      }
+    );
+  }, [queryClient, user?.id]);
 
   return {
     vehicles,
     loading,
-    error,
+    error: error?.message || null,
     refetch,
     deleteVehicle,
     updateVehicle

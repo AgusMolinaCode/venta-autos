@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/components/auth/auth-provider';
 import { VehiculoConFotos } from "@/lib/supabase";
 import { formatVehicleName } from "@/utils/formatters";
 import { DeleteDialogState, StepFormHandlersReturn } from './types';
@@ -9,7 +11,7 @@ interface UseStepFormHandlersProps {
   onClick?: () => void;
   vehicles: VehiculoConFotos[];
   deleteVehicle: (vehicleId: string) => Promise<boolean>;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<void>; // Keep for backward compatibility but won't be used
 }
 
 export function useStepFormHandlers({
@@ -18,6 +20,9 @@ export function useStepFormHandlers({
   deleteVehicle,
   refetch,
 }: UseStepFormHandlersProps): StepFormHandlersReturn {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
   // Estados modales
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<VehiculoConFotos | null>(null);
@@ -28,6 +33,13 @@ export function useStepFormHandlers({
     vehicleName: "",
   });
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Helper function to invalidate vehicles cache
+  const invalidateVehicles = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['vehicles', user?.id]
+    });
+  };
 
   // Handler para agregar vehículo
   const handleAddVehicle = () => {
@@ -99,12 +111,12 @@ export function useStepFormHandlers({
 
   const onAddSuccess = () => {
     setIsAddModalOpen(false);
-    refetch();
+    invalidateVehicles(); // Use React Query invalidation instead of manual refetch
   };
 
   const onEditSuccess = () => {
     setEditingVehicle(null);
-    refetch();
+    invalidateVehicles(); // Use React Query invalidation instead of manual refetch
   };
 
   return {

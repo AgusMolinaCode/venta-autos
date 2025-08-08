@@ -3,9 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import { UserMenu } from "@/components/auth/user-menu";
+import { Navbar } from "@/components/ui/Navbar";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Header from "@/components/landing/header/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,14 +45,13 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <div className="min-h-screen bg-gray-50">
-                {/* Header with Authentication */}
-                <header className="bg-zinc-300 shadow-sm border-b">
-                  
-                </header>
+              <div className="min-h-screen bg-background">
+                {/* Modern Navbar */}
+                {/* <Navbar /> */}
+                <Header />
 
                 {/* Main Content */}
-                <main>
+                <main className="flex-1">
                   {children}
                 </main>
               </div>

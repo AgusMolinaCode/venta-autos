@@ -1,5 +1,5 @@
 import React from 'react';
-import { ModeToggle } from '@/components/ui/ModeToggle';
+import { UserModeToggle } from '@/components/ui/UserModeToggle';
 import { AuthButton } from '@/components/auth/auth-button';
 
 const Header: React.FC = () => {
@@ -17,7 +17,7 @@ const Header: React.FC = () => {
         
         <div className="flex items-center space-x-3">
           <AuthButton />
-          <ModeToggle />
+          <UserModeToggle />
         </div>
         
         <button className="md:hidden text-gray-600">

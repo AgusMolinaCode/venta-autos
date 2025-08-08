@@ -3,11 +3,12 @@
 import { useAuth } from './auth-provider'
 import { Button } from '@/components/ui/button'
 import { User, LogOut } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 export function AuthButton() {
   const { user, loading, signOut } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   if (loading) {
     return (
@@ -28,14 +29,17 @@ export function AuthButton() {
 
   return (
     <div className="flex items-center space-x-3">
-      <Button
-        onClick={() => router.push('/dashboard')}
-        variant="outline"
-        className="flex items-center space-x-2"
-      >
-        <User className="h-4 w-4" />
-        <span>Dashboard</span>
-      </Button>
+      {pathname !== '/dashboard' && (
+        <Button
+          onClick={() => router.push('/dashboard')}
+          variant="outline"
+          className="flex items-center space-x-2"
+        >
+          <User className="h-4 w-4" />
+          <span>Dashboard</span>
+        </Button>
+      )}
+      
       <Button
         onClick={signOut}
         variant="outline"

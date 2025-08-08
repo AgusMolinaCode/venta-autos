@@ -16,6 +16,7 @@ import {
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/ui/ModeToggle";
+import { UserMenuSidebar } from "@/components/ui/UserMenuSidebar";
 import StepForm from "@/components/dashboard-admin/main/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
@@ -93,7 +94,7 @@ function Page() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
+        "mx-auto flex w-full flex-1 flex-col overflow-hidden border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
         "h-screen", // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >
@@ -124,17 +125,7 @@ function Page() {
               {" "}
             </div>
             <ModeToggle />
-            <SidebarLink
-              link={{
-                label: user?.email || "Usuario",
-                href: "#",
-                icon: (
-                  <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-xs text-white font-bold">
-                    {user?.email?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                ),
-              }}
-            />
+            <UserMenuSidebar />
           </div>
         </SidebarBody>
       </Sidebar>
