@@ -4,15 +4,10 @@ import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useRouter } from "next/navigation";
 import {
-  IconArrowLeft,
   IconBrandTabler,
-  IconSettings,
   IconUserBolt,
 } from "@tabler/icons-react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/ui/ModeToggle";
-import { UserMenuSidebar } from "@/components/ui/UserMenuSidebar";
 import StepForm from "@/components/dashboard-admin/main/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";

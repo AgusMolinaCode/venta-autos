@@ -4,7 +4,7 @@ import { AuthButton } from '@/components/auth/auth-button';
 
 const Header: React.FC = () => {
   return (
-    <header className="bg-zinc-100 dark:bg-zinc-800 shadow-sm">
+    <header className="bg-zinc-100 dark:bg-zinc-800">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-800">AutoSelect</div>
         <nav className="hidden md:flex space-x-6">
