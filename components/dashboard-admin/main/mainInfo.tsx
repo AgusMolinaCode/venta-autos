@@ -1,100 +1,163 @@
-import React from "react";
-import {
-  IconCar,
-  IconUserBolt,
-} from "@tabler/icons-react";
+"use client";
 
-const mainInfo = () => {
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Car, 
+  Play, 
+  Pause, 
+  CheckCircle, 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign,
+  Star
+} from "lucide-react";
+import { useVehicles } from "@/hooks/use-vehicles";
+
+const MainInfo = () => {
+  const { vehicles } = useVehicles();
+
+  // Calculate metrics from real vehicle data
+  const published = vehicles.filter(v => v.estado === 'publicado').length;
+  const paused = vehicles.filter(v => v.estado === 'pausado').length; 
+  const sold = vehicles.filter(v => v.estado === 'vendido').length;
+  const totalVehicles = vehicles.length;
+  const brandCount = new Set(vehicles.map(v => v.marca)).size;
+  const totalRevenue = vehicles
+    .filter(v => v.estado === 'vendido')
+    .reduce((sum, v) => sum + (v.precio || 0), 0);
+
   return (
-    <div className="flex gap-2">
-      {/* Card 1: Total de Vehículos */}
-      <div className="flex flex-col flex-1 rounded-lg bg-zinc-100 p-6 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-900">
-        <span className="text-xs text-zinc-400">
-          Total de Vehículos
-        </span>
-        <span className="text-2xl font-bold">
-          127
-        </span>
-        <span className="text-xs text-green-400 mt-1">
-          +12% vs mes anterior
-        </span>
-        <div className="ml-auto mt-2 bg-primary rounded-full p-2 inline-block">
-          <IconCar className="h-5 w-5 text-primary-foreground" />
-        </div>
+    <div className="space-y-6">
+      {/* Status Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">
+              Publicados
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-green-500">
+              <Play className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-700 dark:text-green-300">
+              {published}
+            </div>
+            <p className="text-sm text-green-600 dark:text-green-400">
+              Vehículos activos en venta
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20 dark:border-yellow-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+              Pausados
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-yellow-500">
+              <Pause className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">
+              {paused}
+            </div>
+            <p className="text-sm text-yellow-600 dark:text-yellow-400">
+              Temporalmente inactivos
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              Vendidos
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-blue-500">
+              <CheckCircle className="h-4 w-4 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+              {sold}
+            </div>
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              Ventas exitosas
+            </p>
+          </CardContent>
+        </Card>
       </div>
-      {/* Card 2: Consultas Pendientes */}
-      <div className="flex flex-col flex-1 rounded-lg bg-zinc-100 p-6 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-900 ">
-        <span className="text-xs text-zinc-400">
-          Consultas Pendientes
-        </span>
-        <span className="text-2xl font-bold">
-          23
-        </span>
-        <span className="text-xs text-green-400 mt-1">
-          +16% vs mes anterior
-        </span>
-        <div className="ml-auto mt-2 bg-primary rounded-full p-2 inline-block">
-          <IconUserBolt className="h-5 w-5 text-primary-foreground" />
-        </div>
-      </div>
-      {/* Card 3: Ventas del Mes */}
-      <div className="flex flex-col flex-1 rounded-lg bg-zinc-100 p-6 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-900 ">
-        <span className="text-xs text-zinc-400">
-          Ventas del Mes
-        </span>
-        <span className="text-2xl font-bold">
-          18
-        </span>
-        <span className="text-xs text-green-400 mt-1">
-          +28% vs mes anterior
-        </span>
-        <div className="ml-auto mt-2 bg-primary rounded-full p-2 inline-block">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-primary-foreground"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 17l6-6 4 4 8-8"
-            />
-          </svg>
-        </div>
-      </div>
-      {/* Card 4: Ingresos del Mes */}
-      <div className="flex flex-col flex-1 rounded-lg bg-zinc-100 p-6 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-900 ">
-        <span className="text-xs text-zinc-400">
-          Ingresos del Mes
-        </span>
-        <span className="text-2xl font-bold">
-          $2.8M
-        </span>
-        <span className="text-xs text-green-400 mt-1">
-          +15% vs mes anterior
-        </span>
-        <div className="ml-auto mt-2 bg-primary rounded-full p-2 inline-block">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-primary-foreground"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 10c-4.41 0-8-1.79-8-4V6c0-2.21 3.59-4 8-4s8 1.79 8 4v8c0 2.21-3.59 4-8 4z"
-            />
-          </svg>
-        </div>
+
+      {/* Metrics Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Vehículos</CardTitle>
+            <Car className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalVehicles}</div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-green-600 flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                +12% vs mes anterior
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${totalRevenue.toLocaleString('es-AR')}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-green-600 flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                +8% vs mes anterior
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Marcas Listadas</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{brandCount}</div>
+            <p className="text-xs text-muted-foreground">
+              Diversidad en inventario
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tasa Conversión</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalVehicles > 0 ? ((sold / totalVehicles) * 100).toFixed(1) : 0}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <span className="text-red-600 flex items-center gap-1">
+                <TrendingDown className="h-3 w-3" />
+                -2% vs mes anterior
+              </span>
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 };
 
-export default mainInfo;
+export default MainInfo;

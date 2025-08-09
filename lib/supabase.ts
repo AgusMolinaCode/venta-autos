@@ -20,6 +20,7 @@ export type Vehiculo = {
   tipo_vehiculo: 'autos/camionetas' | 'motos'
   precio: number
   moneda: 'ARS' | 'USD'
+  estado?: 'publicado' | 'pausado' | 'vendido' | 'preparación'
   user_id?: string
   created_at?: string
   updated_at?: string

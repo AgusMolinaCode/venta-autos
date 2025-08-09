@@ -39,7 +39,8 @@ export function VehicleImage({
 
   return (
     <div className={cn(
-      sizeClasses[size],
+      // Only apply size classes if no custom className with width/height is provided
+      !className?.includes('w-') && !className?.includes('h-') ? sizeClasses[size] : '',
       "rounded-md overflow-hidden bg-muted flex items-center justify-center",
       className
     )}>
@@ -51,7 +52,11 @@ export function VehicleImage({
           loading="lazy"
         />
       ) : showFallback ? (
-        <IconCar className={cn(iconSizes[size], "text-muted-foreground")} />
+        <IconCar className={cn(
+          // Scale icon size based on container size if custom dimensions
+          className?.includes('h-40') ? 'h-12 w-12' : iconSizes[size], 
+          "text-muted-foreground"
+        )} />
       ) : null}
     </div>
   );
