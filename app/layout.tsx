@@ -46,14 +46,10 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <div className="min-h-screen bg-background">
-                {/* Modern Navbar */}
-                {/* <Navbar /> */}
                 <Header />
 
                 {/* Main Content */}
-                <main className="flex-1">
-                  {children}
-                </main>
+                <main className="flex-1">{children}</main>
               </div>
               <Toaster richColors />
             </AuthProvider>

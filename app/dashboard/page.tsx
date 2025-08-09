@@ -1,10 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  Sidebar,
-  SidebarBody,
-  SidebarLink,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useRouter } from "next/navigation";
 import {
@@ -24,16 +20,14 @@ import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 function Page() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
-  const [open, setOpen] =
-    useState(false);
-  const [activeView, setActiveView] =
-    useState<"dashboard" | "vehicles">(
-      "dashboard",
-    );
+  const [open, setOpen] = useState(false);
+  const [activeView, setActiveView] = useState<"dashboard" | "vehicles">(
+    "dashboard"
+  );
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, loading, router]);
 
@@ -56,10 +50,8 @@ function Page() {
       icon: (
         <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
-      onClick: () =>
-        setActiveView("dashboard"),
-      isActive:
-        activeView === "dashboard",
+      onClick: () => setActiveView("dashboard"),
+      isActive: activeView === "dashboard",
     },
     {
       label: "Listado de Autos",
@@ -67,101 +59,32 @@ function Page() {
       icon: (
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
-      onClick: () =>
-        setActiveView("vehicles"),
-      isActive:
-        activeView === "vehicles",
-    },
-    {
-      label: "Settings",
-      href: "#",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: (
-        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-      onClick: async () => {
-        await signOut();
-        router.push('/');
-      },
+      onClick: () => setActiveView("vehicles"),
+      isActive: activeView === "vehicles",
     },
   ];
   return (
     <div
       className={cn(
         "mx-auto flex w-full flex-1 flex-col overflow-hidden border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
-        "h-screen", // for your use case, use `h-screen` instead of `h-[60vh]`
+        "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >
-      <Sidebar
-        open={open}
-        setOpen={setOpen}
-      >
+      <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            {open ? (
-              <Logo />
-            ) : (
-              <LogoIcon />
-            )}
             <div className="mt-8 flex flex-col gap-2">
-              {links.map(
-                (link, idx) => (
-                  <SidebarLink
-                    key={idx}
-                    link={link}
-                  />
-                ),
-              )}
+              {links.map((link, idx) => (
+                <SidebarLink key={idx} link={link} />
+              ))}
             </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-center">
-              {" "}
-            </div>
-            <ModeToggle />
-            <UserMenuSidebar />
           </div>
         </SidebarBody>
       </Sidebar>
-      <Dashboard
-        activeView={activeView}
-      />
+      <Dashboard activeView={activeView} />
     </div>
   );
 }
-const Logo = () => {
-  return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black dark:text-white"
-      >
-        Acet Labs
-      </motion.span>
-    </a>
-  );
-};
-const LogoIcon = () => {
-  return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-    </a>
-  );
-};
 
 // Dashboard component with conditional content
 const Dashboard = ({
@@ -169,14 +92,8 @@ const Dashboard = ({
 }: {
   activeView: "dashboard" | "vehicles";
 }) => {
-  const [
-    isAddCarModalOpen,
-    setIsAddCarModalOpen,
-  ] = useState(false);
-  const [
-    liveVehicleData,
-    setLiveVehicleData,
-  ] = useState<{
+  const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
+  const [liveVehicleData, setLiveVehicleData] = useState<{
     marca?: string;
     modelo?: string;
     ano?: number;
@@ -220,9 +137,7 @@ const Dashboard = ({
         </div>
 
         {/* Contenido condicional basado en la vista activa */}
-        {activeView === "dashboard" && (
-          <MainInfo />
-        )}
+        {activeView === "dashboard" && <MainInfo />}
 
         {activeView === "vehicles" && (
           <div className="flex flex-1 gap-2">
@@ -235,9 +150,7 @@ const Dashboard = ({
         {/* Modal para agregar auto */}
         <AddCarModal
           isOpen={isAddCarModalOpen}
-          onClose={() =>
-            setIsAddCarModalOpen(false)
-          }
+          onClose={() => setIsAddCarModalOpen(false)}
           onSubmit={handleCarSubmit}
         />
       </div>
