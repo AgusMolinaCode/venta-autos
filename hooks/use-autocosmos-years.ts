@@ -16,7 +16,7 @@ interface UseAutocosmosYearsState {
 }
 
 interface UseAutocosmosYearsReturn extends UseAutocosmosYearsState {
-  fetchYears: (brand: string, model: string) => Promise<void>;
+  fetchYears: (brand: string, model: string, force?: boolean) => Promise<void>;
   resetYears: () => void;
   retryFetch: () => void;
   clearCache: (brand?: string, model?: string) => void;
@@ -48,7 +48,7 @@ export function useAutocosmosYears(): UseAutocosmosYearsReturn {
     setLastBrandModel('');
   }, []);
 
-  const fetchYears = useCallback(async (brand: string, model: string) => {
+  const fetchYears = useCallback(async (brand: string, model: string, force: boolean = false) => {
     if (!brand || brand.trim() === '' || !model || model.trim() === '') {
       resetYears();
       return;
@@ -56,22 +56,27 @@ export function useAutocosmosYears(): UseAutocosmosYearsReturn {
 
     const brandModelKey = `${brand}-${model}`;
 
-    // Evitar fetch repetido para la misma marca y modelo
-    if (lastBrandModel === brandModelKey && state.years.length > 0) {
+    // Evitar fetch repetido para la misma marca y modelo (a menos que sea forzado)
+    if (!force && lastBrandModel === brandModelKey && state.years.length > 0) {
       return;
     }
 
     const cacheKey = `years_${brand.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${model.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
 
-    // 1. Intentar cargar desde cache primero
-    const cachedYears = vehicleModelsCache.get<Array<{
+    // Si es forzado, limpiar cache primero
+    if (force) {
+      vehicleModelsCache.remove(cacheKey);
+    }
+
+    // 1. Intentar cargar desde cache primero (solo si no es forzado)
+    const cachedYears = !force ? vehicleModelsCache.get<Array<{
       year: number;
       value: string;
       displayText: string;
       brandSlug: string;
       modelSlug: string;
       isActive?: boolean;
-    }>>(cacheKey);
+    }>>(cacheKey) : null;
 
     if (cachedYears) {
       try {
@@ -179,7 +184,7 @@ export function useAutocosmosYears(): UseAutocosmosYearsReturn {
   const retryFetch = useCallback(() => {
     const [brand, model] = lastBrandModel.split('-', 2);
     if (brand && model) {
-      fetchYears(brand, model);
+      fetchYears(brand, model, true); // Force refetch
     }
   }, [lastBrandModel, fetchYears]);
 

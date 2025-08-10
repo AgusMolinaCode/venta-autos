@@ -32,12 +32,19 @@ interface PriceFormModalProps {
     modelo: string;
     ano: number;
   } | null;
+  isEditMode?: boolean;
+  currentPrice?: {
+    precio: number;
+    moneda: "ARS" | "USD";
+  } | null;
 }
 
 export function PriceFormModal({
   form,
   onSubmit,
   vehicleData,
+  isEditMode = false,
+  currentPrice,
 }: PriceFormModalProps) {
   const {
     getValuation,
@@ -451,6 +458,8 @@ export function PriceFormModal({
           <PriceFormContent
             form={form}
             onSubmit={onSubmit}
+            isEditMode={isEditMode}
+            currentPrice={currentPrice}
           />
         </div>
       </motion.div>
@@ -506,6 +515,8 @@ export function PriceFormModal({
             <PriceFormContent
               form={form}
               onSubmit={onSubmit}
+              isEditMode={isEditMode}
+              currentPrice={currentPrice}
             />
           </div>
         </div>
@@ -552,6 +563,8 @@ export function PriceFormModal({
           <PriceFormContent
             form={form}
             onSubmit={onSubmit}
+            isEditMode={isEditMode}
+            currentPrice={currentPrice}
           />
         </>
       )}
@@ -563,11 +576,18 @@ export function PriceFormModal({
 function PriceFormContent({
   form,
   onSubmit,
+  isEditMode = false,
+  currentPrice,
 }: {
   form: UseFormReturn<PriceFormData>;
   onSubmit: (
     data: PriceFormData,
   ) => void;
+  isEditMode?: boolean;
+  currentPrice?: {
+    precio: number;
+    moneda: "ARS" | "USD";
+  } | null;
 }) {
   return (
     <Form {...form}>
@@ -590,27 +610,51 @@ function PriceFormContent({
                 <FormLabel className="text-green-800 dark:text-green-100">
                   Precio *
                 </FormLabel>
+                
+                {/* Show current price in edit mode */}
+                {isEditMode && currentPrice && (
+                  <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                      Precio actual: {currentPrice.moneda === "USD" ? "US$" : "$"}{" "}
+                      {currentPrice.precio.toLocaleString(
+                        currentPrice.moneda === "USD" ? "en-US" : "es-AR"
+                      )}{" "}
+                      {currentPrice.moneda}
+                    </div>
+                  </div>
+                )}
+                
                 <FormControl>
                   <Input
-                    type="number"
-                    min={0}
-                    placeholder="15000000"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder={isEditMode ? "Colocar nuevo precio" : "15000000"}
                     className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
-                    {...field}
-                    value={
-                      field.value?.toString() ??
-                      ""
-                    }
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value
-                          ? parseFloat(
-                              e.target
-                                .value,
-                            )
-                          : undefined,
-                      )
-                    }
+                    name={field.name}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    // value={
+                    //   field.value?.toString() ?? ""
+                    // }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      
+                      // Allow empty string for complete deletion
+                      if (value === "") {
+                        field.onChange(undefined);
+                        return;
+                      }
+                      
+                      // Only allow digits and one decimal point
+                      if (!/^\d*\.?\d*$/.test(value)) {
+                        return; // Don't update if invalid characters
+                      }
+                      
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue) && numValue >= 0) {
+                        field.onChange(numValue);
+                      }
+                    }}
                   />
                 </FormControl>
                 <FormField

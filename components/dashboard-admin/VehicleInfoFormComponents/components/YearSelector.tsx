@@ -2,11 +2,8 @@ import {
   FormField,
   FormItem,
   FormMessage,
-  FormControl,
+  FormLabel,
 } from "@/components/ui/form";
-import { SelectItem } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
@@ -14,22 +11,15 @@ import {
 } from "lucide-react";
 import { FORM_CONFIG } from "@/constants";
 import { YearSelectorProps } from "../types/VehicleFormTypes";
-import { FormFieldWrapper } from "./shared/FormFieldWrapper";
-import { SelectWithManual } from "./shared/SelectWithManual";
-import { ManualInputModal } from "./shared/ManualInputModal";
+import { EditableSelect, EditableSelectOption } from "./shared/EditableSelect";
 
 /**
- * Year selector component with conditional logic for manual brands
- * Handles year selection from API or manual entry based on brand type
+ * Year selector component with editable select
+ * Allows typing directly or selecting from available options
  */
 export function YearSelector({
   form,
-  manualState,
-  setManualState,
-  forceUpdateAno,
-  setForceUpdateAno,
   isMarcaManual,
-  localAno,
   setLocalAno,
   autocosmosData,
 }: YearSelectorProps) {
@@ -42,426 +32,138 @@ export function YearSelector({
     fetchYears,
   } = autocosmosData;
 
-  const selectedBrand =
-    form.getValues("marca");
-  const selectedModel =
-    form.getValues("modelo");
+  const selectedBrand = form.getValues("marca");
+  const selectedModel = form.getValues("modelo");
+  const isDisabled = !selectedBrand;
 
-  const handleManualSubmit = (
-    value: string,
-  ) => {
-    const cleanValue = value.trim();
-    
-    // Verificar que no esté vacío y no sea solo ceros
-    if (!cleanValue || cleanValue === "0" || cleanValue === "00" || cleanValue === "000") {
-      return;
-    }
-    
-    const yearValue = parseInt(cleanValue, 10);
-    
-    // Validación más estricta
-    if (
-      !isNaN(yearValue) &&
-      yearValue > 0 &&
-      yearValue >= FORM_CONFIG.minYear &&
-      yearValue <= FORM_CONFIG.maxYear &&
-      yearValue.toString() === cleanValue // Asegurar que no hay caracteres extra
-    ) {
-      form.setValue("ano", yearValue);
-      setManualState((prev) => ({
-        ...prev,
-        manualYear: "",
-        showManualYear: false,
-      }));
-      setForceUpdateAno(
-        (prev) => prev + 1,
-      );
+  const handleRefetch = () => {
+    if (selectedBrand && selectedModel && selectedBrand.trim() && selectedModel.trim()) {
+      fetchYears(selectedBrand, selectedModel, true); // Force refetch
+    } else {
+      retryFetchYears();
     }
   };
 
-  const handleSelectChange = (
-    value: string,
-  ) => {
-    // Handle refetch action
-    if (value === "__refetch_years__") {
-      const currentBrand =
-        form.getValues("marca");
-      const currentModel =
-        form.getValues("modelo");
-      if (
-        currentBrand &&
-        currentModel &&
-        currentBrand.trim() &&
-        currentModel.trim()
-      ) {
-        fetchYears(
-          currentBrand,
-          currentModel,
-        );
-      } else {
-        retryFetchYears();
-      }
-      return;
-    }
-
-    // Validate and set year value
-    if (value !== "manual-brand-message" && value !== "") {
+  const handleChange = (value: string) => {
+    if (value === "") {
+      form.setValue("ano", 0);
+      setLocalAno("");
+    } else {
       const yearValue = parseInt(value, 10);
       if (!isNaN(yearValue) && yearValue >= FORM_CONFIG.minYear && yearValue <= FORM_CONFIG.maxYear) {
         form.setValue("ano", yearValue);
+        setLocalAno(value);
       }
     }
   };
 
-  const handleManualOpen = () => {
-    setManualState((prev) => ({
-      ...prev,
-      showManualYear: true,
-    }));
-  };
-
-  const handleManualClose = () => {
-    setManualState((prev) => ({
-      ...prev,
-      showManualYear: false,
-      manualYear: "",
-    }));
-  };
-
-  const handleManualChange = (
-    value: string,
-  ) => {
-    setManualState((prev) => ({
-      ...prev,
-      manualYear: value,
-    }));
+  const handleSelectOption = (value: string) => {
+    if (value !== "manual-brand-message") {
+      const yearValue = parseInt(value, 10);
+      if (!isNaN(yearValue) && yearValue >= FORM_CONFIG.minYear && yearValue <= FORM_CONFIG.maxYear) {
+        form.setValue("ano", yearValue);
+        setLocalAno(value);
+      }
+    }
   };
 
   const getPlaceholder = () => {
-    if (isMarcaManual) {
-      return "Usar botón Manual para agregar año";
-    }
-    if (yearsError) {
-      return "Error al cargar años";
-    }
-    if (hasYears) {
-      return "Seleccionar año";
-    }
-    return "No hay años disponibles";
+    if (isDisabled) return "Selecciona marca y modelo primero";
+    if (!selectedModel) return "Selecciona un modelo primero";
+    if (isMarcaManual) return "Escribir año...";
+    if (yearsError) return "Error al cargar - escribir año...";
+    return "Escribir o seleccionar año...";
   };
 
-  const shouldShowSelect = Boolean(
-    selectedBrand &&
-      (selectedModel || isMarcaManual),
-  );
-  const isDisabled = !selectedBrand;
+  const getRefetchText = () => {
+    if (yearsError) return "🔄 Reintentar cargar años";
+    if (hasYears && years.length > 0) return "🔄 Buscar nuevos años";
+    return "🔄 Buscar años para este modelo";
+  };
 
-  if (!shouldShowSelect) {
-    return (
-      <FormField
-        control={form.control}
-        name="ano"
-        render={() => (
-          <FormItem>
-            <FormFieldWrapper
-              label="Año"
-              required
-              onManualClick={
-                handleManualOpen
-              }
-              isManualDisabled={
-                isDisabled
-              }
-              manualButtonTitle={
-                isDisabled
-                  ? "Selecciona una marca primero"
-                  : "Agregar año manualmente"
-              }
-            >
-              <FormControl>
-                <div className="flex items-center justify-center h-10 px-3 py-2 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-600 rounded-md text-gray-500 dark:text-zinc-400 text-sm">
-                  {selectedBrand
-                    ? "Selecciona un modelo primero"
-                    : "Selecciona marca y modelo primero"}
-                </div>
-              </FormControl>
-            </FormFieldWrapper>
-            <FormMessage className="text-red-500 dark:text-red-400" />
-          </FormItem>
-        )}
-      />
-    );
-  }
+  const currentValue = form.getValues("ano");
+  const displayValue = currentValue && !isNaN(currentValue) && currentValue > 0 ? currentValue.toString() : "";
 
   return (
     <FormField
       control={form.control}
       name="ano"
-      render={({ field }) => (
+      render={() => (
         <FormItem>
-          <FormFieldWrapper
-            label="Año"
-            required
-            onManualClick={
-              handleManualOpen
-            }
-            isManualDisabled={
-              isDisabled
-            }
-            manualButtonTitle={
-              isDisabled
-                ? "Selecciona una marca primero"
-                : "Agregar año manualmente"
-            }
-          >
-            <SelectWithManual
-              forceUpdateKey={`ano-select-${forceUpdateAno}`}
-              onValueChange={
-                handleSelectChange
-              }
-              value={
-                field.value && !isNaN(field.value) && field.value > 0 
-                  ? field.value.toString() 
-                  : ""
-              }
-              disabled={
-                yearsLoading ||
-                isMarcaManual
-              }
+          <FormLabel className="text-gray-700 dark:text-zinc-300">
+            Año *
+          </FormLabel>
+          
+          {isDisabled ? (
+            <div className="flex items-center justify-center h-10 px-3 py-2 bg-gray-50 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-600 rounded-md text-gray-500 dark:text-zinc-400 text-sm">
+              {selectedBrand ? "Selecciona un modelo primero" : "Selecciona marca y modelo primero"}
+            </div>
+          ) : (
+            <EditableSelect
+              value={displayValue}
+              onChange={handleChange}
+              onRefetch={selectedModel ? handleRefetch : undefined}
+              placeholder={getPlaceholder()}
               loading={yearsLoading}
               loadingText="Cargando años..."
-              placeholder={getPlaceholder()}
+              refetchText={getRefetchText()}
             >
-              {/* Show manual value if exists and not in years list */}
-              {field.value &&
-                !isNaN(field.value) &&
-                field.value > 0 &&
-                hasYears &&
-                years.length > 0 &&
-                !years.some(
-                  (year) =>
-                    year.year ===
-                    field.value,
-                ) && (
-                  <>
-                    <SelectItem
-                      value={field.value.toString()}
-                      className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700 bg-blue-50 dark:bg-blue-900/20"
-                    >
-                      {field.value}{" "}
-                      (Manual)
-                    </SelectItem>
-                    <Separator className="my-2" />
-                  </>
-                )}
+              {/* Show current manual value if it exists and is not in the years list */}
+              {displayValue && hasYears && years.length > 0 && !years.some(year => year.year.toString() === displayValue) && (
+                <EditableSelectOption
+                  value={displayValue}
+                  onSelect={handleSelectOption}
+                  className="bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100"
+                >
+                  {displayValue} (Manual)
+                </EditableSelectOption>
+              )}
 
-              {/* Show manual value when no years loaded */}
-              {field.value &&
-                !isNaN(field.value) &&
-                field.value > 0 &&
-                (!hasYears ||
-                  years.length === 0) &&
-                !yearsLoading && (
-                  <>
-                    <SelectItem
-                      value={field.value.toString()}
-                      className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700 bg-blue-50 dark:bg-blue-900/20"
-                    >
-                      {field.value}{" "}
-                      (Manual)
-                    </SelectItem>
-                    <Separator className="my-2" />
-                  </>
-                )}
+              {/* Show years from API */}
+              {hasYears && years.length > 0 && !isMarcaManual && years
+                .filter(year => year.year && !isNaN(year.year) && year.year > 0)
+                .map((year, index) => (
+                  <EditableSelectOption
+                    key={`${year.brandSlug}-${year.modelSlug}-${year.year}-${index}`}
+                    value={year.year.toString()}
+                    onSelect={handleSelectOption}
+                  >
+                    {year.getDisplayText()}
+                  </EditableSelectOption>
+                ))}
 
-              {isMarcaManual ? (
-                <SelectItem
+              {/* Show manual brand message */}
+              {isMarcaManual && (
+                <EditableSelectOption
                   value="manual-brand-message"
-                  disabled
-                  className="text-gray-500 dark:text-zinc-400"
+                  onSelect={() => {}} // No action for disabled item
+                  className="text-gray-500 dark:text-zinc-400 cursor-not-allowed"
                 >
-                  Marca manual - usa el
-                  botón
-                  &quot;Manual&quot;
-                  para agregar año
-                </SelectItem>
-              ) : hasYears &&
-                years.length > 0 ? (
-                <>
-                  {years.map(
-                    (year, index) => {
-                      // Validar que el año sea válido antes de renderizar
-                      if (!year.year || isNaN(year.year) || year.year <= 0) {
-                        return null;
-                      }
-                      
-                      return (
-                        <SelectItem
-                          key={`${year.brandSlug}-${year.modelSlug}-${year.year}-${index}`}
-                          value={year.year.toString()}
-                          className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700"
-                        >
-                          {year.getDisplayText()}
-                        </SelectItem>
-                      );
-                    },
-                  ).filter(Boolean)}
+                  Marca manual - escribir año arriba
+                </EditableSelectOption>
+              )}
+            </EditableSelect>
+          )}
 
-                  {/* Refetch button */}
-                  <Separator className="my-1" />
-                  <SelectItem
-                    value="__refetch_years__"
-                    className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border-t bg-gray-50 dark:bg-zinc-800"
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <RefreshCw className="h-4 w-4" />
-                      <span>
-                        🔄 Buscar nuevos
-                        años
-                      </span>
-                    </div>
-                  </SelectItem>
-                </>
-              ) : !yearsLoading ? (
-                <SelectItem
-                  value="__refetch_years__"
-                  className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-gray-50 dark:bg-zinc-800"
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <RefreshCw className="h-4 w-4" />
-                    <span>
-                      {yearsError
-                        ? "🔄 Reintentar cargar años"
-                        : "🔄 Buscar años para este modelo"}
-                    </span>
-                  </div>
-                </SelectItem>
-              ) : null}
-            </SelectWithManual>
-
-            {/* Show informative message when brand is manual */}
-            {/*{isMarcaManual && (
-              <div className="flex items-center gap-2 mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>
-                    Marca manual seleccionada. Usa el botón &quot;Manual&quot; para
-                    agregar el año.
-                  </span>
-                </div>
+          {/* Show error message */}
+          {!isMarcaManual && yearsError && (
+            <div className="flex items-center justify-between mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+              <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                <AlertCircle className="h-4 w-4" />
+                <span>Error al cargar años</span>
               </div>
-            )}*/}
-
-            {/* Show error and retry only if brand is not manual */}
-            {!isMarcaManual &&
-              yearsError && (
-                <div className="flex items-center justify-between mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
-                  <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>
-                      Error al cargar
-                      años
-                    </span>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={
-                      retryFetchYears
-                    }
-                    className="h-7 px-2 text-xs"
-                  >
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                    Reintentar
-                  </Button>
-                </div>
-              )}
-
-            {/* Fallback input if error and brand is not manual */}
-            {!isMarcaManual &&
-              yearsError && (
-                <div className="mt-2">
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={
-                        FORM_CONFIG.minYear
-                      }
-                      max={
-                        FORM_CONFIG.maxYear
-                      }
-                      placeholder="Escribir año manualmente"
-                      className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
-                      value={localAno}
-                      onChange={(e) => {
-                        const inputValue = e.target.value;
-                        // Solo permitir números y evitar valores como 00
-                        if (inputValue === "" || (/^\d{1,4}$/.test(inputValue) && parseInt(inputValue, 10) > 0)) {
-                          setLocalAno(inputValue);
-                        }
-                      }}
-                      onBlur={() => {
-                        if (
-                          localAno === "" ||
-                          localAno === "0" ||
-                          localAno === "00"
-                        ) {
-                          field.onChange(
-                            undefined,
-                          );
-                          setLocalAno("");
-                        } else {
-                          const numValue =
-                            parseInt(
-                              localAno,
-                              10
-                            );
-                          if (
-                            !isNaN(numValue) &&
-                            numValue >= FORM_CONFIG.minYear &&
-                            numValue <= FORM_CONFIG.maxYear
-                          ) {
-                            field.onChange(numValue);
-                          } else {
-                            field.onChange(undefined);
-                            setLocalAno("");
-                          }
-                        }
-                      }}
-                    />
-                  </FormControl>
-                </div>
-              )}
-
-            {/* Manual input modal */}
-            <ManualInputModal
-              isOpen={
-                manualState.showManualYear
-              }
-              onClose={
-                handleManualClose
-              }
-              onSubmit={
-                handleManualSubmit
-              }
-              title="Agregar año manualmente"
-              placeholder="Ej: 2020, 2018, 2015..."
-              inputType="number"
-              minValue={
-                FORM_CONFIG.minYear
-              }
-              maxValue={
-                FORM_CONFIG.maxYear
-              }
-              value={
-                manualState.manualYear
-              }
-              onChange={
-                handleManualChange
-              }
-            />
-          </FormFieldWrapper>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={retryFetchYears}
+                className="h-7 px-2 text-xs"
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Reintentar
+              </Button>
+            </div>
+          )}
 
           <FormMessage className="text-red-500 dark:text-red-400" />
         </FormItem>

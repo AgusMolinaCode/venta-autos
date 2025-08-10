@@ -38,8 +38,8 @@ export const VehicleDataSchema = VehicleFormInputSchema.extend({
 
 export const PriceSchema = z.object({
   precio: z.number().min(1, {
-    message: "El precio es obligatorio y debe ser mayor a 0.",
-  }),
+    message: "El precio debe ser mayor a 0.",
+  }).optional(),
   moneda: z.enum(["ARS", "USD"]).default("ARS").optional(),
 });
 

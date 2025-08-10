@@ -24,10 +24,7 @@ import { VehicleFormFields } from "./components/VehicleFormFields";
  * Refactored vehicle information form component
  * Now composed of smaller, reusable components for better maintainability
  */
-export function VehicleInfoForm({
-  form,
-  onSubmit,
-}: VehicleInfoFormProps) {
+export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
   // Custom hooks for state and data management
   const {
     formState,
@@ -35,152 +32,105 @@ export function VehicleInfoForm({
     setLocalKilometraje,
     setManualState,
     setForceUpdateMarca,
-    setForceUpdateModelo,
-    setForceUpdateAno,
     setIsMarcaManual,
     resetAllManualStates,
   } = useVehicleFormState(form);
 
   // Shared autocosmos data hook for all child components
-  const autocosmosData =
-    useAutocosmosData();
+  const autocosmosData = useAutocosmosData();
 
   useEffect(() => {
-    const isEditMode =
-      !!form.formState.defaultValues
-        ?.marca;
+    const isEditMode = !!form.formState.defaultValues?.marca;
 
     // Si es modo edición, establece el estado local inicial y sal.
     if (isEditMode) {
-      setLocalAno(
-        form
-          .getValues("ano")
-          ?.toString() ?? "",
-      );
-      setLocalKilometraje(
-        form
-          .getValues("kilometraje")
-          ?.toString() ?? "",
-      );
+      setLocalAno(form.getValues("ano")?.toString() ?? "");
+      setLocalKilometraje(form.getValues("kilometraje")?.toString() ?? "");
       return;
     }
 
-    const subscription = form.watch(
-      (value, { name }) => {
-        // Update local ano when form ano changes
-        if (name === "ano" || !name) {
-          setLocalAno(
-            value.ano?.toString() ?? "",
-          );
-        }
+    const subscription = form.watch((value, { name }) => {
+      // Update local ano when form ano changes
+      if (name === "ano" || !name) {
+        setLocalAno(value.ano?.toString() ?? "");
+      }
 
-        // Update local kilometraje when form kilometraje changes
-        if (
-          name === "kilometraje" ||
-          !name
-        ) {
-          setLocalKilometraje(
-            value.kilometraje?.toString() ??
-              "",
-          );
-        }
+      // Update local kilometraje when form kilometraje changes
+      if (name === "kilometraje" || !name) {
+        setLocalKilometraje(value.kilometraje?.toString() ?? "");
+      }
 
-        // Handle brand changes
-        if (name === "marca" || !name) {
-          const selectedBrand =
-            value.marca;
+      // Handle brand changes
+      if (name === "marca" || !name) {
+        const selectedBrand = value.marca;
 
-          if (
-            selectedBrand &&
-            selectedBrand.trim() !== ""
-          ) {
-            // Detect if brand is manual
-            const marcaEsManual =
-              autocosmosData.isManualBrand(
-                selectedBrand,
-              );
-            setIsMarcaManual(
-              marcaEsManual,
-            );
+        if (selectedBrand && selectedBrand.trim() !== "") {
+          // Detect if brand is manual
+          const marcaEsManual = autocosmosData.isManualBrand(selectedBrand);
+          setIsMarcaManual(marcaEsManual);
 
-            // Reset model and year fields
-            form.setValue("modelo", "");
-            form.setValue("ano", 0); // Reset to 0 instead of null
-            resetAllManualStates();
+          // Reset model and year fields
+          form.setValue("modelo", "");
+          form.setValue("ano", 0); // Reset to 0 instead of null
+          resetAllManualStates();
 
-            // Only fetch models if brand is not manual
-            if (!marcaEsManual) {
-              autocosmosData.fetchModels(
-                selectedBrand,
-              );
-              autocosmosData.resetYears();
-            } else {
-              // If brand is manual, clear models and years
-              autocosmosData.resetModels();
-              autocosmosData.resetYears();
-            }
+          // Only fetch models if brand is not manual
+          if (!marcaEsManual) {
+            autocosmosData.fetchModels(selectedBrand);
+            autocosmosData.resetYears();
           } else {
-            // No brand selected
-            setIsMarcaManual(false);
+            // If brand is manual, clear models and years
             autocosmosData.resetModels();
             autocosmosData.resetYears();
-            resetAllManualStates();
           }
+        } else {
+          // No brand selected
+          setIsMarcaManual(false);
+          autocosmosData.resetModels();
+          autocosmosData.resetYears();
+          resetAllManualStates();
         }
+      }
 
-        // Handle model changes
+      // Handle model changes
+      if (name === "modelo" || !name) {
+        const selectedBrand = value.marca;
+        const selectedModel = value.modelo;
+
         if (
-          name === "modelo" ||
-          !name
+          selectedBrand &&
+          selectedBrand.trim() !== "" &&
+          selectedModel &&
+          selectedModel.trim() !== ""
         ) {
-          const selectedBrand =
-            value.marca;
-          const selectedModel =
-            value.modelo;
+          // Reset year field
+          form.setValue("ano", 0); // Reset to 0 instead of null
+          setManualState((prev) => ({
+            ...prev,
+            showManualYear: false,
+            manualYear: "",
+          }));
 
-          if (
-            selectedBrand &&
-            selectedBrand.trim() !==
-              "" &&
-            selectedModel &&
-            selectedModel.trim() !== ""
-          ) {
-            // Reset year field
-            form.setValue("ano", 0); // Reset to 0 instead of null
-            setManualState((prev) => ({
-              ...prev,
-              showManualYear: false,
-              manualYear: "",
-            }));
-
-            // Only fetch years if brand is not manual
-            const marcaEsManual =
-              autocosmosData.isManualBrand(
-                selectedBrand,
-              );
-            if (!marcaEsManual) {
-              autocosmosData.fetchYears(
-                selectedBrand,
-                selectedModel,
-              );
-            } else {
-              // If brand is manual, no scraping for years
-              autocosmosData.resetYears();
-            }
+          // Only fetch years if brand is not manual
+          const marcaEsManual = autocosmosData.isManualBrand(selectedBrand);
+          if (!marcaEsManual) {
+            autocosmosData.fetchYears(selectedBrand, selectedModel);
           } else {
+            // If brand is manual, no scraping for years
             autocosmosData.resetYears();
-            setManualState((prev) => ({
-              ...prev,
-              showManualYear: false,
-              manualYear: "",
-            }));
           }
+        } else {
+          autocosmosData.resetYears();
+          setManualState((prev) => ({
+            ...prev,
+            showManualYear: false,
+            manualYear: "",
+          }));
         }
-      },
-    );
+      }
+    });
 
-    return () =>
-      subscription.unsubscribe();
+    return () => subscription.unsubscribe();
   }, [
     form,
     autocosmosData.fetchModels,
@@ -197,10 +147,7 @@ export function VehicleInfoForm({
   ]);
 
   // Brand change handler
-  const handleBrandChange = (
-    brand: string,
-    isManual: boolean,
-  ) => {
+  const handleBrandChange = (brand: string, isManual: boolean) => {
     setIsMarcaManual(isManual);
   };
 
@@ -222,12 +169,7 @@ export function VehicleInfoForm({
       </div>
 
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(
-            onSubmit,
-          )}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Vehicle Type Switch */}
           <div className="flex justify-start">
             <FormField
@@ -239,18 +181,9 @@ export function VehicleInfoForm({
                     Autos/Camionetas
                   </span>
                   <Switch
-                    checked={
-                      field.value ===
-                      "motos"
-                    }
-                    onCheckedChange={(
-                      checked,
-                    ) => {
-                      field.onChange(
-                        checked
-                          ? "motos"
-                          : "autos/camionetas",
-                      );
+                    checked={field.value === "motos"}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked ? "motos" : "autos/camionetas");
                     }}
                   />
                   <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">
@@ -265,38 +198,16 @@ export function VehicleInfoForm({
             <BrandSelector
               form={form}
               manualState={formState}
-              setManualState={
-                setManualState
-              }
-              forceUpdateMarca={
-                formState.forceUpdateMarca
-              }
-              setForceUpdateMarca={
-                setForceUpdateMarca
-              }
-              onBrandChange={
-                handleBrandChange
-              }
+              setManualState={setManualState}
+              forceUpdateMarca={formState.forceUpdateMarca}
+              setForceUpdateMarca={setForceUpdateMarca}
+              onBrandChange={handleBrandChange}
             />
 
             <ModelSelector
               form={form}
-              manualState={formState}
-              setManualState={
-                setManualState
-              }
-              forceUpdateModelo={
-                formState.forceUpdateModelo
-              }
-              setForceUpdateModelo={
-                setForceUpdateModelo
-              }
-              isMarcaManual={
-                formState.isMarcaManual
-              }
-              autocosmosData={
-                autocosmosData
-              }
+              isMarcaManual={formState.isMarcaManual}
+              autocosmosData={autocosmosData}
               // onModelChange={handleModelChange}
             />
           </div>
@@ -305,86 +216,81 @@ export function VehicleInfoForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <YearSelector
               form={form}
-              manualState={formState}
-              setManualState={
-                setManualState
-              }
-              forceUpdateAno={
-                formState.forceUpdateAno
-              }
-              setForceUpdateAno={
-                setForceUpdateAno
-              }
-              isMarcaManual={
-                formState.isMarcaManual
-              }
-              localAno={
-                formState.localAno
-              }
+              isMarcaManual={formState.isMarcaManual}
               setLocalAno={setLocalAno}
-              autocosmosData={
-                autocosmosData
-              }
+              autocosmosData={autocosmosData}
             />
 
             {/* Kilometraje field */}
             <FormField
               control={form.control}
               name="kilometraje"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-zinc-300">
-                    Kilometraje
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="Ej: 50000, 100000..."
-                      className="bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white"
-                      value={
-                        formState.localKilometraje
-                      }
-                      onChange={(e) =>
-                        setLocalKilometraje(
-                          e.target
-                            .value,
-                        )
-                      }
-                      onBlur={() => {
-                        if (
-                          formState.localKilometraje ===
-                          ""
-                        ) {
-                          field.onChange(
-                            undefined,
-                          );
-                        } else {
-                          const numValue =
-                            parseInt(
-                              formState.localKilometraje,
-                            );
-                          field.onChange(
-                            isNaN(
-                              numValue,
-                            )
-                              ? undefined
-                              : numValue,
-                          );
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-500 dark:text-red-400" />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const isEditMode = !!form.formState.defaultValues?.marca;
+                const currentKm = form.formState.defaultValues?.kilometraje;
+
+                return (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-zinc-300">
+                      Kilometraje
+                    </FormLabel>
+                    <div className="flex items-center gap-3">
+                      {/* Show current kilometraje in edit mode */}
+                      {isEditMode && currentKm && (
+                        <div className=" p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                          <div className="text-sm text-blue-800 dark:text-blue-200 font-medium flex items-center">
+                            Actual:{" "}
+                            {currentKm.toLocaleString("es-AR")} km
+                          </div>
+                        </div>
+                      )}
+
+                      <FormControl>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder={
+                            isEditMode
+                              ? "Colocar nuevo kilometraje"
+                              : "Ej: 50000, 100000..."
+                          }
+                          className={'bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white' + (isEditMode ? " w-2/4" : "w-full")}
+                          // value={
+                          //   field.value?.toString() ?? ""
+                          // }
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            // Allow empty string for complete deletion
+                            if (value === "") {
+                              field.onChange(undefined);
+                              setLocalKilometraje("");
+                              return;
+                            }
+
+                            // Only allow digits
+                            if (!/^\d+$/.test(value)) {
+                              return; // Don't update if invalid characters
+                            }
+
+                            const numValue = parseInt(value, 10);
+                            if (!isNaN(numValue) && numValue >= 0) {
+                              field.onChange(numValue);
+                              setLocalKilometraje(value);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="text-red-500 dark:text-red-400" />
+                  </FormItem>
+                );
+              }}
             />
           </div>
 
           {/* Additional form fields */}
-          <VehicleFormFields
-            form={form}
-          />
+          <VehicleFormFields form={form} />
         </form>
       </Form>
     </motion.div>

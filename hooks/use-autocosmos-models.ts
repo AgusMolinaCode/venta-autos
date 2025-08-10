@@ -16,7 +16,7 @@ interface UseAutocosmosModelsState {
 }
 
 interface UseAutocosmosModelsReturn extends UseAutocosmosModelsState {
-  fetchModels: (brand: string) => Promise<void>;
+  fetchModels: (brand: string, force?: boolean) => Promise<void>;
   resetModels: () => void;
   retryFetch: () => void;
   clearCache: (brand?: string) => void;
@@ -48,27 +48,32 @@ export function useAutocosmosModels(): UseAutocosmosModelsReturn {
     setLastBrand('');
   }, []);
 
-  const fetchModels = useCallback(async (brand: string) => {
+  const fetchModels = useCallback(async (brand: string, force: boolean = false) => {
     if (!brand || brand.trim() === '') {
       resetModels();
       return;
     }
 
-    // Evitar fetch repetido para la misma marca
-    if (lastBrand === brand && state.models.length > 0) {
+    // Evitar fetch repetido para la misma marca (a menos que sea forzado)
+    if (!force && lastBrand === brand && state.models.length > 0) {
       return;
     }
 
     const cacheKey = `models_${brand.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
 
-    // 1. Intentar cargar desde cache primero
-    const cachedModels = vehicleModelsCache.get<Array<{
+    // Si es forzado, limpiar cache primero
+    if (force) {
+      vehicleModelsCache.remove(cacheKey);
+    }
+
+    // 1. Intentar cargar desde cache primero (solo si no es forzado)
+    const cachedModels = !force ? vehicleModelsCache.get<Array<{
       name: string;
       slug: string;
       brandSlug: string;
       displayName?: string;
       isActive?: boolean;
-    }>>(cacheKey);
+    }>>(cacheKey) : null;
 
     if (cachedModels) {
       try {
@@ -164,7 +169,7 @@ export function useAutocosmosModels(): UseAutocosmosModelsReturn {
 
   const retryFetch = useCallback(() => {
     if (lastBrand) {
-      fetchModels(lastBrand);
+      fetchModels(lastBrand, true); // Force refetch
     }
   }, [lastBrand, fetchModels]);
 

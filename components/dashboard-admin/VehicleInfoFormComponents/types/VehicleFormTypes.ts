@@ -120,10 +120,6 @@ export interface BrandSelectorProps {
  */
 export interface ModelSelectorProps {
   form: UseFormReturn<VehicleFormData>;
-  manualState: ManualInputState;
-  setManualState: ManualStateSetter;
-  forceUpdateModelo: number;
-  setForceUpdateModelo: React.Dispatch<React.SetStateAction<number>>;
   isMarcaManual: boolean;
   autocosmosData: UseAutocosmosDataReturn;
   onModelChange?: (model: string) => void;
@@ -134,12 +130,7 @@ export interface ModelSelectorProps {
  */
 export interface YearSelectorProps {
   form: UseFormReturn<VehicleFormData>;
-  manualState: ManualInputState;
-  setManualState: ManualStateSetter;
-  forceUpdateAno: number;
-  setForceUpdateAno: React.Dispatch<React.SetStateAction<number>>;
   isMarcaManual: boolean;
-  localAno: string;
   setLocalAno: React.Dispatch<React.SetStateAction<string>>;
   autocosmosData: UseAutocosmosDataReturn;
 }
@@ -179,7 +170,7 @@ export interface UseAutocosmosDataReturn {
   modelsLoading: boolean;
   modelsError: string | null;
   hasModels: boolean;
-  fetchModels: (brand: string) => Promise<void>;
+  fetchModels: (brand: string, force?: boolean) => Promise<void>;
   resetModels: () => void;
   retryFetchModels: () => void;
   
@@ -193,7 +184,7 @@ export interface UseAutocosmosDataReturn {
   yearsLoading: boolean;
   yearsError: string | null;
   hasYears: boolean;
-  fetchYears: (brand: string, model: string) => Promise<void>;
+  fetchYears: (brand: string, model: string, force?: boolean) => Promise<void>;
   resetYears: () => void;
   retryFetchYears: () => void;
   

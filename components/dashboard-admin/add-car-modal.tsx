@@ -163,6 +163,11 @@ function AddCarModal({
                 vehicleData={
                   vehicleData
                 }
+                isEditMode={!!editingVehicle}
+                currentPrice={editingVehicle ? {
+                  precio: editingVehicle.precio,
+                  moneda: editingVehicle.moneda
+                } : null}
               />
             )}
 

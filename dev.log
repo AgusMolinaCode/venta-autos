@@ -1,0 +1,19 @@
+
+> venta-autos@0.1.0 dev
+> TURBOPACK=1 next dev --turbopack
+
+ ⚠ Warning: Found multiple lockfiles. Selecting /Users/uauario/pnpm-lock.yaml.
+   Consider removing the lockfiles at:
+   * /Users/uauario/Desktop/Programacion/venta-autos/pnpm-lock.yaml
+
+ ⚠ Port 3000 is in use by process 1796
+82547, using available port 3002 instead.
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Local:        http://localhost:3002
+   - Network:      http://192.168.1.46:3002
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Compiled middleware in 109ms
+ ✓ Ready in 867ms
+[?25h
