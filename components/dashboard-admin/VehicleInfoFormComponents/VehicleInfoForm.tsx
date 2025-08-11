@@ -254,7 +254,7 @@ export function VehicleInfoForm({ form, onSubmit }: VehicleInfoFormProps) {
                               ? "Colocar nuevo kilometraje"
                               : "Ej: 50000, 100000..."
                           }
-                          className={'bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white' + (isEditMode ? " w-2/4" : "w-full")}
+                          className={'bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600' + (isEditMode ? " w-2/4" : "w-full")}
                           // value={
                           //   field.value?.toString() ?? ""
                           // }

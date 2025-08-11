@@ -1,10 +1,11 @@
-import { DolarAPIResponse } from '@/types/dolar';
+import { Dolar } from '@/utils/interfaces';
 
-const DOLAR_API_URL = 'https://criptoya.com/api/dolar';
+// Use our internal API route to avoid CORS issues
+const DOLAR_API_URL = '/api/dolar';
 
 export class DolarService {
   private static instance: DolarService;
-  private cache: { data: DolarAPIResponse; timestamp: number } | null = null;
+  private cache: { data: Dolar; timestamp: number } | null = null;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   private constructor() {}
@@ -16,7 +17,7 @@ export class DolarService {
     return DolarService.instance;
   }
 
-  private async fetchDolarRates(): Promise<DolarAPIResponse> {
+  private async fetchDolarRates(): Promise<Dolar> {
     try {
       const response = await fetch(DOLAR_API_URL, {
         method: 'GET',
@@ -30,7 +31,7 @@ export class DolarService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: DolarAPIResponse = await response.json();
+      const data: Dolar = await response.json();
       return data;
     } catch (error) {
       console.error('[DOLAR_SERVICE] Error fetching dolar rates:', error);
@@ -38,7 +39,7 @@ export class DolarService {
     }
   }
 
-  public async getDolarRates(): Promise<DolarAPIResponse> {
+  public async getDolarRates(): Promise<Dolar> {
     const now = Date.now();
 
     // Check if we have valid cached data

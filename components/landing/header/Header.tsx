@@ -7,7 +7,10 @@ const Header: React.FC = () => {
   return (
     <header className="bg-zinc-100 dark:bg-zinc-800 h-[60px]">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-blue-300">
+        <Link
+          href="/"
+          className="text-2xl font-bold text-zinc-800 dark:text-zinc-200"
+        >
           Bs.As Cars
         </Link>
 
