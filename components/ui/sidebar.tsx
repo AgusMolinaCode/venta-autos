@@ -118,7 +118,7 @@ export const SidebarBody = (
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar
+      <MobileSidebar 
         {...(props as React.ComponentProps<"div">)}
       />
     </>
@@ -144,9 +144,9 @@ export const DesktopSidebar = ({
         animate={{
           width: animate
             ? open
-              ? "300px"
+              ? "200px"
               : "60px"
-            : "300px",
+            : "200px",
         }}
         onMouseEnter={() =>
           setOpen(true)
