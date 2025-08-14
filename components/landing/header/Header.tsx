@@ -11,7 +11,7 @@ const Header: React.FC = () => {
           href="/"
           className="text-2xl font-bold text-zinc-800 dark:text-zinc-200"
         >
-          Bs.As Carss
+          Bs.As Cars
         </Link>
 
         <div className="flex items-center space-x-3">
