@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { DashboardNavigationProvider } from "@/contexts/dashboard-navigation-context";
 import { Navbar } from "@/components/ui/Navbar";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -45,13 +46,15 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <div className="min-h-screen bg-background">
-                <Header />
+              <DashboardNavigationProvider>
+                <div className="min-h-screen bg-background">
+                  <Header />
 
-                {/* Main Content */}
-                <main className="flex-1">{children}</main>
-              </div>
-              <Toaster richColors />
+                  {/* Main Content */}
+                  <main className="flex-1">{children}</main>
+                </div>
+                <Toaster richColors />
+              </DashboardNavigationProvider>
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>

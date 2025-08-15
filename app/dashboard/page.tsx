@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useDashboardNavigation } from "@/contexts/dashboard-navigation-context";
 import {
   IconBrandTabler,
   IconUserBolt,
@@ -12,19 +13,27 @@ import StepForm from "@/components/dashboard-admin/main/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 
-function Page() {
+// Componente interno que usa el context
+function DashboardContent() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [activeView, setActiveView] = useState<"dashboard" | "vehicles">(
-    "dashboard"
-  );
+  const { activeView, setActiveView } = useDashboardNavigation();
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  // Handle query parameter for initial view
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'vehicles') {
+      setActiveView('vehicles');
+    }
+  }, [searchParams, setActiveView]);
 
   if (loading) {
     return (
@@ -123,7 +132,7 @@ const Dashboard = ({
 
   return (
     <div className="flex flex-1">
-      <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 md:p-10 dark:border-zinc-700 dark:bg-zinc-900">
+      <div className="flex h-full w-full flex-1 flex-col gap-2 md:rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 md:p-10 dark:border-zinc-700 dark:bg-zinc-900">
         {/* Header dinámico */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
@@ -152,5 +161,10 @@ const Dashboard = ({
     </div>
   );
 };
+
+// Componente principal - ya no necesita provider (está en layout)
+function Page() {
+  return <DashboardContent />;
+}
 
 export default Page;

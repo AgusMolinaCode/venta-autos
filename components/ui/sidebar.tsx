@@ -118,9 +118,9 @@ export const SidebarBody = (
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar 
+      {/* <MobileSidebar 
         {...(props as React.ComponentProps<"div">)}
-      />
+      /> */}
     </>
   );
 };
@@ -251,7 +251,7 @@ export const SidebarLink = ({
       href={link.href}
       onClick={handleClick}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-md transition-colors duration-200",
+        "flex items-center justify-start gap-2 group/sidebar py-2 px-2 md:rounded-md transition-colors duration-200",
         link.isActive
           ? "bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
           : "text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800",
