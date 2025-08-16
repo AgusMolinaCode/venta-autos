@@ -120,7 +120,7 @@ const MobileSidebarOverlay: React.FC<{
                   className="text-2xl font-bold text-zinc-800 dark:text-zinc-200"
                   onClick={() => setOpen(false)}
                 >
-                  Bs.As Car
+                  Bs.As Cars
                 </Link>
               </div>
 
