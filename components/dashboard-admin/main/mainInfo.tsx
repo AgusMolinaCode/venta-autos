@@ -23,7 +23,7 @@ import { CurrencyToggle } from "@/components/dashboard-admin/ui/currency-toggle"
 const MainInfo = () => {
   const { vehicles } = useVehicles();
   const { getVehicleStatus } = useVehicleStatusCache();
-  
+
   // Custom hooks for clean separation of concerns
   const {
     preferredCurrency,
@@ -45,11 +45,11 @@ const MainInfo = () => {
       <CurrencyToggle
         preferredCurrency={preferredCurrency}
         onCurrencyChange={setPreferredCurrency}
-        className="flex justify-end"
+        className="flex justify-start"
       />
 
       {/* Status Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-6">
         <MetricCard
           title="En Preparación"
           value={metrics.statusCounts.preparation}
@@ -81,11 +81,15 @@ const MainInfo = () => {
       </div>
 
       {/* Price Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 gap-1">
         <MetricCard
           title="Valor Total Inventario"
           value={formatCurrency(metrics.totalInventoryValue)}
-          subtitle={`Total de ${metrics.totalVehicles} vehículos • Tasa Dólar Blue: $${dollarRate.toLocaleString("es-AR")} ARS${rateLoading ? " (actualizando...)" : ""}`}
+          subtitle={`Total de ${
+            metrics.totalVehicles
+          } vehículos • Tasa Dólar Blue: $${dollarRate.toLocaleString(
+            "es-AR"
+          )} ARS${rateLoading ? " (actualizando...)" : ""}`}
           icon={Calculator}
           variant="purple"
         />
@@ -102,11 +106,20 @@ const MainInfo = () => {
           subtitle={`${metrics.statusCounts.sold} vehículos vendidos`}
           icon={HandCoins}
           variant="amber"
+          className="hidden lg:block"
         />
       </div>
+      <MetricCard
+        title="Ingresos por Ventas"
+        value={formatCurrency(metrics.soldVehiclesRevenue)}
+        subtitle={`${metrics.statusCounts.sold} vehículos vendidos`}
+        icon={HandCoins}
+        variant="amber"
+        className="block lg:hidden"
+      />
 
       {/* Additional Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <MetricCard
           title="Total Vehículos"
           value={metrics.totalVehicles}
@@ -135,8 +148,18 @@ const MainInfo = () => {
           subtitle="Diversidad en inventario"
           icon={Star}
           variant="green"
+          className="hidden lg:block"
         />
       </div>
+
+      <MetricCard
+          title="Marcas Listadas"
+          value={metrics.brandCount}
+          subtitle="Diversidad en inventario"
+          icon={Star}
+          variant="green"
+          className="hidden lg:block"
+        />
     </div>
   );
 };

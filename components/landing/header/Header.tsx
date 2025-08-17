@@ -196,7 +196,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarContent }) => {
             <Link
               href="/"
               className={`font-bold text-zinc-800 dark:text-zinc-200 ${
-                isDashboardRoute ? 'text-xl' : 'text-xl mx-auto'
+                isDashboardRoute ? 'text-xl' : 'text-xl'
               }`}
             >
               Bs.As Cars
