@@ -32,17 +32,8 @@ interface StepFormProps {
   disabled?: boolean;
 }
 
-const StepForm = ({
-  onClick,
-  disabled,
-}: StepFormProps) => {
-
-  const {
-    vehicles,
-    loading,
-    refetch,
-    deleteVehicle,
-  } = useVehicles();
+const StepForm = ({ onClick, disabled }: StepFormProps) => {
+  const { vehicles, loading, refetch, deleteVehicle } = useVehicles();
 
   const {
     isAddModalOpen,
@@ -69,18 +60,15 @@ const StepForm = ({
   });
 
   // Hook de filtrado por estado
-  const {
-    activeFilter,
-    setActiveFilter,
-    filteredVehicles,
-  } = useStatusFilter({ vehicles });
+  const { activeFilter, setActiveFilter, filteredVehicles } = useStatusFilter({
+    vehicles,
+  });
 
   // Hook de búsqueda de vehículos
   const {
     searchQuery,
     setSearchQuery,
-    filteredVehicles:
-      searchFilteredVehicles,
+    filteredVehicles: searchFilteredVehicles,
     isSearching,
     hasActiveSearch,
     clearSearch,
@@ -89,28 +77,25 @@ const StepForm = ({
   });
 
   // Definir columnas para el sorting
-  const columns: ColumnDef<VehiculoConFotos>[] =
-    [
-      {
-        accessorKey: "marca",
-        id: "marca",
-      },
-      {
-        accessorKey: "kilometraje",
-        id: "kilometraje",
-      },
-    ];
+  const columns: ColumnDef<VehiculoConFotos>[] = [
+    {
+      accessorKey: "marca",
+      id: "marca",
+    },
+    {
+      accessorKey: "kilometraje",
+      id: "kilometraje",
+    },
+  ];
 
   // Hook de sorting (aplicado a vehículos filtrados y buscados)
-  const { getSortedData, table } =
-    useSortableTable({
-      data: searchFilteredVehicles,
-      columns,
-    });
+  const { getSortedData, table } = useSortableTable({
+    data: searchFilteredVehicles,
+    columns,
+  });
 
   // Obtener datos ordenados, filtrados y buscados
-  const finalFilteredVehicles =
-    getSortedData();
+  const finalFilteredVehicles = getSortedData();
 
   if (loading) {
     return <LoadingStepForm />;
@@ -118,45 +103,33 @@ const StepForm = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-bold text-foreground">
-            Vehículos
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {
-              searchFilteredVehicles.length
-            }{" "}
-            de {vehicles.length}{" "}
-            vehículo
-            {vehicles.length !== 1
-              ? "s"
-              : ""}
-            {activeFilter !== "all" && (
-              <span className="ml-1 font-medium">
-                ({activeFilter})
-              </span>
-            )}
-          </p>
+      <div className="lg:flex items-center justify-between">
+        <div className="flex items-center gap-2 mg:gap-4">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">Vehículos</h2>
+            <p className="text-sm text-muted-foreground lg:mt-1">
+              {searchFilteredVehicles.length} de {vehicles.length} vehículo
+              {vehicles.length !== 1 ? "s" : ""}
+              {activeFilter !== "all" && (
+                <span className="ml-1 font-medium">({activeFilter})</span>
+              )}
+            </p>
+          </div>
           <Buscador
             vehicles={filteredVehicles}
             onSearch={() => {
               // La lógica de búsqueda se maneja internamente por el hook
             }}
             searchValue={searchQuery}
-            onSearchChange={
-              setSearchQuery
-            }
+            onSearchChange={setSearchQuery}
             placeholder="Buscar por marca, modelo o año..."
-            className="ml-4"
+            className="lg:ml-4"
           />
         </div>
         <div className="flex items-center gap-4">
           <StatusFilterButtons
             activeFilter={activeFilter}
-            onFilterChange={
-              setActiveFilter
-            }
+            onFilterChange={setActiveFilter}
           />
           <Button
             onClick={handleAddVehicle}
@@ -169,29 +142,25 @@ const StepForm = ({
         </div>
       </div>
 
-      {finalFilteredVehicles.length ===
-      0 ? (
+      {finalFilteredVehicles.length === 0 ? (
         <EmptyState
-          onAddVehicle={
-            handleAddVehicle
-          }
+          onAddVehicle={handleAddVehicle}
           title={
             hasActiveSearch
               ? `No se encontraron vehículos para "${searchQuery}"`
               : activeFilter !== "all"
-                ? `No hay vehículos con estado "${activeFilter}"`
-                : "No hay vehículos registrados"
+              ? `No hay vehículos con estado "${activeFilter}"`
+              : "No hay vehículos registrados"
           }
           description={
             hasActiveSearch
               ? "Intenta con otros términos de búsqueda como marca, modelo o año."
               : activeFilter !== "all"
-                ? "Cambia el filtro o agrega vehículos con este estado."
-                : "Comienza agregando tu primer vehículo al sistema. Podrás gestionar toda la información y fotos desde aquí."
+              ? "Cambia el filtro o agrega vehículos con este estado."
+              : "Comienza agregando tu primer vehículo al sistema. Podrás gestionar toda la información y fotos desde aquí."
           }
           buttonText={
-            hasActiveSearch ||
-            activeFilter !== "all"
+            hasActiveSearch || activeFilter !== "all"
               ? "Agregar vehículo"
               : "Agregar primer vehículo"
           }
@@ -201,72 +170,38 @@ const StepForm = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-20">
-                  Foto
-                </TableHead>
+                <TableHead className="w-20">Foto</TableHead>
                 <TableHead className="w-32">
-                  <SortableHeader
-                    column={
-                      table.getColumn(
-                        "marca",
-                      )!
-                    }
-                  >
+                  <SortableHeader column={table.getColumn("marca")!}>
                     Marca
                   </SortableHeader>
                 </TableHead>
-                <TableHead className="w-40">
-                  Modelo
-                </TableHead>
-                <TableHead className="w-32">
-                  Versión
-                </TableHead>
-                <TableHead className="w-20 text-center">
-                  Año
-                </TableHead>
+                <TableHead className="w-40">Modelo</TableHead>
+                <TableHead className="w-32">Versión</TableHead>
+                <TableHead className="w-20 text-center">Año</TableHead>
+                <TableHead className="w-32 text-right">Precio</TableHead>
                 <TableHead className="w-32 text-right">
-                  Precio
-                </TableHead>
-                <TableHead className="w-32 text-right">
-                  <SortableHeader
-                    column={
-                      table.getColumn(
-                        "kilometraje",
-                      )!
-                    }
-                  >
+                  <SortableHeader column={table.getColumn("kilometraje")!}>
                     Kilometraje
                   </SortableHeader>
                 </TableHead>
-                <TableHead className="w-24 text-center">
-                  Estado
-                </TableHead>
-                <TableHead className="w-24 text-right">
-                  Acciones
-                </TableHead>
+                <TableHead className="w-24 text-center">Estado</TableHead>
+                <TableHead className="w-24 text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {finalFilteredVehicles.map(
-                (vehicle) => (
-                  <VehicleTableRow
-                    key={vehicle.id}
-                    vehicle={vehicle}
-                    onEdit={
-                      handleEditVehicle
-                    }
-                    onDelete={
-                      handleDeleteVehicle
-                    }
-                    onViewDetails={
-                      handleViewDetails
-                    }
-                    onStatusChange={() => {
-                      // No hacer refetch, el cache ya maneja el estado
-                    }}
-                  />
-                ),
-              )}
+              {finalFilteredVehicles.map((vehicle) => (
+                <VehicleTableRow
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  onEdit={handleEditVehicle}
+                  onDelete={handleDeleteVehicle}
+                  onViewDetails={handleViewDetails}
+                  onStatusChange={() => {
+                    // No hacer refetch, el cache ya maneja el estado
+                  }}
+                />
+              ))}
             </TableBody>
           </Table>
         </div>
@@ -292,9 +227,7 @@ const StepForm = ({
           isOpen={true}
           onClose={closeEditModal}
           onSuccess={onEditSuccess}
-          editingVehicle={
-            editingVehicle
-          }
+          editingVehicle={editingVehicle}
         />
       )}
 
@@ -303,9 +236,7 @@ const StepForm = ({
         isOpen={deleteDialog.open}
         onClose={closeDeleteDialog}
         onConfirm={confirmDelete}
-        vehicleName={
-          deleteDialog.vehicleName
-        }
+        vehicleName={deleteDialog.vehicleName}
         isDeleting={isDeleting}
       />
     </div>

@@ -158,7 +158,7 @@ const MainInfo = () => {
           subtitle="Diversidad en inventario"
           icon={Star}
           variant="green"
-          className="hidden lg:block"
+          className="block lg:hidden"
         />
     </div>
   );
