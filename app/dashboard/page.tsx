@@ -141,7 +141,7 @@ const Dashboard = ({
         </div>
 
         {/* Contenido condicional basado en la vista activa */}
-        {activeView === "dashboar" && <MainInfo />}
+        {activeView === "dashboard" && <MainInfo />}
 
         {activeView === "vehicles" && (
           <div className="flex flex-1 gap-2">
