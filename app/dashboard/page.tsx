@@ -135,7 +135,7 @@ const Dashboard = ({
       <div className="flex h-full w-full flex-1 flex-col gap-2 md:rounded-tl-2xl border border-zinc-200 bg-slate-50 p-2 lg:p-10 dark:border-zinc-700 dark:bg-zinc-900 overflow-y-auto min-h-0">
         {/* Header dinámico */}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold text-zinc-800 dark:text-zinc-200">
+          <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
             {getPageTitle()}
           </h1>
         </div>
