@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__magic__21st_magic_component_builder",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  }
+}
