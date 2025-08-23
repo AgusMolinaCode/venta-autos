@@ -34,7 +34,7 @@ export function AuthButton() {
           className="flex items-center space-x-2"
         >
           <User className="h-4 w-4" />
-          <span>Dashboard</span>
+          <span>Dashboar</span>
         </Button>
       )}
     </div>
