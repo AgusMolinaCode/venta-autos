@@ -111,7 +111,7 @@ function AddCarModal({
           type: "spring",
           duration: 0.5,
         }}
-        className="w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto"
         onClick={(e) =>
           e.stopPropagation()
         }

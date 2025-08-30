@@ -1,0 +1,17 @@
+{
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.codeLensFontFamily": "JetBrains Mono",
+    "editor.inlayHints.fontFamily": "JetBrains Mono",
+    "debug.console.fontFamily": "JetBrains Mono",
+    "scm.inputFontFamily": "JetBrains Mono",
+    "notebook.markup.fontFamily": "JetBrains Mono",
+    "notebook.output.fontFamily": "JetBrains Mono",
+    "chat.editor.fontFamily": "JetBrains Mono",
+    "editor.fontSize": 14,
+    "debug.console.fontSize": 14,
+    "scm.inputFontSize": 14,
+    "terminal.integrated.fontSize": 13,
+    "workbench.panel.defaultLocation": "right",
+    "workbench.activityBar.location": "bottom",
+    "window.zoomLevel": 1
+}
