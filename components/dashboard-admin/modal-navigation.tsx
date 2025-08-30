@@ -46,7 +46,7 @@ export function ModalNavigation({
           onClick={onPrevStep}
           className="border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 bg-transparent"
         >
-          Anterior
+          Anterio
         </Button>
       )}
 
