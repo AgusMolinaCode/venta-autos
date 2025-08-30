@@ -93,7 +93,7 @@ export function ModalNavigation({
                 Guardando...
               </>
             ) : !isValid ? (
-              "Suba al menos 1 imagen"
+              "Suba al menos 1 imagen *"
             ) : (
               submitButtonText
             )}
