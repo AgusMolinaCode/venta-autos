@@ -4,17 +4,9 @@ import type React from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { z } from "zod";
-import {
-  VehicleFormInputSchema,
-  PriceSchema,
-} from "@/lib/validations";
+import { VehicleFormInputSchema, PriceSchema } from "@/lib/validations";
 import { ProgressBar } from "./progress-bar";
 import { VehicleInfoForm } from "./VehicleInfoFormComponents/VehicleInfoForm";
 import { PhotoUpload } from "./photo-upload";
@@ -26,22 +18,15 @@ import { VehiculoConFotos } from "@/lib/supabase";
 interface AddCarModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (
-    data: CombinedFormData,
-  ) => void;
+  onSubmit?: (data: CombinedFormData) => void;
   onSuccess?: () => void;
   editingVehicle?: VehiculoConFotos;
 }
 
 // Types
-type VehicleFormData = z.infer<
-  typeof VehicleFormInputSchema
-> & { ano: number };
-type PriceFormData = z.infer<
-  typeof PriceSchema
->;
-type CombinedFormData =
-  VehicleFormData & PriceFormData;
+type VehicleFormData = z.infer<typeof VehicleFormInputSchema> & { ano: number };
+type PriceFormData = z.infer<typeof PriceSchema>;
+type CombinedFormData = VehicleFormData & PriceFormData;
 
 function AddCarModal({
   isOpen,
@@ -68,15 +53,10 @@ function AddCarModal({
     removeFile,
     resetForm,
     canProceedToNextStep,
-  } = useCarFormState(
-    onSubmit,
-    onSuccess || onClose,
-    editingVehicle,
-  );
+  } = useCarFormState(onSubmit, onSuccess || onClose, editingVehicle);
 
   const prevStep = () => {
-    if (currentStep > 1)
-      setCurrentStep(currentStep - 1);
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const handleModalClose = () => {
@@ -112,9 +92,7 @@ function AddCarModal({
           duration: 0.5,
         }}
         className="w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) =>
-          e.stopPropagation()
-        }
+        onClick={(e) => e.stopPropagation()}
       >
         <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700">
           <CardHeader className="flex flex-row items-center justify-between border-b border-gray-200 dark:border-zinc-700">
@@ -122,7 +100,11 @@ function AddCarModal({
               <CardTitle className="text-xl text-gray-900 dark:text-white">
                 {editingVehicle
                   ? "Editar Vehículo"
-                  : `Agregar ${vehicleForm.watch("tipo_vehiculo") === "motos" ? "nueva moto" : "nuevo auto"}`}
+                  : `Agregar ${
+                      vehicleForm.watch("tipo_vehiculo") === "motos"
+                        ? "nueva moto"
+                        : "nuevo auto"
+                    }`}
               </CardTitle>
               <p className="text-gray-600 dark:text-zinc-400 mt-1">
                 Paso {currentStep} de 3
@@ -139,17 +121,13 @@ function AddCarModal({
           </CardHeader>
 
           <CardContent className="p-6">
-            <ProgressBar
-              currentStep={currentStep}
-            />  
+            <ProgressBar currentStep={currentStep} />
 
             {/* Step 1: Vehicle Information */}
             {currentStep === 1 && (
               <VehicleInfoForm
                 form={vehicleForm}
-                onSubmit={
-                  handleStep1Submit
-                }
+                onSubmit={handleStep1Submit}
               />
             )}
 
@@ -157,39 +135,29 @@ function AddCarModal({
             {currentStep === 2 && (
               <PriceFormModal
                 form={priceForm}
-                onSubmit={
-                  handleStep2Submit
-                }
-                vehicleData={
-                  vehicleData
-                }
+                onSubmit={handleStep2Submit}
+                vehicleData={vehicleData}
                 isEditMode={!!editingVehicle}
-                currentPrice={editingVehicle ? {
-                  precio: editingVehicle.precio,
-                  moneda: editingVehicle.moneda
-                } : null}
+                currentPrice={
+                  editingVehicle
+                    ? {
+                        precio: editingVehicle.precio,
+                        moneda: editingVehicle.moneda,
+                      }
+                    : null
+                }
               />
             )}
 
             {/* Step 3: Fotos */}
             {currentStep === 3 && (
               <PhotoUpload
-                uploadedFiles={
-                  uploadedFiles
-                }
-                onFileUpload={
-                  handleFileUpload
-                }
-                onRemoveFile={
-                  removeFile
-                }
+                uploadedFiles={uploadedFiles}
+                onFileUpload={handleFileUpload}
+                onRemoveFile={removeFile}
                 maxFiles={3}
-                existingPhotos={
-                  editingVehicle?.fotos
-                }
-                isEditMode={
-                  !!editingVehicle
-                }
+                existingPhotos={editingVehicle?.fotos}
+                isEditMode={!!editingVehicle}
               />
             )}
 
@@ -200,33 +168,17 @@ function AddCarModal({
               onReset={resetForm}
               onNextStep={
                 currentStep === 1
-                  ? vehicleForm.handleSubmit(
-                      handleStep1Submit,
-                    )
+                  ? vehicleForm.handleSubmit(handleStep1Submit)
                   : currentStep === 2
-                    ? priceForm.handleSubmit(
-                        handleStep2Submit,
-                      )
-                    : undefined
-              }
-              onSubmit={
-                currentStep === 3
-                  ? handleFinalSubmit
+                  ? priceForm.handleSubmit(handleStep2Submit)
                   : undefined
               }
-              isValid={canProceedToNextStep(
-                currentStep,
-              )}
-              isLastStep={
-                currentStep === 3
-              }
-              isSubmitting={
-                isSubmitting
-              }
+              onSubmit={currentStep === 3 ? handleFinalSubmit : undefined}
+              isValid={canProceedToNextStep(currentStep)}
+              isLastStep={currentStep === 3}
+              isSubmitting={isSubmitting}
               nextButtonText={
-                currentStep === 2
-                  ? "Continuar a Fotos →"
-                  : "Siguiente →"
+                currentStep === 2 ? "Continuar a Fotos →" : "Siguiente →"
               }
             />
           </CardContent>
