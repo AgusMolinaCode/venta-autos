@@ -150,7 +150,7 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
               ? `No se encontraron vehículos para "${searchQuery}"`
               : activeFilter !== "all"
               ? `No hay vehículos con estado "${activeFilter}"`
-              : "No hay vehículos registrados"
+              : "No hay vehículos registrados..."
           }
           description={
             hasActiveSearch
