@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { VehicleTableRow } from "../ui/vehicle-table-row";
+import { VehicleCard } from "../ui/vehicle-card";
 import { EmptyState } from "../ui/empty-state";
 import { StatusFilterButtons } from "../ui/status-filter-buttons";
 import { DeleteConfirmationModal } from "@/modals/delete-confirmation-modal";
@@ -166,45 +167,61 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
           }
         />
       ) : (
-        <div className="border rounded-lg bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">Foto</TableHead>
-                <TableHead className="w-32">
-                  <SortableHeader column={table.getColumn("marca")!}>
-                    Marca
-                  </SortableHeader>
-                </TableHead>
-                <TableHead className="w-40">Modelo</TableHead>
-                <TableHead className="w-32">Versión</TableHead>
-                <TableHead className="w-20 text-center">Año</TableHead>
-                <TableHead className="w-32 text-right">Precio</TableHead>
-                <TableHead className="w-32 text-right">
-                  <SortableHeader column={table.getColumn("kilometraje")!}>
-                    Kilometraje
-                  </SortableHeader>
-                </TableHead>
-                <TableHead className="w-24 text-center">Estado</TableHead>
-                <TableHead className="w-24 text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {finalFilteredVehicles.map((vehicle) => (
-                <VehicleTableRow
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  onEdit={handleEditVehicle}
-                  onDelete={handleDeleteVehicle}
-                  onViewDetails={handleViewDetails}
-                  onStatusChange={() => {
-                    // No hacer refetch, el cache ya maneja el estado
-                  }}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <>
+          {/* Table view for medium and larger screens */}
+          <div className="border rounded-lg bg-card hidden lg:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-20">Foto</TableHead>
+                  <TableHead className="w-32">
+                    <SortableHeader column={table.getColumn("marca")!}>
+                      Marca
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead className="w-40">Modelo</TableHead>
+                  <TableHead className="w-32">Versión</TableHead>
+                  <TableHead className="w-20 text-center">Año</TableHead>
+                  <TableHead className="w-32 text-right">Precio</TableHead>
+                  <TableHead className="w-32 text-right">
+                    <SortableHeader column={table.getColumn("kilometraje")!}>
+                      Kilometraje
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead className="w-24 text-center">Estado</TableHead>
+                  <TableHead className="w-24 text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {finalFilteredVehicles.map((vehicle) => (
+                  <VehicleTableRow
+                    key={vehicle.id}
+                    vehicle={vehicle}
+                    onEdit={handleEditVehicle}
+                    onDelete={handleDeleteVehicle}
+                    onViewDetails={handleViewDetails}
+                    onStatusChange={() => {
+                      // No hacer refetch, el cache ya maneja el estado
+                    }}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Card view for small screens */}
+          <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {finalFilteredVehicles.map((vehicle) => (
+              <VehicleCard
+                key={vehicle.id}
+                vehicle={vehicle}
+                onEdit={handleEditVehicle}
+                onDelete={handleDeleteVehicle}
+                onViewDetails={handleViewDetails}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {/* Add Modal */}
