@@ -185,7 +185,7 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
                   <TableHead className="w-32 text-right">Precio</TableHead>
                   <TableHead className="w-32 text-right">
                     <SortableHeader column={table.getColumn("kilometraje")!}>
-                      Kilometraj
+                      Kilometraje
                     </SortableHeader>
                   </TableHead>
                   <TableHead className="w-24 text-center">Estado</TableHead>
