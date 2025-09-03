@@ -4,10 +4,7 @@ import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDashboardNavigation } from "@/contexts/dashboard-navigation-context";
-import {
-  IconBrandTabler,
-  IconUserBolt,
-} from "@tabler/icons-react";
+import { IconBrandTabler, IconUserBolt } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import StepForm from "@/components/dashboard-admin/main/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
@@ -29,9 +26,10 @@ function DashboardContent() {
 
   // Handle query parameter for initial view
   useEffect(() => {
-    const view = searchParams.get('view');
-    if (view === 'vehicles') {
-      setActiveView('vehicles');
+    const view = searchParams.get("view");
+
+    if (view === "vehicles") {
+      setActiveView("vehicles");
     }
   }, [searchParams, setActiveView]);
 
