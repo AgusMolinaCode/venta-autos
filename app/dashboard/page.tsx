@@ -55,7 +55,7 @@ function DashboardContent() {
         <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
       onClick: () => setActiveView("dashboard"),
-      isActive: activeView === "dashboar",
+      isActive: activeView === "dashboard",
     },
     {
       label: "Listado de Autos",
