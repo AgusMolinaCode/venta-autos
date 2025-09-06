@@ -2,7 +2,7 @@
 
 import { VehiculoConFotos } from "@/lib/supabase";
 import { VehicleImage } from "./vehicle-image";
-import { StatusBadge } from "./status-badge";
+import { StatusDropdown } from "./status-dropdown";
 import { PriceDisplay } from "./price-display";
 import { VehicleActionsMenu } from "./vehicle-actions-menu";
 import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
@@ -12,13 +12,15 @@ interface VehicleCardProps {
   onEdit: (vehicle: VehiculoConFotos) => void;
   onDelete: (vehicleId: string) => void;
   onViewDetails: (vehicle: VehiculoConFotos) => void;
+  onStatusChange?: () => void;
 }
 
 export function VehicleCard({ 
   vehicle, 
   onEdit, 
   onDelete, 
-  onViewDetails 
+  onViewDetails,
+  onStatusChange
 }: VehicleCardProps) {
   const { getVehicleStatus } = useVehicleStatusCache();
   
@@ -48,7 +50,11 @@ export function VehicleCard({
               {vehicle.ano} • {vehicle.version || "Sin versión"}
             </p>
           </div>
-          <StatusBadge status={currentStatus} />
+          <StatusDropdown
+            vehicleId={vehicle.id!}
+            currentStatus={currentStatus}
+            onStatusChange={onStatusChange}
+          />
         </div>
         
         {/* Price and Details */}

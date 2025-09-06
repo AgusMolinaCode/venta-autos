@@ -121,7 +121,7 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
           </div>
 
           {/* Search Section */}
-          <div className="flex-1 md:max-w-xs">
+          <div className="md:max-w-sm">
             <Buscador
               vehicles={filteredVehicles}
               onSearch={() => {
@@ -130,7 +130,7 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
               searchValue={searchQuery}
               onSearchChange={setSearchQuery}
               placeholder="Buscar por marca, modelo o año..."
-              className="w-full"
+              className="w-full placeholder:text-xs"
             />
           </div>
         </div>
@@ -234,6 +234,9 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
                 onEdit={handleEditVehicle}
                 onDelete={handleDeleteVehicle}
                 onViewDetails={handleViewDetails}
+                onStatusChange={() => {
+                  // No hacer refetch, el cache ya maneja el estado
+                }}
               />
             ))}
           </div>
