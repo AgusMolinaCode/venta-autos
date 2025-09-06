@@ -13,7 +13,7 @@ import {
 import { VehicleTableRow } from "../ui/vehicle-table-row";
 import { VehicleCard } from "../ui/vehicle-card";
 import { EmptyState } from "../ui/empty-state";
-import { StatusFilterButtons } from "../ui/status-filter-buttons";
+import { StatusFilterResponsive } from "../ui/status-filter-responsive";
 import { DeleteConfirmationModal } from "@/modals/delete-confirmation-modal";
 import LoadingStepForm from "../ui/LoadingStepForm";
 import { useStepFormHandlers } from "../step-form-handlers/use-step-form-handlers";
@@ -104,11 +104,14 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="lg:flex items-center justify-between">
-        <div className="flex items-center gap-2 mg:gap-4">
-          <div>
+      {/* Header Section - Mobile First Design */}
+      <div className="space-y-4">
+        {/* Title and Search Row */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          {/* Title Section */}
+          <div className="flex-shrink-0">
             <h2 className="text-xl md:text-2xl font-bold text-foreground">Vehículos</h2>
-            <p className="text-sm text-muted-foreground lg:mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {searchFilteredVehicles.length} de {vehicles.length} vehículo
               {vehicles.length !== 1 ? "s" : ""}
               {activeFilter !== "all" && (
@@ -116,30 +119,43 @@ const StepForm = ({ onClick, disabled }: StepFormProps) => {
               )}
             </p>
           </div>
-          <Buscador
-            vehicles={filteredVehicles}
-            onSearch={() => {
-              // La lógica de búsqueda se maneja internamente por el hook
-            }}
-            searchValue={searchQuery}
-            onSearchChange={setSearchQuery}
-            placeholder="Buscar por marca, modelo o año..."
-            className="lg:ml-4"
-          />
+
+          {/* Search Section */}
+          <div className="flex-1 md:max-w-xs">
+            <Buscador
+              vehicles={filteredVehicles}
+              onSearch={() => {
+                // La lógica de búsqueda se maneja internamente por el hook
+              }}
+              searchValue={searchQuery}
+              onSearchChange={setSearchQuery}
+              placeholder="Buscar por marca, modelo o año..."
+              className="w-full"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <StatusFilterButtons
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-          />
-          <Button
-            onClick={handleAddVehicle}
-            disabled={disabled}
-            className="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700"
-          >
-            <IconPlus className="h-4 w-4" />
-            Agregar vehículo
-          </Button>
+
+        {/* Controls Row */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Status Filter */}
+          <div className="flex-1">
+            <StatusFilterResponsive
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+          </div>
+
+          {/* Add Button */}
+          <div className="flex-shrink-0">
+            <Button
+              onClick={handleAddVehicle}
+              disabled={disabled}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700"
+            >
+              <IconPlus className="h-4 w-4" />
+              <span className="sm:inline">Agregar vehículo</span>
+            </Button>
+          </div>
         </div>
       </div>
 
