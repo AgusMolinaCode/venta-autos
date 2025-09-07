@@ -120,7 +120,7 @@ export function StatusDropdown({
           variant="ghost"
           size="sm"
           className={cn(
-            "px-2 py-1 h-auto rounded-full text-xs font-medium border inline-flex items-center gap-1 hover:opacity-80",
+            "px-1 py-1 h-auto rounded-full text-xs font-medium border inline-flex items-center gap-1 hover:opacity-80",
             currentConfig.className,
             isLoading && "opacity-50",
             className,
