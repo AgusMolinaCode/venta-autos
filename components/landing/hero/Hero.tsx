@@ -20,7 +20,7 @@ const Hero = memo(function Hero() {
               Rent Car
             </h1>
             <p className="text-xl md:text-2xl lg:text-2xl text-blue-100 text-center lg:text-left font-light">
-              Tu mejor opción para alquilar vehículo
+              Tu mejor opción para alquilar vehículos
             </p>
           </motion.div>
 
