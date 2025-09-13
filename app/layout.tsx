@@ -9,10 +9,8 @@ import { Toaster } from "sonner";
 import Header from "@/components/landing/header/Header";
 
 const outfit = Outfit({
-  variable: "--font-outfit",
   subsets: ["latin"],
-  display: "swap", // Improve font loading performance
-  preload: false, // Only preload primary font
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} antialiased`}
+        className={`${outfit.className} antialiased`}
       >
         <ThemeProvider
           attribute="class"

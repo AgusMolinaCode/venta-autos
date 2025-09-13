@@ -11,16 +11,16 @@ const Hero = memo(function Hero() {
         <div className="grid 2xl:grid-cols-2 gap-12 items-center">
           {/* Left Side - Title */}
           <motion.div 
-            className="flex flex-col items-center lg:items-start justify-center space-y-4 w-[400px]"
+            className="flex flex-col items-center lg:items-start justify-center space-y-4"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl lg:text-8xl font-bold text-white text-center lg:text-left">
-              Rent Car
+            <h1 className="text-5xl md:text-6xl lg:text-9xl font-bold dark:text-gray-100 text-gray-900 text-center lg:text-left">
+              Bs.As Cars
             </h1>
-            <p className="text-xl md:text-2xl lg:text-2xl text-blue-100 text-center lg:text-left font-light">
-              Tu mejor opción para alquilar vehículos
+            <p className="text-xl md:text-2xl lg:text-3xl dark:text-gray-200 text-gray-800 text-center lg:text-left">
+              Tu mejor opción para tu próximo vehículo.
             </p>
           </motion.div>
 
