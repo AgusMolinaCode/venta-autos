@@ -25,18 +25,17 @@ export function PriceDisplay({
     price: number,
     currency: string,
   ) => {
-    return new Intl.NumberFormat(
-      "es-AR",
-      {
-        style: "currency",
-        currency:
-          currency === "USD"
-            ? "USD"
-            : "ARS",
+    if (currency === "USD") {
+      return 'USD ' + new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(price);
+    } else {
+      return '$' + new Intl.NumberFormat("es-AR", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      },
-    ).format(price);
+      }).format(price);
+    }
   };
 
   return (

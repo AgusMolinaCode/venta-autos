@@ -17,6 +17,7 @@ import { z } from "zod";
 import { useEffect } from "react";
 import { useCarValuation } from "@/hooks/use-car-valuation";
 import { IconLoader2 } from "@tabler/icons-react";
+import { formatCurrency } from "@/utils/currency";
 
 type PriceFormData = z.infer<
   typeof PriceSchema
@@ -118,10 +119,7 @@ export function PriceFormModal({
                       Mínimo:
                     </span>
                     <span className="font-mono font-medium text-blue-700 dark:text-blue-300">
-                      $
-                      {results.precios_ars_completo.min.toLocaleString(
-                        "es-AR",
-                      )}
+                      {formatCurrency(results.precios_ars_completo.min, "ARS")}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -129,10 +127,7 @@ export function PriceFormModal({
                       Máximo:
                     </span>
                     <span className="font-mono font-medium text-blue-700 dark:text-blue-300">
-                      $
-                      {results.precios_ars_completo.max.toLocaleString(
-                        "es-AR",
-                      )}
+                      {formatCurrency(results.precios_ars_completo.max, "ARS")}
                     </span>
                   </div>
                   <div className="flex justify-between border-t pt-2">
@@ -140,10 +135,7 @@ export function PriceFormModal({
                       Promedio:
                     </span>
                     <span className="font-mono font-bold text-blue-800 dark:text-blue-200">
-                      $
-                      {results.precios_ars_completo.avg.toLocaleString(
-                        "es-AR",
-                      )}
+                      {formatCurrency(results.precios_ars_completo.avg, "ARS")}
                     </span>
                   </div>
                 </div>
@@ -161,10 +153,7 @@ export function PriceFormModal({
                       Mínimo:
                     </span>
                     <span className="font-mono font-medium text-green-700 dark:text-green-300">
-                      US${" "}
-                      {results.precios_usd_completo.min.toLocaleString(
-                        "en-US",
-                      )}
+                      {formatCurrency(results.precios_usd_completo.min, "USD")}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -172,10 +161,7 @@ export function PriceFormModal({
                       Máximo:
                     </span>
                     <span className="font-mono font-medium text-green-700 dark:text-green-300">
-                      US${" "}
-                      {results.precios_usd_completo.max.toLocaleString(
-                        "en-US",
-                      )}
+                      {formatCurrency(results.precios_usd_completo.max, "USD")}
                     </span>
                   </div>
                   <div className="flex justify-between border-t pt-2">
@@ -183,10 +169,7 @@ export function PriceFormModal({
                       Promedio:
                     </span>
                     <span className="font-mono font-bold text-green-800 dark:text-green-200">
-                      US${" "}
-                      {results.precios_usd_completo.avg.toLocaleString(
-                        "en-US",
-                      )}
+                      {formatCurrency(results.precios_usd_completo.avg, "USD")}
                     </span>
                   </div>
                 </div>
@@ -417,10 +400,7 @@ export function PriceFormModal({
                   Promedio ARS
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 font-mono">
-                  $
-                  {results.precios_ars_completo.avg.toLocaleString(
-                    "es-AR",
-                  )}
+                  {formatCurrency(results.precios_ars_completo.avg, "ARS")}
                 </div>
               </button>
               <button
@@ -439,10 +419,7 @@ export function PriceFormModal({
                   Promedio USD
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 font-mono">
-                  US${" "}
-                  {results.precios_usd_completo.avg.toLocaleString(
-                    "en-US",
-                  )}
+                  {formatCurrency(results.precios_usd_completo.avg, "USD")}
                 </div>
               </button>
             </div>
@@ -615,11 +592,7 @@ function PriceFormContent({
                 {isEditMode && currentPrice && (
                   <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <div className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                      Precio actual: {currentPrice.moneda === "USD" ? "US$" : "$"}{" "}
-                      {currentPrice.precio.toLocaleString(
-                        currentPrice.moneda === "USD" ? "en-US" : "es-AR"
-                      )}{" "}
-                      {currentPrice.moneda}
+                      Precio actual: {formatCurrency(currentPrice.precio, currentPrice.moneda)}
                     </div>
                   </div>
                 )}

@@ -3,15 +3,22 @@
  */
 
 /**
- * Formats a price according to Argentine locale
+ * Formats a price according to currency requirements
+ * USD: shows "USD 1,000" format
+ * ARS: shows "$1.000" format
  */
 export function formatPrice(price: number, currency: string): string {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: currency === "USD" ? "USD" : "ARS",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
+  if (currency === "USD") {
+    return 'USD ' + new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(price);
+  } else {
+    return '$' + new Intl.NumberFormat("es-AR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  }
 }
 
 /**

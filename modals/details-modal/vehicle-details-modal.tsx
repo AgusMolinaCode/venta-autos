@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/utils/formatters";
+import { formatCurrency } from "@/utils/currency";
 import {
   IconCar,
   IconCalendar,
@@ -260,12 +261,7 @@ export function VehicleDetailsModal({
                   </div>
                   <div className="bg-white/70 dark:bg-blue-950/30 rounded-xl p-6 border border-blue-200/50 dark:border-blue-800/30">
                     <div className="text-4xl font-black text-blue-700 dark:text-blue-300 tracking-tight">
-                      {new Intl.NumberFormat("es-AR", {
-                        style: "currency",
-                        currency: vehicle.moneda === "USD" ? "USD" : "ARS",
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      }).format(vehicle.precio)}
+                      {formatCurrency(vehicle.precio, vehicle.moneda)}
                     </div>
                     <div className="mt-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
                       {vehicle.moneda === "USD" ? "Dólares Americanos" : "Pesos Argentinos"}
