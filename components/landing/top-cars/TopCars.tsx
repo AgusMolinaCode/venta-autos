@@ -50,7 +50,7 @@ const TopCars: React.FC = () => {
     return (
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-4xl font-bold text-center text-blue-900 mb-12">
-          Los 6 Mejores Autosssss
+          Los 6 Mejores Autossss
         </h2>
         <div className="text-center text-red-600">
           Error al cargar los vehículos: {error}
