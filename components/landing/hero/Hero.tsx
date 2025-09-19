@@ -14,7 +14,7 @@ const Hero = memo(function Hero() {
             className="flex flex-col items-center lg:items-start justify-center space-y-4"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.3 }}
           >
             <h1 className="text-5xl md:text-6xl lg:text-9xl font-bold dark:text-gray-100 text-gray-900 text-center lg:text-left">
               Bs.As Cars
@@ -29,7 +29,7 @@ const Hero = memo(function Hero() {
             className="flex items-center justify-center"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
           >
             <div className="relative">
               {/* Fondo adaptativo para light y dark mode */}
