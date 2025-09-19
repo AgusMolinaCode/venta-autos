@@ -43,7 +43,7 @@ const Footer = lazy(
 
 export default function Home() {
   return (
-    <div className="font-sans min-h-screen bg-gradient-to-b from-blue-50 via-blue-100 to-indigo-100 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 mx-auto">
+    <div className="font-sans min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 mx-auto">
       <Hero />
       {/* <Search /> */}
       <Suspense

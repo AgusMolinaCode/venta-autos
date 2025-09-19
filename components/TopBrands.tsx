@@ -1,25 +1,43 @@
-import { InfiniteSlider } from "@/components/motion-primitives/infinite-slider";
-import Image from "next/image";
-import Link from "next/link";
-import { BRANDS } from "@/constants";
+"use client";
 
-function TopBrands() {
+import Link from "next/link";
+import Image from "next/image";
+import { BRANDS } from "@/constants";
+import { InfiniteSlider } from "@/components/ui/infinite-slider";
+import { cn } from "@/lib/utils";
+
+interface TopBrandsProps {
+  className?: string;
+  speed?: number;
+  gap?: number;
+}
+
+export function TopBrands({
+  className,
+  speed = 50,
+  gap = 24
+}: TopBrandsProps) {
   return (
-    <div className="container mx-auto py-4">
-      <InfiniteSlider speedOnHover={10} speed={50} gap={24} className="py-2">
+    <div className={cn("w-full", className)}>
+      <InfiniteSlider
+        speed={speed}
+        gap={gap}
+        speedOnHover={20}
+        className="py-4"
+      >
         {BRANDS.map((brand, index) => (
           <Link
             key={`${brand.name}-${index}`}
             href={`/brands/${brand.name.toLowerCase().replace(/\s+/g, "-")}`}
-            className="group relative flex-shrink-0 block p-1"
+            className="group relative flex-shrink-0 block"
           >
-            <div className="relative h-30 w-30 overflow-hidden rounded-full border border-border bg-white shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
+            <div className="relative h-16 w-24 overflow-hidden rounded-lg border border-border bg-background shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
               <Image
                 src={brand.imageUrl}
                 alt={`${brand.name} logo`}
                 fill
                 className="object-contain p-2 transition-all duration-300 group-hover:scale-110"
-                sizes="(max-width: 768px) 112px, 112px"
+                sizes="(max-width: 768px) 96px, 96px"
               />
             </div>
             <div className="mt-1 text-center">
@@ -33,5 +51,3 @@ function TopBrands() {
     </div>
   );
 }
-
-export default TopBrands;

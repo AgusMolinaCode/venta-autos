@@ -186,7 +186,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarContent }) => {
   
   return (
     <SidebarProvider>
-      <header className=" dark:bg-neutral-900 bg-blue-50 h-[60px]">
+      <header className=" dark:bg-neutral-900 bg-gray-50 h-[60px]">
         <div className="container mx-auto px-4 py-4">
           {/* Mobile Layout */}
           <div className="md:hidden flex items-center justify-between">

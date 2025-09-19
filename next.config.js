@@ -3,14 +3,18 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'pnwabwooxblwvojbaotw.supabase.co',
-        port: '',
-        pathname: '/storage/v1/object/public/**',
+        protocol: "https",
+        hostname: "pnwabwooxblwvojbaotw.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**",
       },
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "http2.mlstatic.com",
       },
     ],
   },
@@ -18,46 +22,47 @@ const nextConfig = {
     return [
       {
         // Apply security headers to all routes
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           // Prevent clickjacking attacks
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           // Prevent MIME type sniffing
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           // Control referrer information
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           // XSS protection (legacy browsers)
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
           // Control DNS prefetching
           {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
           },
           // Permissions Policy (Feature Policy replacement)
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
           },
         ],
       },
       {
         // Content Security Policy for pages
-        source: '/((?!api/).*)',
+        source: "/((?!api/).*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com",
@@ -70,37 +75,38 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "upgrade-insecure-requests",
-            ].join('; '),
+            ].join("; "),
           },
         ],
       },
       {
         // Strict CSP for API routes
-        source: '/api/(.*)',
+        source: "/api/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: "default-src 'none'; frame-ancestors 'none';",
           },
           // Additional security for API routes
           {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow, noarchive, nosnippet, notranslate, noimageindex',
+            key: "X-Robots-Tag",
+            value:
+              "noindex, nofollow, noarchive, nosnippet, notranslate, noimageindex",
           },
         ],
       },
       {
         // HTTPS Strict Transport Security (HSTS)
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
         ],
       },
-    ]
+    ];
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
