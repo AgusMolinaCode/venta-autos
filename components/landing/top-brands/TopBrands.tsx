@@ -13,7 +13,7 @@ function TopBrands() {
             href={`/brands/${brand.name.toLowerCase().replace(/\s+/g, "-")}`}
             className="group relative flex-shrink-0 block p-1"
           >
-            <div className="relative h-30 w-30 overflow-hidden rounded-full border border-border bg-white shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
+            <div className="relative h-30 w-30 overflow-hidden rounded-full border border-border bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
               <Image
                 src={brand.imageUrl}
                 alt={`${brand.name} logo`}
