@@ -69,21 +69,21 @@ export default function Home() {
       </Suspense>
       <Suspense
         fallback={
-          <div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />
+          <div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg py-28" />
         }
       >
         <Testimonials />
       </Suspense>
       <Suspense
         fallback={
-          <div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />
+          <div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg py-28" />
         }
       >
         <Cta />
       </Suspense>
       <Suspense
         fallback={
-          <div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg" />
+          <div className="min-h-[200px] bg-white/5 animate-pulse rounded-lg py-28" />
         }
       >
         <Footer />

@@ -1,43 +1,84 @@
-import React from 'react';
+import { InfiniteSlider } from "@/components/motion-primitives/infinite-slider";
+import { TESTIMONIALS, TESTIMONIALS_2 } from "@/constants";
+import { IconUser, IconStar, IconStarFilled } from "@tabler/icons-react";
 
-const Testimonials: React.FC = () => {
-  // Testimonial data array
-  const testimonials = [
-    {
-      id: 1,
-      name: "Carlos Rodríguez",
-      rating: 5,
-      comment: "Excelente servicio, encontré el auto que buscaba a un precio justo. El proceso de financiamiento fue rápido y sin complicaciones."
-    },
-    {
-      id: 2,
-      name: "María González",
-      rating: 5,
-      comment: "Compré mi primer auto usado aquí y me sentiría completamente segura recomendándolos a familiares y amigos. Gran atención al cliente."
-    }
-  ];
-
+function StarRating({ rating }: { rating: number }) {
   return (
-    <section className="container mx-auto px-4 py-16">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Lo que dicen nuestros clientes</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {testimonials.map((testimonial) => (
-          <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex items-center mb-4">
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
-              <div className="ml-4">
-                <h4 className="font-bold text-gray-800">{testimonial.name}</h4>
-                <div className="flex text-yellow-400">
-                  {'★ '.repeat(testimonial.rating)}
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <div key={star}>
+          {star <= rating ? (
+            <IconStarFilled className="h-4 w-4 text-yellow-400" />
+          ) : (
+            <IconStar className="h-4 w-4 text-gray-300" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Testimonials() {
+  return (
+    <div className="container mx-auto py-26">
+      <InfiniteSlider speedOnHover={10} speed={20} gap={24} className="py-2">
+        {TESTIMONIALS.map((testimonial, index) => (
+          <div
+            key={`${testimonial.name}-${index}`}
+            className="group relative flex-shrink-0 p-1"
+          >
+            <div className="relative w-80 h-44 overflow-hidden rounded-lg border border-border bg-white dark:bg-neutral-800 shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md p-6">
+              {/* Header with user icon and name */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <IconUser className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                    {testimonial.name}
+                  </h4>
+                  <StarRating rating={testimonial.rating} />
                 </div>
               </div>
+
+              {/* Review text */}
+              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                &ldquo;{testimonial.review}&rdquo;
+              </p>
             </div>
-            <p className="text-gray-600 italic">&ldquo;{testimonial.comment}&rdquo;</p>
           </div>
         ))}
-      </div>
-    </section>
+      </InfiniteSlider>
+      <InfiniteSlider speedOnHover={10} speed={20} gap={24} reverse className="py-2">
+        {TESTIMONIALS_2.map((testimonial, index) => (
+          <div
+            key={`${testimonial.name}-${index}`}
+            className="group relative flex-shrink-0 p-1"
+          >
+            <div className="relative w-80 h-44 overflow-hidden rounded-lg border border-border bg-white dark:bg-neutral-800 shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md p-6">
+              {/* Header with user icon and name */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <IconUser className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                    {testimonial.name}
+                  </h4>
+                  <StarRating rating={testimonial.rating} />
+                </div>
+              </div>
+
+              {/* Review text */}
+              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                &ldquo;{testimonial.review}&rdquo;
+              </p>
+            </div>
+          </div>
+        ))}
+      </InfiniteSlider>
+    </div>
   );
-};
+}
 
 export default Testimonials;

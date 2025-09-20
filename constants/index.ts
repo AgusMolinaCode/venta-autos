@@ -216,6 +216,132 @@ export const BRANDS = [
   },
 ] as const;
 
+export const TESTIMONIALS = [
+  {
+    name: "María González",
+    rating: 5,
+    review: "Excelente servicio, encontré el auto perfecto para mi familia. El proceso fue muy transparente y profesional."
+  },
+  {
+    name: "Carlos Rodríguez",
+    rating: 5,
+    review: "Compré mi primer auto aquí y la experiencia fue increíble. El equipo me ayudó en cada paso del proceso."
+  },
+  {
+    name: "Ana Martínez",
+    rating: 4,
+    review: "Gran variedad de vehículos y precios competitivos. Recomiendo totalmente este concesionario."
+  },
+  {
+    name: "Roberto Silva",
+    rating: 5,
+    review: "Vendí mi auto y compré uno nuevo en el mismo lugar. Proceso rápido y sin complicaciones."
+  },
+  {
+    name: "Lucía Fernández",
+    rating: 5,
+    review: "Atención al cliente excepcional. Me asesoraron perfectamente para elegir el vehículo ideal."
+  },
+  {
+    name: "Diego Morales",
+    rating: 4,
+    review: "Muy buena experiencia de compra. Los vendedores son honestos y conocen bien los productos."
+  },
+  {
+    name: "Patricia López",
+    rating: 5,
+    review: "Encontré exactamente lo que buscaba a un precio justo. El servicio post-venta también es excelente."
+  },
+  {
+    name: "Andrés Castro",
+    rating: 5,
+    review: "Proceso de financiamiento muy ágil. Me ayudaron con todas las opciones disponibles."
+  },
+  {
+    name: "Valeria Ruiz",
+    rating: 4,
+    review: "Personal muy capacitado y amable. Me sentí cómoda durante toda la negociación."
+  },
+  {
+    name: "Sebastián Torres",
+    rating: 5,
+    review: "Compré mi BMW aquí y estoy completamente satisfecho con la compra y el servicio recibido."
+  },
+  {
+    name: "Carmen Jiménez",
+    rating: 5,
+    review: "Excelente relación calidad-precio. El auto que compré superó mis expectativas."
+  },
+  {
+    name: "Fernando Vega",
+    rating: 4,
+    review: "Muy profesionales en el manejo de la documentación. Todo en orden y sin sorpresas."
+  }
+] as const;
+
+export const TESTIMONIALS_2 = [
+  {
+    name: "Gabriela Herrera",
+    rating: 5,
+    review: "Increíble atención desde el primer contacto. Me ayudaron a conseguir el mejor precio para mi vehículo usado."
+  },
+  {
+    name: "Martín Espinoza",
+    rating: 4,
+    review: "El showroom tiene una excelente selección de autos. Encontré justo lo que necesitaba para mi trabajo."
+  },
+  {
+    name: "Sofía Mendoza",
+    rating: 5,
+    review: "Servicio postventa excepcional. Siempre están disponibles para resolver cualquier consulta."
+  },
+  {
+    name: "Ricardo Peña",
+    rating: 5,
+    review: "Compré mi segundo auto aquí y la experiencia fue aún mejor que la primera vez. Muy recomendable."
+  },
+  {
+    name: "Alejandra Rojas",
+    rating: 4,
+    review: "Excelente asesoramiento técnico. Me explicaron todas las características del vehículo en detalle."
+  },
+  {
+    name: "Miguel Contreras",
+    rating: 5,
+    review: "Proceso de entrega muy eficiente. El auto estaba impecable y listo en la fecha acordada."
+  },
+  {
+    name: "Isabella Vargas",
+    rating: 5,
+    review: "Personal altamente profesional. Me dieron todas las facilidades para concretar la operación."
+  },
+  {
+    name: "Joaquín Ramírez",
+    rating: 4,
+    review: "Buena relación precio-calidad. El vehículo llegó con todos los accesorios prometidos."
+  },
+  {
+    name: "Camila Ortega",
+    rating: 5,
+    review: "Ambiente muy acogedor y sin presión de venta. Pude evaluar todas las opciones con tranquilidad."
+  },
+  {
+    name: "Nicolás Guerrero",
+    rating: 5,
+    review: "Excelente seguimiento durante todo el proceso. Siempre mantuvieron comunicación conmigo."
+  },
+  {
+    name: "Valentina Cruz",
+    rating: 4,
+    review: "Muy satisfecha con mi compra. El auto tiene todo lo que necesitaba para mi día a día."
+  },
+  {
+    name: "Emilio Delgado",
+    rating: 5,
+    review: "Superaron mis expectativas. El servicio integral hace la diferencia con otros concesionarios."
+  }
+] as const;
+
 // Tipos derivados
 export type CombustibleType = (typeof COMBUSTIBLES)[number];
 export type TransmisionType = (typeof TRANSMISIONES)[number];
