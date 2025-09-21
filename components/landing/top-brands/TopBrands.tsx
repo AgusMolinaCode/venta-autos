@@ -10,7 +10,7 @@ function TopBrands() {
         {BRANDS.map((brand, index) => (
           <Link
             key={`${brand.name}-${index}`}
-            href={`/brands/${brand.name.toLowerCase().replace(/\s+/g, "-")}`}
+            href={`/marcas/${brand.name.toLowerCase().replace(/\s+/g, "-")}`}
             className="group relative flex-shrink-0 block p-1"
           >
             <div className="relative h-30 w-30 overflow-hidden rounded-full border border-border bg-white  shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md">
