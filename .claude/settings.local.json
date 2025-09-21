@@ -9,7 +9,8 @@
       "Bash(mkdir:*)",
       "Bash(touch:*)",
       "Bash(rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

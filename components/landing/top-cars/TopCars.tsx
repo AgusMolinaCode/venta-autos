@@ -1,19 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useAllVehicles } from "@/hooks/use-all-vehicles";
+import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { formatCurrency } from "@/utils/currency";
 import { VehicleImage } from "@/components/dashboard-admin/ui/vehicle-image";
 import { VehicleDetailsModal } from "@/modals/details-modal/vehicle-details-modal";
 import { VehiculoConFotos } from "@/lib/supabase";
-import Image from 'next/image';
+import Image from "next/image";
 
 const TopCars: React.FC = () => {
   const { vehicles, loading, error } = useAllVehicles();
-  const [viewingVehicle, setViewingVehicle] = useState<VehiculoConFotos | null>(null);
+  const { getVehicleStatus } = useVehicleStatusCache();
+  const [viewingVehicle, setViewingVehicle] = useState<VehiculoConFotos | null>(
+    null
+  );
 
-  // Take only the first 6 vehicles for display
-  const topVehicles = vehicles.slice(0, 6);
+  // Filter vehicles by published status and take only the first 6 for display
+  const topVehicles = vehicles
+    .filter(
+      (vehicle) => vehicle.id && getVehicleStatus(vehicle.id) === "publicado"
+    )
+    .slice(0, 6);
 
   const closeViewModal = () => {
     setViewingVehicle(null);
@@ -31,7 +39,10 @@ const TopCars: React.FC = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {[...Array(6)].map((_, index) => (
-            <div key={index} className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg shadow-xl overflow-hidden animate-pulse">
+            <div
+              key={index}
+              className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg shadow-xl overflow-hidden animate-pulse"
+            >
               <div className="bg-gray-300 w-full h-56 m-4 mb-0 rounded-xl" />
               <div className="p-6">
                 <div className="h-6 bg-gray-300 rounded mb-2" />
@@ -66,7 +77,6 @@ const TopCars: React.FC = () => {
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {topVehicles.map((vehicle, index) => {
-          
           return (
             <div
               key={vehicle.id}
@@ -81,7 +91,9 @@ const TopCars: React.FC = () => {
                     showFallback={false}
                   />
                 ) : (
-                  <div className={`bg-emerald-200 dark:bg-emerald-700 w-full h-full flex items-center justify-center`}>
+                  <div
+                    className={`bg-emerald-200 dark:bg-emerald-700 w-full h-full flex items-center justify-center`}
+                  >
                     <Image
                       src="/image-not-found-icon.png"
                       alt="No image available"
@@ -97,10 +109,15 @@ const TopCars: React.FC = () => {
                   {vehicle.marca} {vehicle.modelo} {vehicle.ano}
                 </h3>
                 <p className="dark:text-gray-100 text-gray-900 mb-3">
-                  {vehicle.combustible} • {vehicle.kilometraje ? `${vehicle.kilometraje.toLocaleString()} km` : 'N/A'}
+                  {vehicle.combustible} •{" "}
+                  {vehicle.kilometraje
+                    ? `${vehicle.kilometraje.toLocaleString()} km`
+                    : "N/A"}
                 </p>
                 <p className="text-3xl font-bold dark:text-gray-100 text-gray-900 mb-4">
-                  {vehicle.precio ? formatCurrency(vehicle.precio, vehicle.moneda) : 'Consultar'}
+                  {vehicle.precio
+                    ? formatCurrency(vehicle.precio, vehicle.moneda)
+                    : "Consultar"}
                 </p>
               </div>
             </div>

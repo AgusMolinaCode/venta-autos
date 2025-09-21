@@ -10,7 +10,7 @@ const Cta: React.FC = () => {
           <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg transition duration-300">
             Ver Todo el Inventario
           </button>
-          <button className="bg-transparent border-2 border-white cursor-pointer hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-lg">
+          <button className="bg-transparent border-2 dark:border-white border-gray-700 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 dark:text-white text-gray-800 font-bold py-3 px-8 rounded-lg">
             Agenda una Cita
           </button>
         </div>

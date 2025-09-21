@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase, VehiculoConFotos } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase, VehiculoConFotos } from "@/lib/supabase";
 
 interface UseAllVehiclesReturn {
   vehicles: VehiculoConFotos[];
@@ -13,33 +12,44 @@ interface UseAllVehiclesReturn {
 }
 
 // Query key for all vehicles
-const getAllVehiclesQueryKey = () => ['all-vehicles'];
+const getAllVehiclesQueryKey = () => ["all-vehicles"];
 
 // Fetch function for React Query - gets all vehicles from all users
 async function fetchAllVehicles(): Promise<VehiculoConFotos[]> {
   try {
     // First try with estado filter (if column exists)
-    let { data, error: fetchError } = await supabase
-      .from('vehiculos')
-      .select(`
+    const { data, error: fetchError } = await supabase
+      .from("vehiculos")
+      .select(
+        `
         *,
         fotos:vehiculo_fotos(*)
-      `)
-      .eq('estado', 'publicado')
-      .order('created_at', { ascending: false });
+      `
+      )
+      .eq("estado", "publicado")
+      .order("created_at", { ascending: false });
 
     // If column doesn't exist, fetch all vehicles without filter
-    if (fetchError && fetchError.message.includes('column vehiculos.estado does not exist')) {
-      console.warn('Column vehiculos.estado does not exist. Fetching all vehicles without estado filter.');
-      console.info('To add estado column, run the migration script: add-estado-column-migration.sql');
+    if (
+      fetchError &&
+      fetchError.message.includes("column vehiculos.estado does not exist")
+    ) {
+      console.warn(
+        "Column vehiculos.estado does not exist. Fetching all vehicles without estado filter."
+      );
+      console.info(
+        "To add estado column, run the migration script: add-estado-column-migration.sql"
+      );
 
       const { data: allData, error: allError } = await supabase
-        .from('vehiculos')
-        .select(`
+        .from("vehiculos")
+        .select(
+          `
           *,
           fotos:vehiculo_fotos(*)
-        `)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .order("created_at", { ascending: false });
 
       if (allError) {
         throw new Error(`Error al cargar vehículos: ${allError.message}`);
@@ -53,10 +63,12 @@ async function fetchAllVehicles(): Promise<VehiculoConFotos[]> {
       throw new Error(`Error al cargar vehículos: ${fetchError.message}`);
     }
 
-    console.log(`Loaded ${data?.length || 0} published vehicles from all users`);
+    console.log(
+      `Loaded ${data?.length || 0} published vehicles from all users`
+    );
     return data || [];
   } catch (error) {
-    console.error('Error in fetchAllVehicles:', error);
+    console.error("Error in fetchAllVehicles:", error);
     throw error;
   }
 }
@@ -72,9 +84,9 @@ export function useAllVehicles(): UseAllVehiclesReturn {
       setIsPageVisible(!document.hidden);
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
