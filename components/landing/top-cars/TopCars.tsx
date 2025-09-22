@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useAllVehicles } from "@/hooks/use-all-vehicles";
-import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { formatCurrency } from "@/utils/currency";
 import { VehicleImage } from "@/components/dashboard-admin/ui/vehicle-image";
 import { VehicleDetailsModal } from "@/modals/details-modal/vehicle-details-modal";
@@ -11,17 +10,12 @@ import Image from "next/image";
 
 const TopCars: React.FC = () => {
   const { vehicles, loading, error } = useAllVehicles();
-  const { getVehicleStatus } = useVehicleStatusCache();
   const [viewingVehicle, setViewingVehicle] = useState<VehiculoConFotos | null>(
     null
   );
 
-  // Filter vehicles by published status and take only the first 6 for display
-  const topVehicles = vehicles
-    .filter(
-      (vehicle) => vehicle.id && getVehicleStatus(vehicle.id) === "publicado"
-    )
-    .slice(0, 6);
+  // Take only the first 6 vehicles - already filtered for published status by useAllVehicles
+  const topVehicles = vehicles.slice(0, 6);
 
   const closeViewModal = () => {
     setViewingVehicle(null);
