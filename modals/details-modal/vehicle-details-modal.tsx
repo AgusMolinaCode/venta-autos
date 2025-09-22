@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +39,9 @@ export function VehicleDetailsModal({
   isOpen,
   onClose,
 }: VehicleDetailsModalProps) {
-  const [fullscreenImageIndex, setFullscreenImageIndex] = useState<number | null>(null);
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState<
+    number | null
+  >(null);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   if (!vehicle) return null;
@@ -60,8 +63,18 @@ export function VehicleDetailsModal({
               <IconCar className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-bold text-foreground">
-                {vehicle.marca} {vehicle.modelo}
+              <DialogTitle className="text-xl font-bold text-foreground">
+                <div className="flex flex-col  items-start gap-2">
+                  <Link
+                    href={`/marcas/${vehicle.marca
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    className="hover:text-blue-600 text-2xl dark:hover:text-blue-400 transition-colors duration-200 underline"
+                  >
+                    {vehicle.marca}
+                  </Link>{" "}
+                  {vehicle.modelo}
+                </div>
               </DialogTitle>
               <DialogDescription className="text-base mt-1">
                 Año {vehicle.ano} • Detalles completos del vehículo
@@ -80,7 +93,8 @@ export function VehicleDetailsModal({
                 </h3>
                 {vehicle.fotos && vehicle.fotos.length > 0 && (
                   <Badge variant="secondary" className="text-xs">
-                    {vehicle.fotos.length} {vehicle.fotos.length === 1 ? "foto" : "fotos"}
+                    {vehicle.fotos.length}{" "}
+                    {vehicle.fotos.length === 1 ? "foto" : "fotos"}
                   </Badge>
                 )}
               </div>
@@ -103,7 +117,9 @@ export function VehicleDetailsModal({
                           >
                             <Image
                               src={getImageUrl(foto.storage_path)}
-                              alt={`${vehicle.marca} ${vehicle.modelo} - Foto ${index + 1}`}
+                              alt={`${vehicle.marca} ${vehicle.modelo} - Foto ${
+                                index + 1
+                              }`}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                               priority={foto.is_primary}
                               width={600}
@@ -198,28 +214,51 @@ export function VehicleDetailsModal({
                   {vehicle.descripcion && vehicle.descripcion.trim() !== "" ? (
                     <div className="space-y-3">
                       <p className="whitespace-pre-wrap leading-relaxed text-base text-foreground">
-                        {shouldShowReadMore(vehicle.descripcion) && !isDescriptionExpanded
+                        {shouldShowReadMore(vehicle.descripcion) &&
+                        !isDescriptionExpanded
                           ? `${truncateDescription(vehicle.descripcion)}...`
                           : vehicle.descripcion}
                       </p>
-                      
+
                       {shouldShowReadMore(vehicle.descripcion) && (
                         <button
-                          onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                          onClick={() =>
+                            setIsDescriptionExpanded(!isDescriptionExpanded)
+                          }
                           className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
                         >
                           {isDescriptionExpanded ? (
                             <>
                               <span>Leer menos</span>
-                              <svg className="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              <svg
+                                className="w-3 h-3 transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 15l7-7 7 7"
+                                />
                               </svg>
                             </>
                           ) : (
                             <>
                               <span>Leer más</span>
-                              <svg className="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              <svg
+                                className="w-3 h-3 transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
                               </svg>
                             </>
                           )}
@@ -264,7 +303,9 @@ export function VehicleDetailsModal({
                       {formatCurrency(vehicle.precio, vehicle.moneda)}
                     </div>
                     <div className="mt-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
-                      {vehicle.moneda === "USD" ? "Dólares Americanos" : "Pesos Argentinos"}
+                      {vehicle.moneda === "USD"
+                        ? "Dólares Americanos"
+                        : "Pesos Argentinos"}
                     </div>
                   </div>
                 </div>

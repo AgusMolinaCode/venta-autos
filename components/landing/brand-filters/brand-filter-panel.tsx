@@ -33,10 +33,15 @@ export function BrandFilterPanel({ vehicles, onFilterChange, className }: BrandF
     const anos = vehicles.map(v => v.ano).filter(Boolean);
     const kilometrajes = vehicles.map(v => v.kilometraje).filter(Boolean);
 
+    // Handle empty arrays with fallback values
+    const anoMin = anos.length > 0 ? Math.min(...anos) : 1970;
+    const anoMax = anos.length > 0 ? Math.max(...anos) : 2025;
+    const kmMax = kilometrajes.length > 0 ? Math.max(...kilometrajes) : 500000;
+
     return {
       modelos,
-      anoRange: [Math.min(...anos), Math.max(...anos)] as [number, number],
-      kilometrajeRange: [0, Math.max(...kilometrajes, 500000)] as [number, number]
+      anoRange: [anoMin, anoMax] as [number, number],
+      kilometrajeRange: [0, kmMax] as [number, number]
     };
   }, [vehicles]);
 
@@ -126,12 +131,12 @@ export function BrandFilterPanel({ vehicles, onFilterChange, className }: BrandF
         {/* Modelo Filter */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Modelo</label>
-          <Select value={filters.modelo || ""} onValueChange={(value) => updateFilters({ modelo: value || null })}>
+          <Select value={filters.modelo || "all"} onValueChange={(value) => updateFilters({ modelo: value === "all" ? null : value })}>
             <SelectTrigger>
               <SelectValue placeholder="Todos los modelos" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos los modelos</SelectItem>
+              <SelectItem value="all">Todos los modelos</SelectItem>
               {filterOptions.modelos.map((modelo) => (
                 <SelectItem key={modelo} value={modelo}>{modelo}</SelectItem>
               ))}
