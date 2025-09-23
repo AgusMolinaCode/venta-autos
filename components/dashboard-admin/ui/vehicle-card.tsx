@@ -5,7 +5,7 @@ import { VehicleImage } from "./vehicle-image";
 import { StatusDropdown } from "./status-dropdown";
 import { PriceDisplay } from "./price-display";
 import { VehicleActionsMenu } from "./vehicle-actions-menu";
-import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
+// Vehicle status is now managed through database estado field
 
 interface VehicleCardProps {
   vehicle: VehiculoConFotos;
@@ -22,10 +22,8 @@ export function VehicleCard({
   onViewDetails,
   onStatusChange
 }: VehicleCardProps) {
-  const { getVehicleStatus } = useVehicleStatusCache();
-  
-  // Obtener el estado actual desde el cache
-  const currentStatus = getVehicleStatus(vehicle.id!);
+  // Use estado from database vehicle object
+  const currentStatus = vehicle.estado || "preparación";
   
   return (
     <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 p-4 hover:shadow-md transition-shadow min-h-[320px] h-fit flex flex-col">

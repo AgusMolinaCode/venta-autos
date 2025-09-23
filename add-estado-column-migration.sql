@@ -3,12 +3,12 @@
 
 -- 1. Add the estado column with enum constraint
 ALTER TABLE vehiculos
-ADD COLUMN IF NOT EXISTS estado VARCHAR(20) DEFAULT 'publicado'
+ADD COLUMN IF NOT EXISTS estado VARCHAR(20) DEFAULT 'preparación'
 CHECK (estado IN ('publicado', 'pausado', 'vendido', 'preparación'));
 
--- 2. Update existing records to have 'publicado' status
+-- 2. Update existing records to have 'preparación' status
 UPDATE vehiculos
-SET estado = 'publicado'
+SET estado = 'preparación'
 WHERE estado IS NULL;
 
 -- 3. Make the column NOT NULL after setting default values

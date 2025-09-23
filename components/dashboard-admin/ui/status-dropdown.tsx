@@ -17,7 +17,7 @@ import {
   ESTADOS,
   EstadoType,
 } from "@/constants";
-import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
+import { useVehicleStatusDB } from "@/hooks/use-vehicle-status-db";
 
 interface StatusDropdownProps {
   vehicleId: string;
@@ -62,16 +62,12 @@ export function StatusDropdown({
   className,
 }: StatusDropdownProps) {
   const {
-    getVehicleStatus,
     updateVehicleStatus,
     isLoading,
-  } = useVehicleStatusCache();
+  } = useVehicleStatusDB();
 
-  // Obtener el estado actual del cache o usar el valor por defecto
-  const status =
-    getVehicleStatus(vehicleId) ||
-    currentStatus ||
-    "preparación";
+  // Usar el estado actual proporcionado o valor por defecto
+  const status = currentStatus || "preparación";
 
   const handleStatusChange = async (
     newStatus: EstadoType,
