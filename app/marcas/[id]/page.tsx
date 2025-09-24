@@ -51,7 +51,7 @@ export default function MarcaPage({
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 dark:bg-neutral-900 bg-gray-50">
         <h1 className="text-4xl font-bold text-center mb-12">
           Cargando vehículos de {brandName}...
         </h1>
@@ -83,7 +83,7 @@ export default function MarcaPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-16 dark:bg-neutral-900 bg-gray-50">
       <h1 className="text-4xl font-bold text-center dark:text-gray-100 text-gray-900 mb-4">
         Vehículos {brandName}
       </h1>

@@ -37,7 +37,7 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <DashboardNavigationProvider>
-                <div className="min-h-screen bg-background">
+                <div className="min-h-screen dark:bg-neutral-900 bg-gray-50">
                   <Header />
 
                   {/* Main Content */}
