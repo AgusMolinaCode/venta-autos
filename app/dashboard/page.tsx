@@ -68,13 +68,13 @@ function DashboardContent() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full flex-1 flex-col bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
+        "mx-auto flex w-full flex-1 flex-col  md:flex-row dark:bg-neutral-900 bg-gray-50",
         "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto dark:bg-neutral-900 bg-gray-50">
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
