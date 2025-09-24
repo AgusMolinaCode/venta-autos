@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { IconPlus } from "@tabler/icons-react";
 import {
@@ -24,6 +24,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { VehiculoConFotos } from "@/lib/supabase";
 import { useVehicles } from "@/hooks/use-vehicles";
 import { useVehicleSearch } from "@/hooks/use-vehicle-search";
+import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import Buscador from "../buscador/Buscador";
 import AddCarModal from "../add-car-modal";
 import { VehicleDetailsModal } from "@/modals/details-modal/vehicle-details-modal";
@@ -35,6 +36,18 @@ interface StepFormProps {
 
 const StepForm = ({ onClick, disabled }: StepFormProps) => {
   const { vehicles, loading, refetch, deleteVehicle } = useVehicles();
+  const { syncFromDatabase } = useVehicleStatusCache();
+
+  // ✅ Sincronizar cache con estados de BD al cargar vehículos
+  useEffect(() => {
+    if (vehicles.length > 0) {
+      vehicles.forEach((vehicle) => {
+        if (vehicle.id && vehicle.estado) {
+          syncFromDatabase(vehicle.id, vehicle.estado);
+        }
+      });
+    }
+  }, [vehicles, syncFromDatabase]);
 
   const {
     isAddModalOpen,

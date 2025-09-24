@@ -99,8 +99,8 @@ export function useAllVehicles(): UseAllVehiclesReturn {
     queryKey: getAllVehiclesQueryKey(),
     queryFn: fetchAllVehicles,
     enabled: isPageVisible, // Only fetch if page is visible
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 1000, // ✅ Reducido a 30 segundos para mayor responsividad
+    gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false, // Prevent refetch on tab focus
     refetchOnMount: false, // Don't refetch on mount if we have data
     retry: 2,

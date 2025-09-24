@@ -13,11 +13,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ESTADOS,
   EstadoType,
 } from "@/constants";
 import { useVehicleStatusDB } from "@/hooks/use-vehicle-status-db";
+import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 
 interface StatusDropdownProps {
   vehicleId: string;
@@ -66,8 +69,14 @@ export function StatusDropdown({
     isLoading,
   } = useVehicleStatusDB();
 
-  // Usar el estado actual proporcionado o valor por defecto
-  const status = currentStatus || "preparación";
+  // Hook para sincronizar cache después de actualizar BD
+  const { updateVehicleStatus: updateCache, getVehicleStatus, statusCache } = useVehicleStatusCache();
+
+  // Query client para invalidar TopCars cuando cambie el estado
+  const queryClient = useQueryClient();
+
+  // ✅ Usar directamente el cache, que debería triggear re-render
+  const status = getVehicleStatus(vehicleId) || currentStatus || "preparación";
 
   const handleStatusChange = async (
     newStatus: EstadoType,
@@ -86,6 +95,12 @@ export function StatusDropdown({
         );
 
       if (success) {
+        // ✅ Sincronizar cache después de actualizar BD
+        await updateCache(vehicleId, newStatus);
+
+        // ✅ Invalidar query de TopCars para actualización en tiempo real
+        queryClient.invalidateQueries({ queryKey: ["all-vehicles"] });
+
         onStatusChange?.(newStatus);
         toast.success(
           `Estado cambiado a "${STATUS_CONFIG[newStatus].label}"`,

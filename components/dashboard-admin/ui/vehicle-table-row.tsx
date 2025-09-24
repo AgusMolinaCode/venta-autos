@@ -9,7 +9,7 @@ import { VehiculoConFotos } from "@/lib/supabase";
 import { VehicleImage } from "./vehicle-image";
 import { StatusDropdown } from "./status-dropdown";
 import { PriceDisplay } from "./price-display";
-// Vehicle status is now managed through database estado field
+import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 
 interface VehicleTableRowProps {
@@ -31,8 +31,10 @@ export function VehicleTableRow({
   onViewDetails,
   onStatusChange,
 }: VehicleTableRowProps) {
-  // Use estado from database vehicle object
-  const currentStatus = vehicle.estado || "preparación";
+  const { getVehicleStatus } = useVehicleStatusCache();
+
+  // ✅ Usar cache actualizado en lugar del objeto stale
+  const currentStatus = getVehicleStatus(vehicle.id!) || vehicle.estado || "preparación";
 
   return (
     <TableRow 

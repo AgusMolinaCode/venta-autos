@@ -42,8 +42,18 @@ export function useVehicleStatusCache() {
 
   // Obtener estado de un vehículo
   const getVehicleStatus = useCallback((vehicleId: string): EstadoType => {
-    return globalStatusCache[vehicleId] || "preparación";
-  }, []);
+    return statusCache[vehicleId] || globalStatusCache[vehicleId] || "preparación";
+  }, [statusCache]);
+
+  // Sincronizar estado desde BD al cache
+  const syncFromDatabase = useCallback((vehicleId: string, status: EstadoType) => {
+    globalStatusCache = {
+      ...globalStatusCache,
+      [vehicleId]: status,
+    };
+    setStatusCache(globalStatusCache);
+    saveToStorage(globalStatusCache);
+  }, [saveToStorage]);
 
   // Actualizar estado de un vehículo
   const updateVehicleStatus = useCallback(
@@ -105,6 +115,7 @@ export function useVehicleStatusCache() {
     isLoading,
     getVehicleStatus,
     updateVehicleStatus,
+    syncFromDatabase,
     clearCache,
     getCacheStats,
   };
