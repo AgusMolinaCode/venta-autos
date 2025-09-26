@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { VehiculoConFotos } from "@/lib/supabase";
+import { VehicleFilterState } from "@/hooks/use-vehicle-filters";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,136 +17,86 @@ import { X, Filter, ChevronDown, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMBUSTIBLES, TRANSMISIONES } from "@/constants";
 import { formatCurrency } from "@/utils/currency";
-import { DolarService } from "@/lib/services/dolar-service";
 
-interface BrandFilterPanelProps {
+interface VehicleFilterPanelProps {
   vehicles: VehiculoConFotos[];
-  onFilterChange: (filters: FilterState) => void;
+  onFilterChange: (filters: VehicleFilterState) => void;
   className?: string;
   variant?: 'horizontal' | 'vertical';
-  selectedCurrency?: 'ARS' | 'USD';
-  blueDollarRate?: number;
-  onCurrencyChange?: (currency: 'ARS' | 'USD') => void;
-  onBlueDollarRateChange?: (rate: number) => void;
 }
 
-export interface FilterState {
-  modelo: string | null;
-  anoRange: [number, number];
-  precioRange: [number, number];
-  kilometrajeRange: [number, number];
-  combustibles: string[];
-  transmisiones: string[];
-}
-
-export function BrandFilterPanel({
+export function VehicleFilterPanel({
   vehicles,
   onFilterChange,
   className,
   variant = 'horizontal',
-  selectedCurrency: externalCurrency,
-  blueDollarRate: externalRate,
-  onCurrencyChange,
-  onBlueDollarRateChange,
-}: BrandFilterPanelProps) {
+}: VehicleFilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [internalBlueDollarRate, setInternalBlueDollarRate] = useState<number>(1000); // Fallback rate
-  const [internalSelectedCurrency, setInternalSelectedCurrency] = useState<'ARS' | 'USD'>('ARS');
 
-  // Use external state if provided, otherwise use internal state
-  const blueDollarRate = externalRate ?? internalBlueDollarRate;
-  const selectedCurrency = externalCurrency ?? internalSelectedCurrency;
-
-  // Fetch blue dollar rate on component mount
-  useEffect(() => {
-    const fetchDollarRate = async () => {
-      try {
-        const dolarService = DolarService.getInstance();
-        const rate = await dolarService.getBlueDollarRate();
-
-        if (onBlueDollarRateChange) {
-          onBlueDollarRateChange(rate);
-        } else {
-          setInternalBlueDollarRate(rate);
-        }
-      } catch (error) {
-        console.warn('[BrandFilterPanel] Could not fetch dollar rate, using fallback');
-      }
-    };
-
-    fetchDollarRate();
-  }, [onBlueDollarRateChange]);
-
-  // Extract unique values from vehicles and convert to selected currency for uniform filtering
+  // Extract unique values from vehicles
   const filterOptions = useMemo(() => {
+    const marcas = [...new Set(vehicles.map((v) => v.marca))].sort();
     const modelos = [...new Set(vehicles.map((v) => v.modelo))].sort();
     const anos = vehicles.map((v) => v.ano).filter(Boolean);
+    const precios = vehicles.map((v) => v.precio).filter(Boolean);
     const kilometrajes = vehicles.map((v) => v.kilometraje).filter(Boolean);
-
-    // Convert all prices to selected currency for consistent filtering
-    const preciosEnMonedaSeleccionada = vehicles
-      .map((v) => {
-        if (!v.precio) return null;
-
-        if (selectedCurrency === 'ARS') {
-          // Convert to ARS
-          if (v.moneda === 'ARS') return v.precio;
-          if (v.moneda === 'USD') return v.precio * blueDollarRate;
-        } else {
-          // Convert to USD
-          if (v.moneda === 'USD') return v.precio;
-          if (v.moneda === 'ARS') return v.precio / blueDollarRate;
-        }
-        return null;
-      })
-      .filter(Boolean) as number[];
 
     // Handle empty arrays with fallback values
     const anoMin = anos.length > 0 ? Math.min(...anos) : 1970;
     const anoMax = anos.length > 0 ? Math.max(...anos) : 2025;
-    const precioMin = preciosEnMonedaSeleccionada.length > 0 ? Math.min(...preciosEnMonedaSeleccionada) : 0;
-    const precioMax = preciosEnMonedaSeleccionada.length > 0
-      ? Math.max(...preciosEnMonedaSeleccionada)
-      : (selectedCurrency === 'ARS' ? 10000000 : 100000); // 10M ARS or 100K USD
+    const precioMin = precios.length > 0 ? Math.min(...precios) : 0;
+    const precioMax = precios.length > 0 ? Math.max(...precios) : 1000000;
     const kmMax = kilometrajes.length > 0 ? Math.max(...kilometrajes) : 500000;
 
     return {
+      marcas,
       modelos,
       anoRange: [anoMin, anoMax] as [number, number],
       precioRange: [precioMin, precioMax] as [number, number],
       kilometrajeRange: [0, kmMax] as [number, number],
     };
-  }, [vehicles, blueDollarRate, selectedCurrency]);
+  }, [vehicles]);
 
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = useState<VehicleFilterState>({
+    marca: null,
     modelo: null,
     anoRange: filterOptions.anoRange,
-    precioRange: [0, filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000)],
+    precioRange: [0, filterOptions.precioRange[1] || 1000000],
     kilometrajeRange: [0, filterOptions.kilometrajeRange[1] || 500000],
     combustibles: [],
     transmisiones: [],
   });
 
-  // Update filters when currency changes
-  useEffect(() => {
-    setFilters(prev => ({
-      ...prev,
-      precioRange: [0, filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000)]
-    }));
-  }, [selectedCurrency, filterOptions.precioRange]);
+  // Get available modelos for selected marca
+  const availableModelos = useMemo(() => {
+    if (!filters.marca) {
+      return filterOptions.modelos;
+    }
+    return [...new Set(vehicles
+      .filter(v => v.marca === filters.marca)
+      .map(v => v.modelo)
+    )].sort();
+  }, [vehicles, filters.marca, filterOptions.modelos]);
 
-  const updateFilters = (newFilters: Partial<FilterState>) => {
-    const updated = { ...filters, ...newFilters };
+  const updateFilters = (newFilters: Partial<VehicleFilterState>) => {
+    let updated = { ...filters, ...newFilters };
+
+    // If marca changes, reset modelo
+    if (newFilters.marca !== undefined && newFilters.marca !== filters.marca) {
+      updated.modelo = null;
+    }
+
     setFilters(updated);
     onFilterChange(updated);
   };
 
   const clearFilters = () => {
-    const cleared: FilterState = {
+    const cleared: VehicleFilterState = {
+      marca: null,
       modelo: null,
       anoRange: filterOptions.anoRange,
-      precioRange: [0, filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000)],
+      precioRange: [0, filterOptions.precioRange[1] || 1000000],
       kilometrajeRange: [0, filterOptions.kilometrajeRange[1] || 500000],
       combustibles: [],
       transmisiones: [],
@@ -156,6 +107,7 @@ export function BrandFilterPanel({
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
+    if (filters.marca) count++;
     if (filters.modelo) count++;
     if (
       filters.anoRange[0] !== filterOptions.anoRange[0] ||
@@ -164,7 +116,7 @@ export function BrandFilterPanel({
       count++;
     if (
       filters.precioRange[0] !== 0 ||
-      filters.precioRange[1] !== (filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000))
+      filters.precioRange[1] !== (filterOptions.precioRange[1] || 1000000)
     )
       count++;
     if (
@@ -175,7 +127,7 @@ export function BrandFilterPanel({
     if (filters.combustibles.length > 0) count++;
     if (filters.transmisiones.length > 0) count++;
     return count;
-  }, [filters, filterOptions, selectedCurrency]);
+  }, [filters, filterOptions]);
 
   const toggleCombustible = (combustible: string) => {
     const updated = filters.combustibles.includes(combustible)
@@ -201,7 +153,7 @@ export function BrandFilterPanel({
           className="lg:hidden w-full mb-4 justify-start"
         >
           <Filter className="h-4 w-4 mr-2" />
-          Filtros de Marca
+          Filtros
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="ml-2 text-xs">
               {activeFilterCount}
@@ -221,7 +173,7 @@ export function BrandFilterPanel({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros de Marca</h3>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros</h3>
                 {activeFilterCount > 0 && (
                   <Badge variant="secondary" className="text-xs">
                     {activeFilterCount}
@@ -245,6 +197,31 @@ export function BrandFilterPanel({
           {/* Filter Content */}
           <div className="p-4">
             <div className="space-y-6">
+              {/* Marca Filter */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Marca
+                </label>
+                <Select
+                  value={filters.marca || "all"}
+                  onValueChange={(value) =>
+                    updateFilters({ marca: value === "all" ? null : value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Todas las marcas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las marcas</SelectItem>
+                    {filterOptions.marcas.map((marca) => (
+                      <SelectItem key={marca} value={marca}>
+                        {marca}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Modelo Filter */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -255,13 +232,14 @@ export function BrandFilterPanel({
                   onValueChange={(value) =>
                     updateFilters({ modelo: value === "all" ? null : value })
                   }
+                  disabled={!filters.marca}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Todos los modelos" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los modelos</SelectItem>
-                    {filterOptions.modelos.map((modelo) => (
+                    {availableModelos.map((modelo) => (
                       <SelectItem key={modelo} value={modelo}>
                         {modelo}
                       </SelectItem>
@@ -291,29 +269,9 @@ export function BrandFilterPanel({
 
               {/* Precio Range */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Precio: {formatCurrency(filters.precioRange[0], selectedCurrency)} - {formatCurrency(filters.precioRange[1], selectedCurrency)}
-                  </label>
-                  <Select
-                    value={selectedCurrency}
-                    onValueChange={(value: 'ARS' | 'USD') => {
-                      if (onCurrencyChange) {
-                        onCurrencyChange(value);
-                      } else {
-                        setInternalSelectedCurrency(value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-20 h-6 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ARS">ARS</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Precio: {formatCurrency(filters.precioRange[0], 'USD')} - {formatCurrency(filters.precioRange[1], 'USD')}
+                </label>
                 <div className="pt-2">
                   <Slider
                     value={filters.precioRange}
@@ -322,7 +280,7 @@ export function BrandFilterPanel({
                     }
                     min={filterOptions.precioRange[0]}
                     max={filterOptions.precioRange[1]}
-                    step={selectedCurrency === 'ARS' ? 100000 : 1000}
+                    step={1000}
                     className="w-full"
                   />
                 </div>
@@ -415,7 +373,7 @@ export function BrandFilterPanel({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros de Marca</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros</h3>
                     {activeFilterCount > 0 && (
                       <Badge variant="secondary" className="text-xs">
                         {activeFilterCount}
@@ -447,6 +405,31 @@ export function BrandFilterPanel({
               {/* Mobile Filter Content */}
               <div className="p-4 overflow-y-auto h-[calc(100vh-100px)]">
                 <div className="space-y-6">
+                  {/* Marca Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Marca
+                    </label>
+                    <Select
+                      value={filters.marca || "all"}
+                      onValueChange={(value) =>
+                        updateFilters({ marca: value === "all" ? null : value })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todas las marcas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas las marcas</SelectItem>
+                        {filterOptions.marcas.map((marca) => (
+                          <SelectItem key={marca} value={marca}>
+                            {marca}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Modelo Filter */}
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -457,13 +440,14 @@ export function BrandFilterPanel({
                       onValueChange={(value) =>
                         updateFilters({ modelo: value === "all" ? null : value })
                       }
+                      disabled={!filters.marca}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Todos los modelos" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos los modelos</SelectItem>
-                        {filterOptions.modelos.map((modelo) => (
+                        {availableModelos.map((modelo) => (
                           <SelectItem key={modelo} value={modelo}>
                             {modelo}
                           </SelectItem>
@@ -493,29 +477,9 @@ export function BrandFilterPanel({
 
                   {/* Precio Range */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Precio: {formatCurrency(filters.precioRange[0], selectedCurrency)} - {formatCurrency(filters.precioRange[1], selectedCurrency)}
-                      </label>
-                      <Select
-                        value={selectedCurrency}
-                        onValueChange={(value: 'ARS' | 'USD') => {
-                          if (onCurrencyChange) {
-                            onCurrencyChange(value);
-                          } else {
-                            setInternalSelectedCurrency(value);
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-20 h-6 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ARS">ARS</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Precio: {formatCurrency(filters.precioRange[0], 'USD')} - {formatCurrency(filters.precioRange[1], 'USD')}
+                    </label>
                     <div className="pt-2">
                       <Slider
                         value={filters.precioRange}
@@ -524,7 +488,7 @@ export function BrandFilterPanel({
                         }
                         min={filterOptions.precioRange[0]}
                         max={filterOptions.precioRange[1]}
-                        step={selectedCurrency === 'ARS' ? 100000 : 1000}
+                        step={1000}
                         className="w-full"
                       />
                     </div>
@@ -613,71 +577,111 @@ export function BrandFilterPanel({
         className
       )}
     >
-      {/* Compact Filter Bar */}
-      <div className="p-3">
-        {/* Compact Filter Content */}
-        <div
-          className={cn(
-            "grid gap-3",
-            !isExpanded && "hidden lg:grid",
-            "grid-cols-1 md:grid-cols-2 lg:grid-cols-6"
-          )}
-        >
-          {/* Modelo Filter - Compact */}
-          <div className="space-y-1 flex gap-3">
-            <div className="grid gap-2">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Modelo
-              </label>
-              <Select
-                value={filters.modelo || "all"}
-                onValueChange={(value) =>
-                  updateFilters({ modelo: value === "all" ? null : value })
-                }
-              >
-                <SelectTrigger className="h-6 text-xs">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los modelos</SelectItem>
-                  {filterOptions.modelos.map((modelo) => (
-                    <SelectItem key={modelo} value={modelo}>
-                      {modelo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-1">
-              {activeFilterCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="h-7 px-2 text-xs text-gray-600 dark:text-gray-400"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Limpiar
-                </Button>
-              )}
+      {/* Filter Header */}
+      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros</h3>
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {activeFilterCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="h-7 px-2 lg:hidden"
+                onClick={clearFilters}
+                className="h-6 px-2 text-xs text-gray-600 dark:text-gray-400"
               >
-                <ChevronDown
-                  className={cn(
-                    "h-3 w-3 transition-transform",
-                    isExpanded && "rotate-180"
-                  )}
-                />
+                <X className="h-3 w-3 mr-1" />
+                Limpiar
               </Button>
-            </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-6 px-2 lg:hidden"
+            >
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 transition-transform",
+                  isExpanded && "rotate-180"
+                )}
+              />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Content */}
+      <div className="p-3">
+        <div
+          className={cn(
+            "grid gap-4",
+            !isExpanded && "hidden lg:grid",
+            variant === 'vertical'
+              ? "grid-cols-1 gap-6"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+          )}
+        >
+          {/* Marca Filter */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Marca
+            </label>
+            <Select
+              value={filters.marca || "all"}
+              onValueChange={(value) =>
+                updateFilters({ marca: value === "all" ? null : value })
+              }
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las marcas</SelectItem>
+                {filterOptions.marcas.map((marca) => (
+                  <SelectItem key={marca} value={marca}>
+                    {marca}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Año Range - Compact */}
-          <div className="space-y-1">
+          {/* Modelo Filter */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Modelo
+            </label>
+            <Select
+              value={filters.modelo || "all"}
+              onValueChange={(value) =>
+                updateFilters({ modelo: value === "all" ? null : value })
+              }
+              disabled={!filters.marca}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los modelos</SelectItem>
+                {availableModelos.map((modelo) => (
+                  <SelectItem key={modelo} value={modelo}>
+                    {modelo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Año Range */}
+          <div className="space-y-2">
             <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
               Año: {filters.anoRange[0]}-{filters.anoRange[1]}
             </label>
@@ -695,31 +699,11 @@ export function BrandFilterPanel({
             </div>
           </div>
 
-          {/* Precio Range - Compact */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Precio: {formatCurrency(filters.precioRange[0], selectedCurrency)} - {formatCurrency(filters.precioRange[1], selectedCurrency)}
-              </label>
-              <Select
-                value={selectedCurrency}
-                onValueChange={(value: 'ARS' | 'USD') => {
-                  if (onCurrencyChange) {
-                    onCurrencyChange(value);
-                  } else {
-                    setInternalSelectedCurrency(value);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-16 h-5 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ARS">ARS</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Precio Range */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Precio: {formatCurrency(filters.precioRange[0], 'USD')} - {formatCurrency(filters.precioRange[1], 'USD')}
+            </label>
             <div className="pt-2">
               <Slider
                 value={filters.precioRange}
@@ -728,14 +712,14 @@ export function BrandFilterPanel({
                 }
                 min={filterOptions.precioRange[0]}
                 max={filterOptions.precioRange[1]}
-                step={selectedCurrency === 'ARS' ? 100000 : 1000}
+                step={1000}
                 className="w-full"
               />
             </div>
           </div>
 
-          {/* Kilometraje Range - Compact */}
-          <div className="space-y-1">
+          {/* Kilometraje Range */}
+          <div className="space-y-2">
             <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
               KM: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k-
               {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
@@ -754,60 +738,81 @@ export function BrandFilterPanel({
             </div>
           </div>
 
-          {/* Combustible Filter - Compact */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Combustible
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {COMBUSTIBLES.map((combustible) => (
-                <Button
-                  key={combustible}
-                  variant={
-                    filters.combustibles.includes(combustible)
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  onClick={() => toggleCombustible(combustible)}
-                  className="h-6 px-2 text-xs"
-                >
-                  {combustible === "Eléctrico"
-                    ? "Elec"
-                    : combustible === "Híbrido"
-                    ? "Híb"
-                    : combustible}
-                </Button>
-              ))}
+          {/* Combustible & Transmisión */}
+          <div className={cn(
+            "space-y-4",
+            variant === 'horizontal' ? "xl:col-span-1" : ""
+          )}>
+            {/* Combustible Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                Combustible
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {COMBUSTIBLES.map((combustible) => (
+                  <Button
+                    key={combustible}
+                    variant={
+                      filters.combustibles.includes(combustible)
+                        ? "default"
+                        : "outline"
+                    }
+                    size="sm"
+                    onClick={() => toggleCombustible(combustible)}
+                    className="h-6 px-2 text-xs"
+                  >
+                    {combustible === "Eléctrico"
+                      ? "Elec"
+                      : combustible === "Híbrido"
+                      ? "Híb"
+                      : combustible}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Transmisión Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                Transmisión
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {TRANSMISIONES.map((transmision) => (
+                  <Button
+                    key={transmision}
+                    variant={
+                      filters.transmisiones.includes(transmision)
+                        ? "default"
+                        : "outline"
+                    }
+                    size="sm"
+                    onClick={() => toggleTransmision(transmision)}
+                    className="h-6 px-2 text-xs"
+                  >
+                    {transmision === "Automática"
+                      ? "Auto"
+                      : transmision === "Manual"
+                      ? "Man"
+                      : transmision}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Transmisión Filter - Compact */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Transmisión
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {TRANSMISIONES.map((transmision) => (
-                <Button
-                  key={transmision}
-                  variant={
-                    filters.transmisiones.includes(transmision)
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  onClick={() => toggleTransmision(transmision)}
-                  className="h-6 px-2 text-xs"
-                >
-                  {transmision === "Automática"
-                    ? "Auto"
-                    : transmision === "Manual"
-                    ? "Man"
-                    : transmision}
-                </Button>
-              ))}
-            </div>
+        {/* Mobile Expanded State */}
+        <div
+          className={cn(
+            "mt-4 lg:hidden",
+            !isExpanded && "hidden"
+          )}
+        >
+          <div className="grid gap-4">
+            {/* Mobile filters would go here if needed */}
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+              Use los filtros de arriba para refinar su búsqueda
+            </p>
           </div>
         </div>
       </div>

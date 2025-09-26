@@ -33,13 +33,21 @@ export default function MarcaPage({
     vehicle.marca.toLowerCase().replace(/\s+/g, '-') === id.toLowerCase()
   ), [vehicles, getVehicleStatus, id]);
 
+  // Currency state for multi-currency filtering
+  const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'USD'>('ARS');
+  const [blueDollarRate, setBlueDollarRate] = useState<number>(1000);
+
   // Use brand filters for additional filtering
   const {
     filteredVehicles,
     filterCounts,
     updateFilters,
     hasActiveFilters
-  } = useBrandFilters({ vehicles: brandVehicles });
+  } = useBrandFilters({
+    vehicles: brandVehicles,
+    selectedCurrency,
+    blueDollarRate
+  });
 
   const closeViewModal = () => {
     setViewingVehicle(null);
@@ -83,90 +91,108 @@ export default function MarcaPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-16 dark:bg-neutral-900 bg-gray-50">
-      <h1 className="text-4xl font-bold text-center dark:text-gray-100 text-gray-900 mb-4">
-        Vehículos {brandName}
-      </h1>
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-        <p className="text-gray-600 dark:text-gray-400 mb-4 lg:mb-0">
-          {hasActiveFilters ? (
-            <>
-              Mostrando {filteredVehicles.length} de {brandVehicles.length} vehículo{brandVehicles.length !== 1 ? 's' : ''}
-            </>
-          ) : (
-            <>
-              {brandVehicles.length} vehículo{brandVehicles.length !== 1 ? 's' : ''} disponible{brandVehicles.length !== 1 ? 's' : ''}
-            </>
-          )}
-        </p>
-      </div>
+    <div className="dark:bg-neutral-900 bg-gray-50 min-h-screen">
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold text-center dark:text-gray-100 text-gray-900 mb-8">
+          Vehículos {brandName}
+        </h1>
 
-      {/* Filter Panel */}
-      {brandVehicles.length > 0 && (
-        <BrandFilterPanel
-          vehicles={brandVehicles}
-          onFilterChange={updateFilters}
-          className="mb-8"
-        />
-      )}
-
-      {filteredVehicles.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-2xl text-gray-500 dark:text-gray-400">
-            {hasActiveFilters ?
-              "No hay vehículos que coincidan con los filtros seleccionados." :
-              `No hay vehículos disponibles de ${brandName} en este momento.`
-            }
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {filteredVehicles.map((vehicle) => (
-            <div
-              key={vehicle.id}
-              onClick={() => handleCardClick(vehicle)}
-              className="bg-emerald-200 dark:bg-emerald-700 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
-            >
-              <div className="border-2 border-white/20 rounded-xl w-full h-56 m-4 mb-0 overflow-hidden">
-                {vehicle.fotos?.length ? (
-                  <VehicleImage
-                    vehicle={vehicle}
-                    className="w-full h-full rounded-xl"
-                    showFallback={false}
-                  />
+        {/* Layout con sidebar izquierda y contenido principal */}
+            <div className="mb-6">
+              <p className="text-gray-600 dark:text-gray-400">
+                {hasActiveFilters ? (
+                  <>
+                    Mostrando {filteredVehicles.length} de {brandVehicles.length} vehículo{brandVehicles.length !== 1 ? 's' : ''}
+                  </>
                 ) : (
-                  <div className="bg-emerald-200 dark:bg-emerald-700 w-full h-full flex items-center justify-center">
-                    <Image
-                      src="/image-not-found-icon.png"
-                      alt="No image available"
-                      className="w-32 h-32 object-contain opacity-80"
-                      width={128}
-                      height={128}
-                    />
-                  </div>
+                  <>
+                    {brandVehicles.length} vehículo{brandVehicles.length !== 1 ? 's' : ''} disponible{brandVehicles.length !== 1 ? 's' : ''}
+                  </>
                 )}
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold dark:text-gray-100 text-gray-900 mb-2">
-                  {vehicle.marca} {vehicle.modelo} {vehicle.ano}
-                </h3>
-                <p className="dark:text-gray-100 text-gray-900 mb-3">
-                  {vehicle.combustible} • {vehicle.kilometraje ? `${vehicle.kilometraje.toLocaleString()} km` : 'N/A'}
-                </p>
-                <p className="text-3xl font-bold dark:text-gray-100 text-gray-900 mb-4">
-                  {vehicle.precio ? formatCurrency(vehicle.precio, vehicle.moneda) : 'Consultar'}
-                </p>
-              </div>
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar de filtros - Solo visible si hay vehículos */}
+          {brandVehicles.length > 0 && (
+            <div className="w-full lg:w-80 flex-shrink-0">
+              <BrandFilterPanel
+                vehicles={brandVehicles}
+                onFilterChange={updateFilters}
+                variant="vertical"
+                className="sticky top-4"
+                selectedCurrency={selectedCurrency}
+                blueDollarRate={blueDollarRate}
+                onCurrencyChange={setSelectedCurrency}
+                onBlueDollarRateChange={setBlueDollarRate}
+              />
+            </div>
+          )}
 
-      <VehicleDetailsModal
-        vehicle={viewingVehicle}
-        isOpen={!!viewingVehicle}
-        onClose={closeViewModal}
-      />
+          {/* Contenido principal */}
+          <div className="flex-1">
+            {/* Contador de resultados */}
+
+            {/* Grid de vehículos */}
+            {filteredVehicles.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-2xl text-gray-500 dark:text-gray-400">
+                  {hasActiveFilters ?
+                    "No hay vehículos que coincidan con los filtros seleccionados." :
+                    `No hay vehículos disponibles de ${brandName} en este momento.`
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+                {filteredVehicles.map((vehicle) => (
+                  <div
+                    key={vehicle.id}
+                    onClick={() => handleCardClick(vehicle)}
+                    className="bg-emerald-200 dark:bg-emerald-700 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                  >
+                    <div className="border-2 border-white/20 rounded-xl w-full h-56 m-4 mb-0 overflow-hidden">
+                      {vehicle.fotos?.length ? (
+                        <VehicleImage
+                          vehicle={vehicle}
+                          className="w-full h-full rounded-xl"
+                          showFallback={false}
+                        />
+                      ) : (
+                        <div className="bg-emerald-200 dark:bg-emerald-700 w-full h-full flex items-center justify-center">
+                          <Image
+                            src="/image-not-found-icon.png"
+                            alt="No image available"
+                            className="w-32 h-32 object-contain opacity-80"
+                            width={128}
+                            height={128}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold dark:text-gray-100 text-gray-900 mb-2">
+                        {vehicle.marca} {vehicle.modelo} {vehicle.ano}
+                      </h3>
+                      <p className="dark:text-gray-100 text-gray-900 mb-3">
+                        {vehicle.combustible} • {vehicle.kilometraje ? `${vehicle.kilometraje.toLocaleString()} km` : 'N/A'}
+                      </p>
+                      <p className="text-3xl font-bold dark:text-gray-100 text-gray-900 mb-4">
+                        {vehicle.precio ? formatCurrency(vehicle.precio, vehicle.moneda) : 'Consultar'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <VehicleDetailsModal
+          vehicle={viewingVehicle}
+          isOpen={!!viewingVehicle}
+          onClose={closeViewModal}
+        />
+      </div>
     </div>
   )
 }
