@@ -1,4 +1,5 @@
 export { BrandFilterPanel } from './brand-filter-panel';
+export { BrandFilter } from './brand-filter';
 export { SortByFilter } from './sort-by-filter';
 export { ModelFilter } from './model-filter';
 export { RangeFilter } from './range-filter';

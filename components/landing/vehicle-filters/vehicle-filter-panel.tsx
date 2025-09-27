@@ -4,25 +4,25 @@ import { useState, useMemo } from "react";
 import { VehiculoConFotos } from "@/lib/supabase";
 import { VehicleFilterState } from "@/hooks/use-vehicle-filters";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { X, Filter, ChevronDown, Menu } from "lucide-react";
+import { X, Filter, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMBUSTIBLES, TRANSMISIONES } from "@/constants";
-import { formatCurrency } from "@/utils/currency";
+// Import modular filter components
+import { BrandFilter } from "../brand-filters/brand-filter";
+import { SortByFilter } from "../brand-filters/sort-by-filter";
+import { ModelFilter } from "../brand-filters/model-filter";
+import { RangeFilter } from "../brand-filters/range-filter";
+import { MultiSelectFilter } from "../brand-filters/multi-select-filter";
+import { FilterState } from "../brand-filters/types";
+import { DolarService } from "@/lib/services/dolar-service";
 
 interface VehicleFilterPanelProps {
   vehicles: VehiculoConFotos[];
   onFilterChange: (filters: VehicleFilterState) => void;
   className?: string;
   variant?: 'horizontal' | 'vertical';
+  blueDollarRate?: number;
 }
 
 export function VehicleFilterPanel({
@@ -30,6 +30,7 @@ export function VehicleFilterPanel({
   onFilterChange,
   className,
   variant = 'horizontal',
+  blueDollarRate,
 }: VehicleFilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -39,21 +40,17 @@ export function VehicleFilterPanel({
     const marcas = [...new Set(vehicles.map((v) => v.marca))].sort();
     const modelos = [...new Set(vehicles.map((v) => v.modelo))].sort();
     const anos = vehicles.map((v) => v.ano).filter(Boolean);
-    const precios = vehicles.map((v) => v.precio).filter(Boolean);
     const kilometrajes = vehicles.map((v) => v.kilometraje).filter(Boolean);
 
     // Handle empty arrays with fallback values
     const anoMin = anos.length > 0 ? Math.min(...anos) : 1970;
     const anoMax = anos.length > 0 ? Math.max(...anos) : 2025;
-    const precioMin = precios.length > 0 ? Math.min(...precios) : 0;
-    const precioMax = precios.length > 0 ? Math.max(...precios) : 1000000;
     const kmMax = kilometrajes.length > 0 ? Math.max(...kilometrajes) : 500000;
 
     return {
       marcas,
       modelos,
       anoRange: [anoMin, anoMax] as [number, number],
-      precioRange: [precioMin, precioMax] as [number, number],
       kilometrajeRange: [0, kmMax] as [number, number],
     };
   }, [vehicles]);
@@ -62,10 +59,10 @@ export function VehicleFilterPanel({
     marca: null,
     modelo: null,
     anoRange: filterOptions.anoRange,
-    precioRange: [0, filterOptions.precioRange[1] || 1000000],
     kilometrajeRange: [0, filterOptions.kilometrajeRange[1] || 500000],
     combustibles: [],
     transmisiones: [],
+    sortBy: null,
   });
 
   // Get available modelos for selected marca
@@ -79,6 +76,16 @@ export function VehicleFilterPanel({
     )].sort();
   }, [vehicles, filters.marca, filterOptions.modelos]);
 
+  // Adapter function to convert between VehicleFilterState and FilterState
+  const convertToFilterState = (vehicleFilters: VehicleFilterState): FilterState => ({
+    modelo: vehicleFilters.modelo,
+    anoRange: vehicleFilters.anoRange,
+    kilometrajeRange: vehicleFilters.kilometrajeRange,
+    combustibles: vehicleFilters.combustibles,
+    transmisiones: vehicleFilters.transmisiones,
+    sortBy: vehicleFilters.sortBy,
+  });
+
   const updateFilters = (newFilters: Partial<VehicleFilterState>) => {
     let updated = { ...filters, ...newFilters };
 
@@ -91,15 +98,20 @@ export function VehicleFilterPanel({
     onFilterChange(updated);
   };
 
+  // Handler for modular filter components
+  const handleModularFilterChange = (filterUpdates: Partial<FilterState>) => {
+    updateFilters(filterUpdates);
+  };
+
   const clearFilters = () => {
     const cleared: VehicleFilterState = {
       marca: null,
       modelo: null,
       anoRange: filterOptions.anoRange,
-      precioRange: [0, filterOptions.precioRange[1] || 1000000],
       kilometrajeRange: [0, filterOptions.kilometrajeRange[1] || 500000],
       combustibles: [],
       transmisiones: [],
+      sortBy: null,
     };
     setFilters(cleared);
     onFilterChange(cleared);
@@ -115,33 +127,16 @@ export function VehicleFilterPanel({
     )
       count++;
     if (
-      filters.precioRange[0] !== 0 ||
-      filters.precioRange[1] !== (filterOptions.precioRange[1] || 1000000)
-    )
-      count++;
-    if (
       filters.kilometrajeRange[0] !== 0 ||
       filters.kilometrajeRange[1] !== (filterOptions.kilometrajeRange[1] || 500000)
     )
       count++;
     if (filters.combustibles.length > 0) count++;
     if (filters.transmisiones.length > 0) count++;
+    if (filters.sortBy) count++;
     return count;
   }, [filters, filterOptions]);
 
-  const toggleCombustible = (combustible: string) => {
-    const updated = filters.combustibles.includes(combustible)
-      ? filters.combustibles.filter((c) => c !== combustible)
-      : [...filters.combustibles, combustible];
-    updateFilters({ combustibles: updated });
-  };
-
-  const toggleTransmision = (transmision: string) => {
-    const updated = filters.transmisiones.includes(transmision)
-      ? filters.transmisiones.filter((t) => t !== transmision)
-      : [...filters.transmisiones, transmision];
-    updateFilters({ transmisiones: updated });
-  };
 
   if (variant === 'vertical') {
     return (
@@ -197,169 +192,65 @@ export function VehicleFilterPanel({
           {/* Filter Content */}
           <div className="p-4">
             <div className="space-y-6">
-              {/* Marca Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Marca
-                </label>
-                <Select
-                  value={filters.marca || "all"}
-                  onValueChange={(value) =>
-                    updateFilters({ marca: value === "all" ? null : value })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todas las marcas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las marcas</SelectItem>
-                    {filterOptions.marcas.map((marca) => (
-                      <SelectItem key={marca} value={marca}>
-                        {marca}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SortByFilter
+                sortBy={filters.sortBy}
+                vehicles={vehicles}
+                blueDollarRate={blueDollarRate}
+                onFilterChange={handleModularFilterChange}
+                variant="vertical"
+              />
 
-              {/* Modelo Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Modelo
-                </label>
-                <Select
-                  value={filters.modelo || "all"}
-                  onValueChange={(value) =>
-                    updateFilters({ modelo: value === "all" ? null : value })
-                  }
-                  disabled={!filters.marca}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todos los modelos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los modelos</SelectItem>
-                    {availableModelos.map((modelo) => (
-                      <SelectItem key={modelo} value={modelo}>
-                        {modelo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <BrandFilter
+                marca={filters.marca}
+                marcas={filterOptions.marcas}
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
 
-              {/* Año Range */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Año: {filters.anoRange[0]} - {filters.anoRange[1]}
-                </label>
-                <div className="pt-2">
-                  <Slider
-                    value={filters.anoRange}
-                    onValueChange={(value) =>
-                      updateFilters({ anoRange: value as [number, number] })
-                    }
-                    min={filterOptions.anoRange[0]}
-                    max={filterOptions.anoRange[1]}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+              <ModelFilter
+                modelo={filters.modelo}
+                modelos={availableModelos}
+                onFilterChange={handleModularFilterChange}
+                variant="vertical"
+              />
 
-              {/* Precio Range */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Precio: {formatCurrency(filters.precioRange[0], 'USD')} - {formatCurrency(filters.precioRange[1], 'USD')}
-                </label>
-                <div className="pt-2">
-                  <Slider
-                    value={filters.precioRange}
-                    onValueChange={(value) =>
-                      updateFilters({ precioRange: value as [number, number] })
-                    }
-                    min={filterOptions.precioRange[0]}
-                    max={filterOptions.precioRange[1]}
-                    step={1000}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+              <RangeFilter
+                range={filters.anoRange}
+                min={filterOptions.anoRange[0]}
+                max={filterOptions.anoRange[1]}
+                step={1}
+                label="Año"
+                onFilterChange={handleModularFilterChange}
+                variant="vertical"
+              />
 
-              {/* Kilometraje Range */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Kilometraje: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k - {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
-                </label>
-                <div className="pt-2">
-                  <Slider
-                    value={filters.kilometrajeRange}
-                    onValueChange={(value) =>
-                      updateFilters({ kilometrajeRange: value as [number, number] })
-                    }
-                    min={0}
-                    max={filterOptions.kilometrajeRange[1]}
-                    step={5000}
-                    className="w-full"
-                  />
-                </div>
-              </div>
 
-              {/* Combustible Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Combustible
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {COMBUSTIBLES.map((combustible) => (
-                    <Button
-                      key={combustible}
-                      variant={
-                        filters.combustibles.includes(combustible)
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => toggleCombustible(combustible)}
-                      className="text-xs"
-                    >
-                      {combustible === "Eléctrico"
-                        ? "Eléctrico"
-                        : combustible === "Híbrido"
-                        ? "Híbrido"
-                        : combustible}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <RangeFilter
+                range={filters.kilometrajeRange}
+                min={0}
+                max={filterOptions.kilometrajeRange[1]}
+                step={5000}
+                label="Kilometraje"
+                formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+                onFilterChange={handleModularFilterChange}
+                variant="vertical"
+              />
 
-              {/* Transmisión Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Transmisión
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {TRANSMISIONES.map((transmision) => (
-                    <Button
-                      key={transmision}
-                      variant={
-                        filters.transmisiones.includes(transmision)
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => toggleTransmision(transmision)}
-                      className="text-xs"
-                    >
-                      {transmision === "Automática"
-                        ? "Automática"
-                        : transmision === "Manual"
-                        ? "Manual"
-                        : transmision}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <MultiSelectFilter
+                selected={filters.combustibles}
+                options={COMBUSTIBLES}
+                label="Combustible"
+                onFilterChange={handleModularFilterChange}
+                variant="vertical"
+              />
+
+              <MultiSelectFilter
+                selected={filters.transmisiones}
+                options={TRANSMISIONES}
+                label="Transmisión"
+                onFilterChange={handleModularFilterChange}
+                variant="vertical"
+              />
             </div>
           </div>
         </div>
@@ -405,161 +296,65 @@ export function VehicleFilterPanel({
               {/* Mobile Filter Content */}
               <div className="p-4 overflow-y-auto h-[calc(100vh-100px)]">
                 <div className="space-y-6">
-                  {/* Marca Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Marca
-                    </label>
-                    <Select
-                      value={filters.marca || "all"}
-                      onValueChange={(value) =>
-                        updateFilters({ marca: value === "all" ? null : value })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Todas las marcas" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todas las marcas</SelectItem>
-                        {filterOptions.marcas.map((marca) => (
-                          <SelectItem key={marca} value={marca}>
-                            {marca}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <SortByFilter
+                    sortBy={filters.sortBy}
+                    vehicles={vehicles}
+                    blueDollarRate={blueDollarRate}
+                    onFilterChange={handleModularFilterChange}
+                    variant="vertical"
+                  />
 
-                  {/* Modelo Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Modelo
-                    </label>
-                    <Select
-                      value={filters.modelo || "all"}
-                      onValueChange={(value) =>
-                        updateFilters({ modelo: value === "all" ? null : value })
-                      }
-                      disabled={!filters.marca}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Todos los modelos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los modelos</SelectItem>
-                        {availableModelos.map((modelo) => (
-                          <SelectItem key={modelo} value={modelo}>
-                            {modelo}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <BrandFilter
+                    marca={filters.marca}
+                    marcas={filterOptions.marcas}
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
 
-                  {/* Año Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Año: {filters.anoRange[0]} - {filters.anoRange[1]}
-                    </label>
-                    <div className="pt-2">
-                      <Slider
-                        value={filters.anoRange}
-                        onValueChange={(value) =>
-                          updateFilters({ anoRange: value as [number, number] })
-                        }
-                        min={filterOptions.anoRange[0]}
-                        max={filterOptions.anoRange[1]}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                  <ModelFilter
+                    modelo={filters.modelo}
+                    modelos={availableModelos}
+                    onFilterChange={handleModularFilterChange}
+                    variant="vertical"
+                  />
 
-                  {/* Precio Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Precio: {formatCurrency(filters.precioRange[0], 'USD')} - {formatCurrency(filters.precioRange[1], 'USD')}
-                    </label>
-                    <div className="pt-2">
-                      <Slider
-                        value={filters.precioRange}
-                        onValueChange={(value) =>
-                          updateFilters({ precioRange: value as [number, number] })
-                        }
-                        min={filterOptions.precioRange[0]}
-                        max={filterOptions.precioRange[1]}
-                        step={1000}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                  <RangeFilter
+                    range={filters.anoRange}
+                    min={filterOptions.anoRange[0]}
+                    max={filterOptions.anoRange[1]}
+                    step={1}
+                    label="Año"
+                    onFilterChange={handleModularFilterChange}
+                    variant="vertical"
+                  />
 
-                  {/* Kilometraje Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Kilometraje: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k - {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
-                    </label>
-                    <div className="pt-2">
-                      <Slider
-                        value={filters.kilometrajeRange}
-                        onValueChange={(value) =>
-                          updateFilters({ kilometrajeRange: value as [number, number] })
-                        }
-                        min={0}
-                        max={filterOptions.kilometrajeRange[1]}
-                        step={5000}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
 
-                  {/* Combustible Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Combustible
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {COMBUSTIBLES.map((combustible) => (
-                        <Button
-                          key={combustible}
-                          variant={
-                            filters.combustibles.includes(combustible)
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onClick={() => toggleCombustible(combustible)}
-                          className="text-xs"
-                        >
-                          {combustible}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  <RangeFilter
+                    range={filters.kilometrajeRange}
+                    min={0}
+                    max={filterOptions.kilometrajeRange[1]}
+                    step={5000}
+                    label="Kilometraje"
+                    formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+                    onFilterChange={handleModularFilterChange}
+                    variant="vertical"
+                  />
 
-                  {/* Transmisión Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Transmisión
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {TRANSMISIONES.map((transmision) => (
-                        <Button
-                          key={transmision}
-                          variant={
-                            filters.transmisiones.includes(transmision)
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onClick={() => toggleTransmision(transmision)}
-                          className="text-xs"
-                        >
-                          {transmision}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  <MultiSelectFilter
+                    selected={filters.combustibles}
+                    options={COMBUSTIBLES}
+                    label="Combustible"
+                    onFilterChange={handleModularFilterChange}
+                    variant="vertical"
+                  />
+
+                  <MultiSelectFilter
+                    selected={filters.transmisiones}
+                    options={TRANSMISIONES}
+                    label="Transmisión"
+                    onFilterChange={handleModularFilterChange}
+                    variant="vertical"
+                  />
                 </div>
               </div>
             </div>
@@ -629,175 +424,70 @@ export function VehicleFilterPanel({
               : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
           )}
         >
-          {/* Marca Filter */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Marca
-            </label>
-            <Select
-              value={filters.marca || "all"}
-              onValueChange={(value) =>
-                updateFilters({ marca: value === "all" ? null : value })
-              }
-            >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Todas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las marcas</SelectItem>
-                {filterOptions.marcas.map((marca) => (
-                  <SelectItem key={marca} value={marca}>
-                    {marca}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SortByFilter
+            sortBy={filters.sortBy}
+            vehicles={vehicles}
+            blueDollarRate={blueDollarRate}
+            onFilterChange={handleModularFilterChange}
+            variant="horizontal"
+          />
 
-          {/* Modelo Filter */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Modelo
-            </label>
-            <Select
-              value={filters.modelo || "all"}
-              onValueChange={(value) =>
-                updateFilters({ modelo: value === "all" ? null : value })
-              }
-              disabled={!filters.marca}
-            >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los modelos</SelectItem>
-                {availableModelos.map((modelo) => (
-                  <SelectItem key={modelo} value={modelo}>
-                    {modelo}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <BrandFilter
+            marca={filters.marca}
+            marcas={filterOptions.marcas}
+            onFilterChange={updateFilters}
+            variant="horizontal"
+          />
 
-          {/* Año Range */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Año: {filters.anoRange[0]}-{filters.anoRange[1]}
-            </label>
-            <div className="pt-2">
-              <Slider
-                value={filters.anoRange}
-                onValueChange={(value) =>
-                  updateFilters({ anoRange: value as [number, number] })
-                }
-                min={filterOptions.anoRange[0]}
-                max={filterOptions.anoRange[1]}
-                step={1}
-                className="w-full"
-              />
-            </div>
-          </div>
+          <ModelFilter
+            modelo={filters.modelo}
+            modelos={availableModelos}
+            onFilterChange={handleModularFilterChange}
+            variant="horizontal"
+          />
 
-          {/* Precio Range */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Precio: {formatCurrency(filters.precioRange[0], 'USD')} - {formatCurrency(filters.precioRange[1], 'USD')}
-            </label>
-            <div className="pt-2">
-              <Slider
-                value={filters.precioRange}
-                onValueChange={(value) =>
-                  updateFilters({ precioRange: value as [number, number] })
-                }
-                min={filterOptions.precioRange[0]}
-                max={filterOptions.precioRange[1]}
-                step={1000}
-                className="w-full"
-              />
-            </div>
-          </div>
+          <RangeFilter
+            range={filters.anoRange}
+            min={filterOptions.anoRange[0]}
+            max={filterOptions.anoRange[1]}
+            step={1}
+            label="Año"
+            onFilterChange={handleModularFilterChange}
+            variant="horizontal"
+          />
 
-          {/* Kilometraje Range */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              KM: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k-
-              {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
-            </label>
-            <div className="pt-2">
-              <Slider
-                value={filters.kilometrajeRange}
-                onValueChange={(value) =>
-                  updateFilters({ kilometrajeRange: value as [number, number] })
-                }
-                min={0}
-                max={filterOptions.kilometrajeRange[1]}
-                step={5000}
-                className="w-full"
-              />
-            </div>
-          </div>
+
+          <RangeFilter
+            range={filters.kilometrajeRange}
+            min={0}
+            max={filterOptions.kilometrajeRange[1]}
+            step={5000}
+            label="Kilometraje"
+            formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+            onFilterChange={handleModularFilterChange}
+            variant="horizontal"
+          />
 
           {/* Combustible & Transmisión */}
           <div className={cn(
             "space-y-4",
             variant === 'horizontal' ? "xl:col-span-1" : ""
           )}>
-            {/* Combustible Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Combustible
-              </label>
-              <div className="flex flex-wrap gap-1">
-                {COMBUSTIBLES.map((combustible) => (
-                  <Button
-                    key={combustible}
-                    variant={
-                      filters.combustibles.includes(combustible)
-                        ? "default"
-                        : "outline"
-                    }
-                    size="sm"
-                    onClick={() => toggleCombustible(combustible)}
-                    className="h-6 px-2 text-xs"
-                  >
-                    {combustible === "Eléctrico"
-                      ? "Elec"
-                      : combustible === "Híbrido"
-                      ? "Híb"
-                      : combustible}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <MultiSelectFilter
+              selected={filters.combustibles}
+              options={COMBUSTIBLES}
+              label="Combustible"
+              onFilterChange={handleModularFilterChange}
+              variant="horizontal"
+            />
 
-            {/* Transmisión Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Transmisión
-              </label>
-              <div className="flex flex-wrap gap-1">
-                {TRANSMISIONES.map((transmision) => (
-                  <Button
-                    key={transmision}
-                    variant={
-                      filters.transmisiones.includes(transmision)
-                        ? "default"
-                        : "outline"
-                    }
-                    size="sm"
-                    onClick={() => toggleTransmision(transmision)}
-                    className="h-6 px-2 text-xs"
-                  >
-                    {transmision === "Automática"
-                      ? "Auto"
-                      : transmision === "Manual"
-                      ? "Man"
-                      : transmision}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <MultiSelectFilter
+              selected={filters.transmisiones}
+              options={TRANSMISIONES}
+              label="Transmisión"
+              onFilterChange={handleModularFilterChange}
+              variant="horizontal"
+            />
           </div>
         </div>
 

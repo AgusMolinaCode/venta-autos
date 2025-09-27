@@ -2,28 +2,29 @@
 
 import { useState, useMemo } from 'react';
 import { VehiculoConFotos } from '@/lib/supabase';
+import { DolarService } from '@/lib/services/dolar-service';
 
 export interface VehicleFilterState {
   marca: string | null;
   modelo: string | null;
   anoRange: [number, number];
-  precioRange: [number, number];
   kilometrajeRange: [number, number];
   combustibles: string[];
   transmisiones: string[];
+  sortBy: 'price-asc' | 'price-desc' | 'year-desc' | 'year-asc' | 'km-asc' | null;
 }
 
 interface UseVehicleFiltersProps {
   vehicles: VehiculoConFotos[];
+  blueDollarRate?: number;
 }
 
-export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
+export function useVehicleFilters({ vehicles, blueDollarRate }: UseVehicleFiltersProps) {
   // Get available options from all vehicles
   const availableOptions = useMemo(() => {
     const marcas = [...new Set(vehicles.map(v => v.marca))].sort();
     const modelos = [...new Set(vehicles.map(v => v.modelo))].sort();
     const anos = vehicles.map(v => v.ano).filter(Boolean);
-    const precios = vehicles.map(v => v.precio).filter(Boolean);
     const kilometrajes = vehicles.map(v => v.kilometraje).filter(Boolean);
     const combustibles = [...new Set(vehicles.map(v => v.combustible).filter(Boolean))];
     const transmisiones = [...new Set(vehicles.map(v => v.transmision).filter(Boolean))];
@@ -32,7 +33,6 @@ export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
       marcas,
       modelos,
       anoRange: anos.length > 0 ? [Math.min(...anos), Math.max(...anos)] as [number, number] : [1970, 2025] as [number, number],
-      precioRange: precios.length > 0 ? [Math.min(...precios), Math.max(...precios)] as [number, number] : [0, 1000000] as [number, number],
       kilometrajeRange: kilometrajes.length > 0 ? [0, Math.max(...kilometrajes)] as [number, number] : [0, 500000] as [number, number],
       combustibles,
       transmisiones
@@ -43,15 +43,15 @@ export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
     marca: null,
     modelo: null,
     anoRange: availableOptions.anoRange,
-    precioRange: [0, availableOptions.precioRange[1] || 1000000],
     kilometrajeRange: [0, availableOptions.kilometrajeRange[1] || 500000],
     combustibles: [],
-    transmisiones: []
+    transmisiones: [],
+    sortBy: null
   });
 
-  // Filter vehicles based on current filter state
+  // Filter and sort vehicles based on current filter state
   const filteredVehicles = useMemo(() => {
-    return vehicles.filter((vehicle) => {
+    let filtered = vehicles.filter((vehicle) => {
       // Marca filter
       if (filters.marca && vehicle.marca !== filters.marca) {
         return false;
@@ -65,13 +65,6 @@ export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
       // Año range filter
       if (vehicle.ano < filters.anoRange[0] || vehicle.ano > filters.anoRange[1]) {
         return false;
-      }
-
-      // Precio range filter
-      if (vehicle.precio !== undefined && vehicle.precio !== null && typeof vehicle.precio === 'number') {
-        if (vehicle.precio < filters.precioRange[0] || vehicle.precio > filters.precioRange[1]) {
-          return false;
-        }
       }
 
       // Kilometraje range filter
@@ -97,7 +90,35 @@ export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
 
       return true;
     });
-  }, [vehicles, filters]);
+
+    // Apply sorting
+    if (filters.sortBy) {
+      filtered = [...filtered].sort((a, b) => {
+        switch (filters.sortBy) {
+          case 'price-asc': {
+            const priceA = DolarService.getConvertedPrice(a, blueDollarRate);
+            const priceB = DolarService.getConvertedPrice(b, blueDollarRate);
+            return priceA - priceB;
+          }
+          case 'price-desc': {
+            const priceA = DolarService.getConvertedPrice(a, blueDollarRate);
+            const priceB = DolarService.getConvertedPrice(b, blueDollarRate);
+            return priceB - priceA;
+          }
+          case 'year-desc':
+            return (b.ano || 0) - (a.ano || 0);
+          case 'year-asc':
+            return (a.ano || 0) - (b.ano || 0);
+          case 'km-asc':
+            return (a.kilometraje || 0) - (b.kilometraje || 0);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [vehicles, filters, blueDollarRate]);
 
   // Get available modelos for selected marca
   const availableModelos = useMemo(() => {
@@ -135,10 +156,10 @@ export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
       marca: null,
       modelo: null,
       anoRange: availableOptions.anoRange,
-      precioRange: [0, availableOptions.precioRange[1] || 1000000],
       kilometrajeRange: [0, availableOptions.kilometrajeRange[1] || 500000],
       combustibles: [],
-      transmisiones: []
+      transmisiones: [],
+      sortBy: null
     };
     setFilters(cleared);
   };
@@ -149,12 +170,11 @@ export function useVehicleFilters({ vehicles }: UseVehicleFiltersProps) {
       filters.modelo !== null ||
       filters.anoRange[0] !== availableOptions.anoRange[0] ||
       filters.anoRange[1] !== availableOptions.anoRange[1] ||
-      filters.precioRange[0] !== 0 ||
-      filters.precioRange[1] !== (availableOptions.precioRange[1] || 1000000) ||
       filters.kilometrajeRange[0] !== 0 ||
       filters.kilometrajeRange[1] !== availableOptions.kilometrajeRange[1] ||
       filters.combustibles.length > 0 ||
-      filters.transmisiones.length > 0
+      filters.transmisiones.length > 0 ||
+      filters.sortBy !== null
     );
   }, [filters, availableOptions]);
 
