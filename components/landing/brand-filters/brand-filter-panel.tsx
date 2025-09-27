@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { VehiculoConFotos } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { X, Filter, ChevronDown, Menu } from "lucide-react";
+import { X, Filter, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMBUSTIBLES, TRANSMISIONES } from "@/constants";
-import { formatCurrency } from "@/utils/currency";
-import { DolarService } from "@/lib/services/dolar-service";
+import { SortByFilter } from "./sort-by-filter";
+import { ModelFilter } from "./model-filter";
+import { RangeFilter } from "./range-filter";
+import { MultiSelectFilter } from "./multi-select-filter";
+import { FilterState, FilterOptions } from "./types";
 
 interface BrandFilterPanelProps {
   vehicles: VehiculoConFotos[];
@@ -29,111 +24,49 @@ interface BrandFilterPanelProps {
   onBlueDollarRateChange?: (rate: number) => void;
 }
 
-export interface FilterState {
-  modelo: string | null;
-  anoRange: [number, number];
-  precioRange: [number, number];
-  kilometrajeRange: [number, number];
-  combustibles: string[];
-  transmisiones: string[];
-}
-
 export function BrandFilterPanel({
   vehicles,
   onFilterChange,
   className,
   variant = 'horizontal',
-  selectedCurrency: externalCurrency,
-  blueDollarRate: externalRate,
-  onCurrencyChange,
-  onBlueDollarRateChange,
+  blueDollarRate,
 }: BrandFilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [internalBlueDollarRate, setInternalBlueDollarRate] = useState<number>(1000); // Fallback rate
-  const [internalSelectedCurrency, setInternalSelectedCurrency] = useState<'ARS' | 'USD'>('ARS');
 
-  // Use external state if provided, otherwise use internal state
-  const blueDollarRate = externalRate ?? internalBlueDollarRate;
-  const selectedCurrency = externalCurrency ?? internalSelectedCurrency;
+  // Extract unique values from vehicles for filtering
+  const filterOptions = useMemo((): FilterOptions => {
+    if (vehicles.length === 0) {
+      return {
+        modelos: [],
+        anoRange: [1970, 2025],
+        kilometrajeRange: [0, 500000],
+      };
+    }
 
-  // Fetch blue dollar rate on component mount
-  useEffect(() => {
-    const fetchDollarRate = async () => {
-      try {
-        const dolarService = DolarService.getInstance();
-        const rate = await dolarService.getBlueDollarRate();
-
-        if (onBlueDollarRateChange) {
-          onBlueDollarRateChange(rate);
-        } else {
-          setInternalBlueDollarRate(rate);
-        }
-      } catch (error) {
-        console.warn('[BrandFilterPanel] Could not fetch dollar rate, using fallback');
-      }
-    };
-
-    fetchDollarRate();
-  }, [onBlueDollarRateChange]);
-
-  // Extract unique values from vehicles and convert to selected currency for uniform filtering
-  const filterOptions = useMemo(() => {
     const modelos = [...new Set(vehicles.map((v) => v.modelo))].sort();
     const anos = vehicles.map((v) => v.ano).filter(Boolean);
     const kilometrajes = vehicles.map((v) => v.kilometraje).filter(Boolean);
 
-    // Convert all prices to selected currency for consistent filtering
-    const preciosEnMonedaSeleccionada = vehicles
-      .map((v) => {
-        if (!v.precio) return null;
-
-        if (selectedCurrency === 'ARS') {
-          // Convert to ARS
-          if (v.moneda === 'ARS') return v.precio;
-          if (v.moneda === 'USD') return v.precio * blueDollarRate;
-        } else {
-          // Convert to USD
-          if (v.moneda === 'USD') return v.precio;
-          if (v.moneda === 'ARS') return v.precio / blueDollarRate;
-        }
-        return null;
-      })
-      .filter(Boolean) as number[];
-
-    // Handle empty arrays with fallback values
     const anoMin = anos.length > 0 ? Math.min(...anos) : 1970;
     const anoMax = anos.length > 0 ? Math.max(...anos) : 2025;
-    const precioMin = preciosEnMonedaSeleccionada.length > 0 ? Math.min(...preciosEnMonedaSeleccionada) : 0;
-    const precioMax = preciosEnMonedaSeleccionada.length > 0
-      ? Math.max(...preciosEnMonedaSeleccionada)
-      : (selectedCurrency === 'ARS' ? 10000000 : 100000); // 10M ARS or 100K USD
-    const kmMax = kilometrajes.length > 0 ? Math.max(...kilometrajes) : 500000;
+    const kmMax = kilometrajes.length > 0 ? Math.max(...kilometrajes as number[]) : 500000;
 
     return {
       modelos,
-      anoRange: [anoMin, anoMax] as [number, number],
-      precioRange: [precioMin, precioMax] as [number, number],
-      kilometrajeRange: [0, kmMax] as [number, number],
+      anoRange: [anoMin, anoMax],
+      kilometrajeRange: [0, kmMax],
     };
-  }, [vehicles, blueDollarRate, selectedCurrency]);
+  }, [vehicles]);
 
   const [filters, setFilters] = useState<FilterState>({
     modelo: null,
     anoRange: filterOptions.anoRange,
-    precioRange: [0, filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000)],
-    kilometrajeRange: [0, filterOptions.kilometrajeRange[1] || 500000],
+    kilometrajeRange: [0, filterOptions.kilometrajeRange[1]],
     combustibles: [],
     transmisiones: [],
+    sortBy: null,
   });
-
-  // Update filters when currency changes
-  useEffect(() => {
-    setFilters(prev => ({
-      ...prev,
-      precioRange: [0, filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000)]
-    }));
-  }, [selectedCurrency, filterOptions.precioRange]);
 
   const updateFilters = (newFilters: Partial<FilterState>) => {
     const updated = { ...filters, ...newFilters };
@@ -145,10 +78,10 @@ export function BrandFilterPanel({
     const cleared: FilterState = {
       modelo: null,
       anoRange: filterOptions.anoRange,
-      precioRange: [0, filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000)],
       kilometrajeRange: [0, filterOptions.kilometrajeRange[1] || 500000],
       combustibles: [],
       transmisiones: [],
+      sortBy: null,
     };
     setFilters(cleared);
     onFilterChange(cleared);
@@ -157,39 +90,32 @@ export function BrandFilterPanel({
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.modelo) count++;
-    if (
-      filters.anoRange[0] !== filterOptions.anoRange[0] ||
-      filters.anoRange[1] !== filterOptions.anoRange[1]
-    )
-      count++;
-    if (
-      filters.precioRange[0] !== 0 ||
-      filters.precioRange[1] !== (filterOptions.precioRange[1] || (selectedCurrency === 'ARS' ? 10000000 : 100000))
-    )
-      count++;
-    if (
-      filters.kilometrajeRange[0] !== 0 ||
-      filters.kilometrajeRange[1] !== (filterOptions.kilometrajeRange[1] || 500000)
-    )
-      count++;
+
+    // Solo contar como filtro activo si el rango difiere significativamente de los valores reales
+    if (filterOptions.anoRange.length > 0) {
+      if (
+        filters.anoRange[0] !== filterOptions.anoRange[0] ||
+        filters.anoRange[1] !== filterOptions.anoRange[1]
+      ) {
+        count++;
+      }
+    }
+
+    if (filterOptions.kilometrajeRange.length > 0) {
+      if (
+        filters.kilometrajeRange[0] !== 0 ||
+        filters.kilometrajeRange[1] !== filterOptions.kilometrajeRange[1]
+      ) {
+        count++;
+      }
+    }
+
     if (filters.combustibles.length > 0) count++;
     if (filters.transmisiones.length > 0) count++;
+    if (filters.sortBy) count++;
     return count;
-  }, [filters, filterOptions, selectedCurrency]);
+  }, [filters, filterOptions]);
 
-  const toggleCombustible = (combustible: string) => {
-    const updated = filters.combustibles.includes(combustible)
-      ? filters.combustibles.filter((c) => c !== combustible)
-      : [...filters.combustibles, combustible];
-    updateFilters({ combustibles: updated });
-  };
-
-  const toggleTransmision = (transmision: string) => {
-    const updated = filters.transmisiones.includes(transmision)
-      ? filters.transmisiones.filter((t) => t !== transmision)
-      : [...filters.transmisiones, transmision];
-    updateFilters({ transmisiones: updated });
-  };
 
   if (variant === 'vertical') {
     return (
@@ -245,163 +171,57 @@ export function BrandFilterPanel({
           {/* Filter Content */}
           <div className="p-4">
             <div className="space-y-6">
-              {/* Modelo Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Modelo
-                </label>
-                <Select
-                  value={filters.modelo || "all"}
-                  onValueChange={(value) =>
-                    updateFilters({ modelo: value === "all" ? null : value })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todos los modelos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los modelos</SelectItem>
-                    {filterOptions.modelos.map((modelo) => (
-                      <SelectItem key={modelo} value={modelo}>
-                        {modelo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SortByFilter
+                sortBy={filters.sortBy}
+                vehicles={vehicles}
+                blueDollarRate={blueDollarRate}
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
 
-              {/* Año Range */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Año: {filters.anoRange[0]} - {filters.anoRange[1]}
-                </label>
-                <div className="pt-2">
-                  <Slider
-                    value={filters.anoRange}
-                    onValueChange={(value) =>
-                      updateFilters({ anoRange: value as [number, number] })
-                    }
-                    min={filterOptions.anoRange[0]}
-                    max={filterOptions.anoRange[1]}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+              <ModelFilter
+                modelo={filters.modelo}
+                modelos={filterOptions.modelos}
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
 
-              {/* Precio Range */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Precio: {formatCurrency(filters.precioRange[0], selectedCurrency)} - {formatCurrency(filters.precioRange[1], selectedCurrency)}
-                  </label>
-                  <Select
-                    value={selectedCurrency}
-                    onValueChange={(value: 'ARS' | 'USD') => {
-                      if (onCurrencyChange) {
-                        onCurrencyChange(value);
-                      } else {
-                        setInternalSelectedCurrency(value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-20 h-6 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ARS">ARS</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="pt-2">
-                  <Slider
-                    value={filters.precioRange}
-                    onValueChange={(value) =>
-                      updateFilters({ precioRange: value as [number, number] })
-                    }
-                    min={filterOptions.precioRange[0]}
-                    max={filterOptions.precioRange[1]}
-                    step={selectedCurrency === 'ARS' ? 100000 : 1000}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+              <RangeFilter
+                range={filters.anoRange}
+                min={filterOptions.anoRange[0]}
+                max={filterOptions.anoRange[1]}
+                step={1}
+                label="Año"
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
 
-              {/* Kilometraje Range */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Kilometraje: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k - {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
-                </label>
-                <div className="pt-2">
-                  <Slider
-                    value={filters.kilometrajeRange}
-                    onValueChange={(value) =>
-                      updateFilters({ kilometrajeRange: value as [number, number] })
-                    }
-                    min={0}
-                    max={filterOptions.kilometrajeRange[1]}
-                    step={5000}
-                    className="w-full"
-                  />
-                </div>
-              </div>
+              <RangeFilter
+                range={filters.kilometrajeRange}
+                min={0}
+                max={filterOptions.kilometrajeRange[1]}
+                step={5000}
+                label="Kilometraje"
+                formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
 
-              {/* Combustible Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Combustible
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {COMBUSTIBLES.map((combustible) => (
-                    <Button
-                      key={combustible}
-                      variant={
-                        filters.combustibles.includes(combustible)
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => toggleCombustible(combustible)}
-                      className="text-xs"
-                    >
-                      {combustible === "Eléctrico"
-                        ? "Eléctrico"
-                        : combustible === "Híbrido"
-                        ? "Híbrido"
-                        : combustible}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <MultiSelectFilter
+                selected={filters.combustibles}
+                options={COMBUSTIBLES}
+                label="Combustible"
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
 
-              {/* Transmisión Filter */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Transmisión
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {TRANSMISIONES.map((transmision) => (
-                    <Button
-                      key={transmision}
-                      variant={
-                        filters.transmisiones.includes(transmision)
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => toggleTransmision(transmision)}
-                      className="text-xs"
-                    >
-                      {transmision === "Automática"
-                        ? "Automática"
-                        : transmision === "Manual"
-                        ? "Manual"
-                        : transmision}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <MultiSelectFilter
+                selected={filters.transmisiones}
+                options={TRANSMISIONES}
+                label="Transmisión"
+                onFilterChange={updateFilters}
+                variant="vertical"
+              />
             </div>
           </div>
         </div>
@@ -447,155 +267,57 @@ export function BrandFilterPanel({
               {/* Mobile Filter Content */}
               <div className="p-4 overflow-y-auto h-[calc(100vh-100px)]">
                 <div className="space-y-6">
-                  {/* Modelo Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Modelo
-                    </label>
-                    <Select
-                      value={filters.modelo || "all"}
-                      onValueChange={(value) =>
-                        updateFilters({ modelo: value === "all" ? null : value })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Todos los modelos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los modelos</SelectItem>
-                        {filterOptions.modelos.map((modelo) => (
-                          <SelectItem key={modelo} value={modelo}>
-                            {modelo}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <SortByFilter
+                    sortBy={filters.sortBy}
+                    vehicles={vehicles}
+                    blueDollarRate={blueDollarRate}
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
 
-                  {/* Año Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Año: {filters.anoRange[0]} - {filters.anoRange[1]}
-                    </label>
-                    <div className="pt-2">
-                      <Slider
-                        value={filters.anoRange}
-                        onValueChange={(value) =>
-                          updateFilters({ anoRange: value as [number, number] })
-                        }
-                        min={filterOptions.anoRange[0]}
-                        max={filterOptions.anoRange[1]}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                  <ModelFilter
+                    modelo={filters.modelo}
+                    modelos={filterOptions.modelos}
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
 
-                  {/* Precio Range */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Precio: {formatCurrency(filters.precioRange[0], selectedCurrency)} - {formatCurrency(filters.precioRange[1], selectedCurrency)}
-                      </label>
-                      <Select
-                        value={selectedCurrency}
-                        onValueChange={(value: 'ARS' | 'USD') => {
-                          if (onCurrencyChange) {
-                            onCurrencyChange(value);
-                          } else {
-                            setInternalSelectedCurrency(value);
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-20 h-6 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ARS">ARS</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="pt-2">
-                      <Slider
-                        value={filters.precioRange}
-                        onValueChange={(value) =>
-                          updateFilters({ precioRange: value as [number, number] })
-                        }
-                        min={filterOptions.precioRange[0]}
-                        max={filterOptions.precioRange[1]}
-                        step={selectedCurrency === 'ARS' ? 100000 : 1000}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                  <RangeFilter
+                    range={filters.anoRange}
+                    min={filterOptions.anoRange[0]}
+                    max={filterOptions.anoRange[1]}
+                    step={1}
+                    label="Año"
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
 
-                  {/* Kilometraje Range */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Kilometraje: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k - {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
-                    </label>
-                    <div className="pt-2">
-                      <Slider
-                        value={filters.kilometrajeRange}
-                        onValueChange={(value) =>
-                          updateFilters({ kilometrajeRange: value as [number, number] })
-                        }
-                        min={0}
-                        max={filterOptions.kilometrajeRange[1]}
-                        step={5000}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                  <RangeFilter
+                    range={filters.kilometrajeRange}
+                    min={0}
+                    max={filterOptions.kilometrajeRange[1]}
+                    step={5000}
+                    label="Kilometraje"
+                    formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
 
-                  {/* Combustible Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Combustible
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {COMBUSTIBLES.map((combustible) => (
-                        <Button
-                          key={combustible}
-                          variant={
-                            filters.combustibles.includes(combustible)
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onClick={() => toggleCombustible(combustible)}
-                          className="text-xs"
-                        >
-                          {combustible}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  <MultiSelectFilter
+                    selected={filters.combustibles}
+                    options={COMBUSTIBLES}
+                    label="Combustible"
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
 
-                  {/* Transmisión Filter */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Transmisión
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {TRANSMISIONES.map((transmision) => (
-                        <Button
-                          key={transmision}
-                          variant={
-                            filters.transmisiones.includes(transmision)
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onClick={() => toggleTransmision(transmision)}
-                          className="text-xs"
-                        >
-                          {transmision}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  <MultiSelectFilter
+                    selected={filters.transmisiones}
+                    options={TRANSMISIONES}
+                    label="Transmisión"
+                    onFilterChange={updateFilters}
+                    variant="vertical"
+                  />
                 </div>
               </div>
             </div>
@@ -623,31 +345,22 @@ export function BrandFilterPanel({
             "grid-cols-1 md:grid-cols-2 lg:grid-cols-6"
           )}
         >
-          {/* Modelo Filter - Compact */}
-          <div className="space-y-1 flex gap-3">
-            <div className="grid gap-2">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Modelo
-              </label>
-              <Select
-                value={filters.modelo || "all"}
-                onValueChange={(value) =>
-                  updateFilters({ modelo: value === "all" ? null : value })
-                }
-              >
-                <SelectTrigger className="h-6 text-xs">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los modelos</SelectItem>
-                  {filterOptions.modelos.map((modelo) => (
-                    <SelectItem key={modelo} value={modelo}>
-                      {modelo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex gap-3">
+            <SortByFilter
+              sortBy={filters.sortBy}
+              vehicles={vehicles}
+              blueDollarRate={blueDollarRate}
+              onFilterChange={updateFilters}
+              variant="horizontal"
+            />
+
+            <ModelFilter
+              modelo={filters.modelo}
+              modelos={filterOptions.modelos}
+              onFilterChange={updateFilters}
+              variant="horizontal"
+            />
+
             <div className="flex items-center gap-1">
               {activeFilterCount > 0 && (
                 <Button
@@ -676,139 +389,42 @@ export function BrandFilterPanel({
             </div>
           </div>
 
-          {/* Año Range - Compact */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Año: {filters.anoRange[0]}-{filters.anoRange[1]}
-            </label>
-            <div className="pt-2">
-              <Slider
-                value={filters.anoRange}
-                onValueChange={(value) =>
-                  updateFilters({ anoRange: value as [number, number] })
-                }
-                min={filterOptions.anoRange[0]}
-                max={filterOptions.anoRange[1]}
-                step={1}
-                className="w-full"
-              />
-            </div>
-          </div>
+          <RangeFilter
+            range={filters.anoRange}
+            min={filterOptions.anoRange[0]}
+            max={filterOptions.anoRange[1]}
+            step={1}
+            label="Año"
+            onFilterChange={updateFilters}
+            variant="horizontal"
+          />
 
-          {/* Precio Range - Compact */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Precio: {formatCurrency(filters.precioRange[0], selectedCurrency)} - {formatCurrency(filters.precioRange[1], selectedCurrency)}
-              </label>
-              <Select
-                value={selectedCurrency}
-                onValueChange={(value: 'ARS' | 'USD') => {
-                  if (onCurrencyChange) {
-                    onCurrencyChange(value);
-                  } else {
-                    setInternalSelectedCurrency(value);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-16 h-5 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ARS">ARS</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="pt-2">
-              <Slider
-                value={filters.precioRange}
-                onValueChange={(value) =>
-                  updateFilters({ precioRange: value as [number, number] })
-                }
-                min={filterOptions.precioRange[0]}
-                max={filterOptions.precioRange[1]}
-                step={selectedCurrency === 'ARS' ? 100000 : 1000}
-                className="w-full"
-              />
-            </div>
-          </div>
+          <RangeFilter
+            range={filters.kilometrajeRange}
+            min={0}
+            max={filterOptions.kilometrajeRange[1]}
+            step={5000}
+            label="Kilometraje"
+            formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+            onFilterChange={updateFilters}
+            variant="horizontal"
+          />
 
-          {/* Kilometraje Range - Compact */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              KM: {(filters.kilometrajeRange[0] / 1000).toFixed(0)}k-
-              {(filters.kilometrajeRange[1] / 1000).toFixed(0)}k
-            </label>
-            <div className="pt-2">
-              <Slider
-                value={filters.kilometrajeRange}
-                onValueChange={(value) =>
-                  updateFilters({ kilometrajeRange: value as [number, number] })
-                }
-                min={0}
-                max={filterOptions.kilometrajeRange[1]}
-                step={5000}
-                className="w-full"
-              />
-            </div>
-          </div>
+          <MultiSelectFilter
+            selected={filters.combustibles}
+            options={COMBUSTIBLES}
+            label="Combustible"
+            onFilterChange={updateFilters}
+            variant="horizontal"
+          />
 
-          {/* Combustible Filter - Compact */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Combustible
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {COMBUSTIBLES.map((combustible) => (
-                <Button
-                  key={combustible}
-                  variant={
-                    filters.combustibles.includes(combustible)
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  onClick={() => toggleCombustible(combustible)}
-                  className="h-6 px-2 text-xs"
-                >
-                  {combustible === "Eléctrico"
-                    ? "Elec"
-                    : combustible === "Híbrido"
-                    ? "Híb"
-                    : combustible}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Transmisión Filter - Compact */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Transmisión
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {TRANSMISIONES.map((transmision) => (
-                <Button
-                  key={transmision}
-                  variant={
-                    filters.transmisiones.includes(transmision)
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  onClick={() => toggleTransmision(transmision)}
-                  className="h-6 px-2 text-xs"
-                >
-                  {transmision === "Automática"
-                    ? "Auto"
-                    : transmision === "Manual"
-                    ? "Man"
-                    : transmision}
-                </Button>
-              ))}
-            </div>
-          </div>
+          <MultiSelectFilter
+            selected={filters.transmisiones}
+            options={TRANSMISIONES}
+            label="Transmisión"
+            onFilterChange={updateFilters}
+            variant="horizontal"
+          />
         </div>
       </div>
     </div>

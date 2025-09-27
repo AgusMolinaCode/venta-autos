@@ -11,8 +11,25 @@ interface UseBrandFiltersProps {
 }
 
 export function useBrandFilters({ vehicles, selectedCurrency = 'ARS', blueDollarRate = 1000 }: UseBrandFiltersProps) {
+  // Helper function to get vehicle price in ARS for consistent sorting
+  const getVehiclePriceInARS = (vehicle: VehiculoConFotos): number => {
+    if (!vehicle.precio) return 0;
+    if (vehicle.moneda === 'ARS') return vehicle.precio;
+    if (vehicle.moneda === 'USD') return vehicle.precio * blueDollarRate;
+    return 0;
+  };
   // Get available options based on current vehicles
   const availableOptions = useMemo(() => {
+    if (vehicles.length === 0) {
+      return {
+        modelos: [],
+        anoRange: [1970, 2025] as [number, number],
+        kilometrajeRange: [0, 500000] as [number, number],
+        combustibles: [],
+        transmisiones: []
+      };
+    }
+
     const modelos = [...new Set(vehicles.map(v => v.modelo))].sort();
     const anos = vehicles.map(v => v.ano).filter(Boolean);
     const kilometrajes = vehicles.map(v => v.kilometraje).filter(Boolean);
@@ -30,27 +47,17 @@ export function useBrandFilters({ vehicles, selectedCurrency = 'ARS', blueDollar
 
   const [filters, setFilters] = useState<FilterState>({
     modelo: null,
-    anoRange: [1970, 2025], // Will be updated by useEffect
-    precioRange: [0, selectedCurrency === 'ARS' ? 10000000 : 100000],
-    kilometrajeRange: [0, 500000], // Will be updated by useEffect
+    anoRange: availableOptions.anoRange,
+    kilometrajeRange: [0, availableOptions.kilometrajeRange[1]],
     combustibles: [],
-    transmisiones: []
+    transmisiones: [],
+    sortBy: null
   });
 
-  // Initialize filters with real vehicle ranges when vehicles are loaded
-  useEffect(() => {
-    if (vehicles.length > 0) {
-      setFilters(prev => ({
-        ...prev,
-        anoRange: availableOptions.anoRange,
-        kilometrajeRange: availableOptions.kilometrajeRange
-      }));
-    }
-  }, [vehicles.length, availableOptions.anoRange, availableOptions.kilometrajeRange]);
-
-  // Filter vehicles based on current filter state
+  // Filter and sort vehicles based on current filter state
   const filteredVehicles = useMemo(() => {
-    return vehicles.filter((vehicle) => {
+    // First, filter vehicles
+    const filtered = vehicles.filter((vehicle) => {
       // Modelo filter
       if (filters.modelo && vehicle.modelo !== filters.modelo) {
         return false;
@@ -59,28 +66,6 @@ export function useBrandFilters({ vehicles, selectedCurrency = 'ARS', blueDollar
       // Año range filter
       if (vehicle.ano < filters.anoRange[0] || vehicle.ano > filters.anoRange[1]) {
         return false;
-      }
-
-      // Precio range filter with currency conversion
-      if (vehicle.precio !== undefined) {
-        // Convert vehicle price to selected currency
-        let vehiclePriceInSelectedCurrency = vehicle.precio;
-
-        if (selectedCurrency === 'ARS') {
-          // Convert to ARS
-          if (vehicle.moneda === 'USD') {
-            vehiclePriceInSelectedCurrency = vehicle.precio * blueDollarRate;
-          }
-        } else {
-          // Convert to USD
-          if (vehicle.moneda === 'ARS') {
-            vehiclePriceInSelectedCurrency = vehicle.precio / blueDollarRate;
-          }
-        }
-
-        if (vehiclePriceInSelectedCurrency < filters.precioRange[0] || vehiclePriceInSelectedCurrency > filters.precioRange[1]) {
-          return false;
-        }
       }
 
       // Kilometraje range filter
@@ -106,7 +91,29 @@ export function useBrandFilters({ vehicles, selectedCurrency = 'ARS', blueDollar
 
       return true;
     });
-  }, [vehicles, filters]);
+
+    // Then, sort the filtered results
+    if (!filters.sortBy) {
+      return filtered;
+    }
+
+    return [...filtered].sort((a, b) => {
+      switch (filters.sortBy) {
+        case 'price-asc':
+          return getVehiclePriceInARS(a) - getVehiclePriceInARS(b);
+        case 'price-desc':
+          return getVehiclePriceInARS(b) - getVehiclePriceInARS(a);
+        case 'year-desc':
+          return (b.ano || 0) - (a.ano || 0);
+        case 'year-asc':
+          return (a.ano || 0) - (b.ano || 0);
+        case 'km-asc':
+          return (a.kilometraje || 0) - (b.kilometraje || 0);
+        default:
+          return 0;
+      }
+    });
+  }, [vehicles, filters, blueDollarRate]);
 
   // Calculate filter counts for display
   const filterCounts = useMemo(() => {
@@ -127,26 +134,30 @@ export function useBrandFilters({ vehicles, selectedCurrency = 'ARS', blueDollar
     setFilters({
       modelo: null,
       anoRange: availableOptions.anoRange,
-      precioRange: [0, selectedCurrency === 'ARS' ? 10000000 : 100000], // Dynamic based on currency
       kilometrajeRange: [0, availableOptions.kilometrajeRange[1]],
       combustibles: [],
-      transmisiones: []
+      transmisiones: [],
+      sortBy: null
     });
   };
 
   const hasActiveFilters = useMemo(() => {
+    // Solo considerar filtros activos si realmente restringen los resultados
     return (
       filters.modelo !== null ||
-      filters.anoRange[0] !== availableOptions.anoRange[0] ||
-      filters.anoRange[1] !== availableOptions.anoRange[1] ||
-      filters.precioRange[0] !== 0 ||
-      filters.precioRange[1] !== (selectedCurrency === 'ARS' ? 10000000 : 100000) ||
-      filters.kilometrajeRange[0] !== 0 ||
-      filters.kilometrajeRange[1] !== availableOptions.kilometrajeRange[1] ||
+      (availableOptions.anoRange.length > 0 && (
+        filters.anoRange[0] !== availableOptions.anoRange[0] ||
+        filters.anoRange[1] !== availableOptions.anoRange[1]
+      )) ||
+      (availableOptions.kilometrajeRange.length > 0 && (
+        filters.kilometrajeRange[0] !== 0 ||
+        filters.kilometrajeRange[1] !== availableOptions.kilometrajeRange[1]
+      )) ||
       filters.combustibles.length > 0 ||
-      filters.transmisiones.length > 0
+      filters.transmisiones.length > 0 ||
+      filters.sortBy !== null
     );
-  }, [filters, availableOptions, selectedCurrency]);
+  }, [filters, availableOptions]);
 
   return {
     filters,
