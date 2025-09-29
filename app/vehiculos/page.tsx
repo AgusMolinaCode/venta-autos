@@ -75,7 +75,7 @@ export default function VehiculosPage() {
     <div className="dark:bg-neutral-900 bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <h1 className="text-4xl font-bold text-center dark:text-gray-100 text-gray-900 mb-8">
-          Todos los Vehículos
+          Todos los Vehículo
         </h1>
 
             <div className="mb-6">
