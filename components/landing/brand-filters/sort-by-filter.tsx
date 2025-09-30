@@ -23,7 +23,7 @@ export function SortByFilter({
         const rate = await dolarService.getBlueDollarRate();
         setLocalBlueDollarRate(rate);
       } catch (error) {
-        console.warn('[SortByFilter] Could not fetch dollar rate, using fallback');
+        // Fallback rate will be used
       }
     };
 

@@ -213,12 +213,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    
-    console.error('❌ [AUTOCOSMOS API] Error processing request:', {
-      error: error instanceof Error ? error.message : error,
-      requestData,
-      responseTime
-    });
 
     // Determinar código de estado HTTP basado en el tipo de error
     let statusCode = 500;

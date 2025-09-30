@@ -50,7 +50,6 @@ export class SupabaseStorageService {
           return { success: false, error: `Error al crear bucket: ${createError.message}` }
         }
 
-        console.log(`✅ Bucket '${STORAGE_CONFIG.BUCKET_NAME}' creado exitosamente`)
       }
 
       return { success: true }

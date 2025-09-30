@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(data.publicUrl);
 
   } catch (error) {
-    console.error('Error fetching image:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -45,9 +45,6 @@ export async function generateVehicleDescription(
       tipo_vehiculo: formData.tipo_vehiculo,
     };
 
-    console.log("🚗 Sending POST request to:", DESCRIPTION_SERVICE_URL);
-    console.log("📤 Payload:", JSON.stringify(payload, null, 2));
-
     // Make POST request with raw body
     const response = await fetch(DESCRIPTION_SERVICE_URL, {
       method: "POST",
@@ -58,18 +55,11 @@ export async function generateVehicleDescription(
       body: JSON.stringify(payload),
     });
 
-    console.log("📡 Response status:", response.status, response.statusText);
-    console.log(
-      "📡 Response headers:",
-      Object.fromEntries(response.headers.entries()),
-    );
-
     if (!response.ok) {
       // Try to get error details from response body
       let errorDetails = "";
       try {
         const errorText = await response.text();
-        console.log("❌ Error response body:", errorText);
         errorDetails = errorText ? ` - ${errorText}` : "";
       } catch (e) {
         console.log("❌ Could not read error response body");
@@ -81,7 +71,6 @@ export async function generateVehicleDescription(
     }
 
     const data = await response.json();
-    console.log("📥 Response received:", data);
 
     // Validate response structure
     if (data.success && data.descripcion) {

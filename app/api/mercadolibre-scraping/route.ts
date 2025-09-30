@@ -162,8 +162,7 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     const executionTime = Date.now() - startTime;
-    console.error('[SCRAPER] Error:', error);
-    
+
     // Handle specific error types
     if (error instanceof Error) {
       // Scraping specific errors

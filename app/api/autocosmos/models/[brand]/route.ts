@@ -176,13 +176,6 @@ export async function GET(
   } catch (error) {
     // Get brand from resolved params or fallback
     const brandForLog = (await params.catch(() => ({ brand: 'unknown' }))).brand;
-    
-    console.error('🔥 [AUTOCOSMOS MODELS API ERROR]', {
-      brand: brandForLog,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString()
-    });
 
     // Determinar tipo de error y código de respuesta
     let statusCode = 500;

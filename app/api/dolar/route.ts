@@ -25,8 +25,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('[DOLAR_API] Error fetching dollar rates:', error);
-    
     // Return fallback data with current approximate rates
     const fallbackData = {
       blue: {

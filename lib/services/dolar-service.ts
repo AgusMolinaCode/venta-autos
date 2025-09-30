@@ -34,7 +34,6 @@ export class DolarService {
       const data: Dolar = await response.json();
       return data;
     } catch (error) {
-      console.error('[DOLAR_SERVICE] Error fetching dolar rates:', error);
       throw new Error('Failed to fetch dolar rates');
     }
   }
@@ -64,7 +63,6 @@ export class DolarService {
       const rates = await this.getDolarRates();
       return rates.blue.ask;
     } catch (error) {
-      console.error('[DOLAR_SERVICE] Error getting blue dollar rate:', error);
       throw error;
     }
   }
@@ -74,7 +72,6 @@ export class DolarService {
       const rates = await this.getDolarRates();
       return rates.oficial.price;
     } catch (error) {
-      console.error('[DOLAR_SERVICE] Error getting official dollar rate:', error);
       throw error;
     }
   }

@@ -25,8 +25,6 @@ export function useVehiclesDebug(): UseVehiclesReturn {
     try {
       setLoading(true);
       setError(null);
-
-      console.log('🔍 Debug - Usuario actual:', user);
       
       // Primero obtener TODOS los vehículos para debug
       const { data: allVehicles, error: allError } = await supabase
@@ -36,8 +34,6 @@ export function useVehiclesDebug(): UseVehiclesReturn {
           fotos:vehiculo_fotos(*)
         `)
         .order('created_at', { ascending: false });
-
-      console.log('🔍 Debug - Todos los vehículos en BD:', allVehicles);
       
       if (allError) {
         throw new Error(`Error al cargar todos los vehículos: ${allError.message}`);
@@ -54,7 +50,6 @@ export function useVehiclesDebug(): UseVehiclesReturn {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        console.log('🔍 Debug - Vehículos filtrados por usuario:', userVehicles);
         
         if (userError) {
           console.error('🔍 Debug - Error al filtrar por usuario:', userError);

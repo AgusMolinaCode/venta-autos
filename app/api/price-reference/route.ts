@@ -73,7 +73,6 @@ export async function POST(request: NextRequest) {
     );
     
     if (!scrapingResponse.ok) {
-      console.error(`Scraping API error: ${scrapingResponse.status} ${scrapingResponse.statusText}`);
       return NextResponse.json(
         { error: 'Error al obtener datos de precios de referencia' },
         { status: 502 }
@@ -131,8 +130,6 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('API Error:', error);
-    
     return NextResponse.json(
       { 
         error: 'Error interno del servidor',
