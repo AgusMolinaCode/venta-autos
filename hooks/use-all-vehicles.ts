@@ -54,18 +54,12 @@ async function fetchAllVehicles(): Promise<VehiculoConFotos[]> {
       if (allError) {
         throw new Error(`Error al cargar vehículos: ${allError.message}`);
       }
-
-      console.log(`Loaded ${allData?.length || 0} vehicles from all users`);
       return allData || [];
     }
 
     if (fetchError) {
       throw new Error(`Error al cargar vehículos: ${fetchError.message}`);
     }
-
-    console.log(
-      `Loaded ${data?.length || 0} published vehicles from all users`
-    );
     return data || [];
   } catch (error) {
     console.error("Error in fetchAllVehicles:", error);
