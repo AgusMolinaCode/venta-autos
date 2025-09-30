@@ -7,7 +7,6 @@ const fetch = require('node-fetch');
 
 async function testVehicleUpload() {
   try {
-    console.log('🧪 Probando carga de vehículo...');
     
     const formData = new FormData();
     
@@ -47,16 +46,12 @@ async function testVehicleUpload() {
       contentType: 'image/jpeg'
     });
     
-    console.log('📤 Enviando datos...');
-    
     const response = await fetch('http://localhost:3000/api/vehiculos', {
       method: 'POST',
       body: formData
     });
     
     const result = await response.text();
-    console.log('📡 Status:', response.status);
-    console.log('📝 Response:', result);
     
     // Limpiar archivo de prueba
     if (fs.existsSync(testImagePath)) {

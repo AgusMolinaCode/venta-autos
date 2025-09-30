@@ -86,8 +86,6 @@ export function useDescriptionGenerator(
     try {
       const formData = form.getValues();
       
-      console.log('🚗 Starting description generation with data:', formData);
-      
       const result: DescriptionResponse = await generateVehicleDescription(formData);
 
       if (result.success && result.descripcion) {

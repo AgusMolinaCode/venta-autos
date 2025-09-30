@@ -38,7 +38,6 @@ export function useVehicleStatusDB() {
         const result = await VehicleStatusService.updateVehicleStatus(vehicleId, newStatus);
 
         if (result.success) {
-          console.log(`✅ Vehicle ${vehicleId} status updated to: ${newStatus}`);
           return true;
         } else {
           console.error(`❌ Failed to update vehicle status:`, result.error);
@@ -100,7 +99,6 @@ export function useVehicleStatusDB() {
         const result = await VehicleStatusService.bulkUpdateStatus(vehicleIds, newStatus);
 
         if (result.success) {
-          console.log(`✅ Bulk updated ${vehicleIds.length} vehicles to status: ${newStatus}`);
           return true;
         } else {
           console.error(`❌ Failed to bulk update statuses:`, result.error);
