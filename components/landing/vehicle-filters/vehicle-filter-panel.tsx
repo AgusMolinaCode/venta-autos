@@ -15,13 +15,12 @@ import { ModelFilter } from "../brand-filters/model-filter";
 import { RangeFilter } from "../brand-filters/range-filter";
 import { MultiSelectFilter } from "../brand-filters/multi-select-filter";
 import { FilterState } from "../brand-filters/types";
-import { DolarService } from "@/lib/services/dolar-service";
 
 interface VehicleFilterPanelProps {
   vehicles: VehiculoConFotos[];
   onFilterChange: (filters: VehicleFilterState) => void;
   className?: string;
-  variant?: 'horizontal' | 'vertical';
+  variant?: "horizontal" | "vertical";
   blueDollarRate?: number;
 }
 
@@ -29,7 +28,7 @@ export function VehicleFilterPanel({
   vehicles,
   onFilterChange,
   className,
-  variant = 'horizontal',
+  variant = "horizontal",
   blueDollarRate,
 }: VehicleFilterPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -45,7 +44,10 @@ export function VehicleFilterPanel({
     // Handle empty arrays with fallback values
     const anoMin = anos.length > 0 ? Math.min(...anos) : 1970;
     const anoMax = anos.length > 0 ? Math.max(...anos) : 2025;
-    const kmMax = kilometrajes.length > 0 ? Math.max(...kilometrajes) : 500000;
+    const kmMax =
+      kilometrajes.length > 0
+        ? Math.max(...(kilometrajes as number[]))
+        : 500000;
 
     return {
       marcas,
@@ -70,24 +72,15 @@ export function VehicleFilterPanel({
     if (!filters.marca) {
       return filterOptions.modelos;
     }
-    return [...new Set(vehicles
-      .filter(v => v.marca === filters.marca)
-      .map(v => v.modelo)
-    )].sort();
+    return [
+      ...new Set(
+        vehicles.filter((v) => v.marca === filters.marca).map((v) => v.modelo)
+      ),
+    ].sort();
   }, [vehicles, filters.marca, filterOptions.modelos]);
 
-  // Adapter function to convert between VehicleFilterState and FilterState
-  const convertToFilterState = (vehicleFilters: VehicleFilterState): FilterState => ({
-    modelo: vehicleFilters.modelo,
-    anoRange: vehicleFilters.anoRange,
-    kilometrajeRange: vehicleFilters.kilometrajeRange,
-    combustibles: vehicleFilters.combustibles,
-    transmisiones: vehicleFilters.transmisiones,
-    sortBy: vehicleFilters.sortBy,
-  });
-
   const updateFilters = (newFilters: Partial<VehicleFilterState>) => {
-    let updated = { ...filters, ...newFilters };
+    const updated = { ...filters, ...newFilters };
 
     // If marca changes, reset modelo
     if (newFilters.marca !== undefined && newFilters.marca !== filters.marca) {
@@ -128,7 +121,8 @@ export function VehicleFilterPanel({
       count++;
     if (
       filters.kilometrajeRange[0] !== 0 ||
-      filters.kilometrajeRange[1] !== (filterOptions.kilometrajeRange[1] || 500000)
+      filters.kilometrajeRange[1] !==
+        (filterOptions.kilometrajeRange[1] || 500000)
     )
       count++;
     if (filters.combustibles.length > 0) count++;
@@ -137,8 +131,7 @@ export function VehicleFilterPanel({
     return count;
   }, [filters, filterOptions]);
 
-
-  if (variant === 'vertical') {
+  if (variant === "vertical") {
     return (
       <>
         {/* Mobile Filter Toggle Button - Solo visible en mobile */}
@@ -168,7 +161,9 @@ export function VehicleFilterPanel({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros</h3>
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                  Filtros
+                </h3>
                 {activeFilterCount > 0 && (
                   <Badge variant="secondary" className="text-xs">
                     {activeFilterCount}
@@ -224,7 +219,6 @@ export function VehicleFilterPanel({
                 variant="vertical"
               />
 
-
               <RangeFilter
                 range={filters.kilometrajeRange}
                 min={0}
@@ -264,7 +258,9 @@ export function VehicleFilterPanel({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                      Filtros
+                    </h3>
                     {activeFilterCount > 0 && (
                       <Badge variant="secondary" className="text-xs">
                         {activeFilterCount}
@@ -328,7 +324,6 @@ export function VehicleFilterPanel({
                     variant="vertical"
                   />
 
-
                   <RangeFilter
                     range={filters.kilometrajeRange}
                     min={0}
@@ -377,7 +372,9 @@ export function VehicleFilterPanel({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            <h3 className="font-medium text-gray-900 dark:text-gray-100">Filtros</h3>
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">
+              Filtros
+            </h3>
             {activeFilterCount > 0 && (
               <Badge variant="secondary" className="text-xs">
                 {activeFilterCount}
@@ -415,15 +412,7 @@ export function VehicleFilterPanel({
 
       {/* Filter Content */}
       <div className="p-3">
-        <div
-          className={cn(
-            "grid gap-4",
-            !isExpanded && "hidden lg:grid",
-            variant === 'vertical'
-              ? "grid-cols-1 gap-6"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-          )}
-        >
+        <div className={cn("grid gap-4", !isExpanded && "hidden lg:grid")}>
           <SortByFilter
             sortBy={filters.sortBy}
             vehicles={vehicles}
@@ -456,7 +445,6 @@ export function VehicleFilterPanel({
             variant="horizontal"
           />
 
-
           <RangeFilter
             range={filters.kilometrajeRange}
             min={0}
@@ -469,10 +457,12 @@ export function VehicleFilterPanel({
           />
 
           {/* Combustible & Transmisión */}
-          <div className={cn(
-            "space-y-4",
-            variant === 'horizontal' ? "xl:col-span-1" : ""
-          )}>
+          <div
+            className={cn(
+              "space-y-4",
+              variant === "horizontal" ? "xl:col-span-1" : ""
+            )}
+          >
             <MultiSelectFilter
               selected={filters.combustibles}
               options={COMBUSTIBLES}
@@ -492,12 +482,7 @@ export function VehicleFilterPanel({
         </div>
 
         {/* Mobile Expanded State */}
-        <div
-          className={cn(
-            "mt-4 lg:hidden",
-            !isExpanded && "hidden"
-          )}
-        >
+        <div className={cn("mt-4 lg:hidden", !isExpanded && "hidden")}>
           <div className="grid gap-4">
             {/* Mobile filters would go here if needed */}
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
