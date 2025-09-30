@@ -8,6 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { X, Filter, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMBUSTIBLES, TRANSMISIONES } from "@/constants";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 // Import modular filter components
 import { BrandFilter } from "../brand-filters/brand-filter";
 import { SortByFilter } from "../brand-filters/sort-by-filter";
@@ -249,112 +256,110 @@ export function VehicleFilterPanel({
           </div>
         </div>
 
-        {/* Mobile Overlay Filter Modal */}
-        {isMobileOpen && (
-          <div className="fixed inset-0 bg-black/50 z-50 lg:hidden">
-            <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white dark:bg-gray-900 shadow-xl">
-              {/* Mobile Filter Header */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                      Filtros
-                    </h3>
-                    {activeFilterCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {activeFilterCount}
-                      </Badge>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsMobileOpen(false)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+        {/* Mobile Sheet Filter */}
+        <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+          <SheetContent side="left" className="w-full sm:max-w-sm p-0">
+            <SheetHeader className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <SheetTitle className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                Filtros
                 {activeFilterCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="mt-2 h-8 px-3 text-xs text-gray-600 dark:text-gray-400"
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Limpiar todos los filtros
-                  </Button>
+                  <Badge variant="secondary" className="text-xs">
+                    {activeFilterCount}
+                  </Badge>
                 )}
-              </div>
+              </SheetTitle>
+              <SheetDescription>
+                Personaliza tu búsqueda de vehículos
+              </SheetDescription>
+              {activeFilterCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="mt-2 h-8 px-3 text-xs text-gray-600 dark:text-gray-400 w-fit"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar todos los filtros
+                </Button>
+              )}
+            </SheetHeader>
 
-              {/* Mobile Filter Content */}
-              <div className="p-4 overflow-y-auto h-[calc(100vh-100px)]">
-                <div className="space-y-6">
-                  <SortByFilter
-                    sortBy={filters.sortBy}
-                    vehicles={vehicles}
-                    blueDollarRate={blueDollarRate}
-                    onFilterChange={handleModularFilterChange}
-                    variant="vertical"
-                  />
+            {/* Mobile Filter Content */}
+            <div className="p-4 overflow-y-auto h-[calc(100vh-180px)]">
+              <div className="space-y-6">
+                <SortByFilter
+                  sortBy={filters.sortBy}
+                  vehicles={vehicles}
+                  blueDollarRate={blueDollarRate}
+                  onFilterChange={handleModularFilterChange}
+                  variant="vertical"
+                />
 
-                  <BrandFilter
-                    marca={filters.marca}
-                    marcas={filterOptions.marcas}
-                    onFilterChange={updateFilters}
-                    variant="vertical"
-                  />
+                <BrandFilter
+                  marca={filters.marca}
+                  marcas={filterOptions.marcas}
+                  onFilterChange={updateFilters}
+                  variant="vertical"
+                />
 
-                  <ModelFilter
-                    modelo={filters.modelo}
-                    modelos={availableModelos}
-                    onFilterChange={handleModularFilterChange}
-                    variant="vertical"
-                  />
+                <ModelFilter
+                  modelo={filters.modelo}
+                  modelos={availableModelos}
+                  onFilterChange={handleModularFilterChange}
+                  variant="vertical"
+                />
 
-                  <RangeFilter
-                    range={filters.anoRange}
-                    min={filterOptions.anoRange[0]}
-                    max={filterOptions.anoRange[1]}
-                    step={1}
-                    label="Año"
-                    onFilterChange={handleModularFilterChange}
-                    variant="vertical"
-                  />
+                <RangeFilter
+                  range={filters.anoRange}
+                  min={filterOptions.anoRange[0]}
+                  max={filterOptions.anoRange[1]}
+                  step={1}
+                  label="Año"
+                  onFilterChange={handleModularFilterChange}
+                  variant="vertical"
+                />
 
-                  <RangeFilter
-                    range={filters.kilometrajeRange}
-                    min={0}
-                    max={filterOptions.kilometrajeRange[1]}
-                    step={5000}
-                    label="Kilometraje"
-                    formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
-                    onFilterChange={handleModularFilterChange}
-                    variant="vertical"
-                  />
+                <RangeFilter
+                  range={filters.kilometrajeRange}
+                  min={0}
+                  max={filterOptions.kilometrajeRange[1]}
+                  step={5000}
+                  label="Kilometraje"
+                  formatValue={(value) => `${(value / 1000).toFixed(0)}k`}
+                  onFilterChange={handleModularFilterChange}
+                  variant="vertical"
+                />
 
-                  <MultiSelectFilter
-                    selected={filters.combustibles}
-                    options={COMBUSTIBLES}
-                    label="Combustible"
-                    onFilterChange={handleModularFilterChange}
-                    variant="vertical"
-                  />
+                <MultiSelectFilter
+                  selected={filters.combustibles}
+                  options={COMBUSTIBLES}
+                  label="Combustible"
+                  onFilterChange={handleModularFilterChange}
+                  variant="vertical"
+                />
 
-                  <MultiSelectFilter
-                    selected={filters.transmisiones}
-                    options={TRANSMISIONES}
-                    label="Transmisión"
-                    onFilterChange={handleModularFilterChange}
-                    variant="vertical"
-                  />
-                </div>
+                <MultiSelectFilter
+                  selected={filters.transmisiones}
+                  options={TRANSMISIONES}
+                  label="Transmisión"
+                  onFilterChange={handleModularFilterChange}
+                  variant="vertical"
+                />
               </div>
             </div>
-          </div>
-        )}
+
+            {/* Footer with Apply Button */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+              <Button
+                onClick={() => setIsMobileOpen(false)}
+                className="w-full"
+              >
+                Aplicar Filtros ({vehicles.length} {vehicles.length === 1 ? 'vehículo' : 'vehículos'})
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </>
     );
   }
