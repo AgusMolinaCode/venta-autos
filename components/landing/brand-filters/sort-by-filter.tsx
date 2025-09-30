@@ -13,7 +13,7 @@ export function SortByFilter({
   variant = 'vertical',
   className
 }: SortByFilterProps) {
-  const [localBlueDollarRate, setLocalBlueDollarRate] = useState<number>(1000);
+  const [localBlueDollarRate, setLocalBlueDollarRate] = useState<number>(1500);
 
   // Fetch blue dollar rate on component mount
   useEffect(() => {

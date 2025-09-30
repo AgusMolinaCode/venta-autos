@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { useAllVehicles } from "@/hooks/use-all-vehicles";
 import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { useVehicleFilters } from "@/hooks/use-vehicle-filters";
+import { useCurrencyConversion } from "@/hooks/use-currency-conversion";
 import { formatCurrency } from "@/utils/currency";
 import { VehicleImage } from "@/components/dashboard-admin/ui/vehicle-image";
 import { VehicleDetailsModal } from "@/modals/details-modal/vehicle-details-modal";
@@ -13,6 +14,7 @@ import Image from "next/image";
 export default function VehiculosPage() {
   const { vehicles, loading, error } = useAllVehicles();
   const { getVehicleStatus } = useVehicleStatusCache();
+  const { dollarRate } = useCurrencyConversion();
   const [viewingVehicle, setViewingVehicle] = useState<VehiculoConFotos | null>(null);
 
   // Filter vehicles by published status only
@@ -26,7 +28,10 @@ export default function VehiculosPage() {
     filterCounts,
     updateFilters,
     hasActiveFilters
-  } = useVehicleFilters({ vehicles: publishedVehicles });
+  } = useVehicleFilters({
+    vehicles: publishedVehicles,
+    blueDollarRate: dollarRate
+  });
 
   const closeViewModal = () => {
     setViewingVehicle(null);

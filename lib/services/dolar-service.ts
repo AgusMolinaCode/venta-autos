@@ -82,4 +82,26 @@ export class DolarService {
   public clearCache(): void {
     this.cache = null;
   }
+
+  /**
+   * Convert vehicle price to ARS for comparison purposes
+   * ALWAYS converts USD prices to ARS to ensure proper sorting
+   * @param vehicle - Vehicle with price and optional moneda field
+   * @param blueDollarRate - Blue dollar rate for conversion (required for USD vehicles)
+   * @returns Price in ARS
+   */
+  public static getConvertedPrice(vehicle: any, blueDollarRate?: number): number {
+    // If vehicle has no price, return 0
+    if (!vehicle.precio) return 0;
+
+    // If price is in USD, ALWAYS convert to ARS
+    if (vehicle.moneda === 'USD') {
+      // Use provided rate or fallback to default
+      const rate = blueDollarRate || 1000; // Fallback rate if not provided
+      return vehicle.precio * rate;
+    }
+
+    // If price is already in ARS or no moneda specified, return as-is
+    return vehicle.precio;
+  }
 }
