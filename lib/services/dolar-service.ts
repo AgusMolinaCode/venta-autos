@@ -63,7 +63,8 @@ export class DolarService {
       const rates = await this.getDolarRates();
       return rates.blue.ask;
     } catch (error) {
-      throw error;
+      // Fallback: usar tasa por defecto si la API falla
+      return 1600;
     }
   }
 
@@ -72,7 +73,8 @@ export class DolarService {
       const rates = await this.getDolarRates();
       return rates.oficial.price;
     } catch (error) {
-      throw error;
+      // Fallback: usar tasa por defecto si la API falla
+      return 1000;
     }
   }
 

@@ -55,7 +55,11 @@ export class VehiculoService {
         };
       }
 
-
+      // Crear objeto con userId para insertar en Supabase
+      const vehiculoConUserId = {
+        ...vehiculoData,
+        user_id: userId
+      };
 
       const { data: vehiculo, error: vehiculoError } = await supabase
         .from('vehiculos')
