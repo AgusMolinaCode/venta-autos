@@ -145,7 +145,7 @@ export function BrandFilterPanel({
         {/* Desktop Sidebar */}
         <div
           className={cn(
-            "hidden lg:block bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700",
+            "hidden lg:block bg-background rounded-lg shadow-sm border border-gray-200 dark:border-gray-700",
             className
           )}
         >
@@ -320,7 +320,7 @@ export function BrandFilterPanel({
             </div>
 
             {/* Footer with Apply Button */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-background">
               <Button
                 onClick={() => setIsMobileOpen(false)}
                 className="w-full"
@@ -338,7 +338,7 @@ export function BrandFilterPanel({
   return (
     <div
       className={cn(
-        "bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700",
+        "bg-background rounded-lg shadow-sm border border-gray-200 dark:border-gray-700",
         className
       )}
     >
