@@ -29,7 +29,7 @@ const TopCars: React.FC = () => {
     return (
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-4xl font-bold text-center text-blue-900 mb-12">
-          Los 6 Mejores Autosss
+          Los 6 Mejores Autoss
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {[...Array(6)].map((_, index) => (
