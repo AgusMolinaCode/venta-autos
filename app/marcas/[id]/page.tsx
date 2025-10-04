@@ -3,10 +3,12 @@ import { use } from 'react'
 import { useAllVehicles } from "@/hooks/use-all-vehicles";
 import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { useBrandFilters } from "@/hooks/use-brand-filters";
+import { usePagination } from "@/hooks/use-pagination";
 import { formatCurrency } from "@/utils/currency";
 import { VehicleImage } from "@/components/dashboard-admin/ui/vehicle-image";
 import { VehicleDetailsModal } from "@/modals/details-modal/vehicle-details-modal";
 import { BrandFilterPanel } from "@/components/landing/brand-filters/brand-filter-panel";
+import { Pagination } from "@/components/ui/pagination";
 import { VehiculoConFotos } from "@/lib/supabase";
 import Image from "next/image";
 import { useState, useMemo } from "react";
@@ -47,6 +49,21 @@ export default function MarcaPage({
     vehicles: brandVehicles,
     selectedCurrency,
     blueDollarRate
+  });
+
+  // Pagination: 6 vehicles per page
+  const {
+    paginatedItems: paginatedVehicles,
+    currentPage,
+    totalPages,
+    nextPage,
+    prevPage,
+    goToPage,
+    canGoPrev,
+    canGoNext
+  } = usePagination({
+    items: filteredVehicles,
+    itemsPerPage: 6
   });
 
   const closeViewModal = () => {
@@ -129,7 +146,7 @@ export default function MarcaPage({
           )}
 
           {/* Contenido principal */}
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col md:h-[58rem]">
             {/* Contador de resultados */}
 
             {/* Grid de vehículos */}
@@ -143,12 +160,13 @@ export default function MarcaPage({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
-                {filteredVehicles.map((vehicle) => (
+              <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 flex-grow">
+                {paginatedVehicles.map((vehicle) => (
                   <div
                     key={vehicle.id}
                     onClick={() => handleCardClick(vehicle)}
-                    className="bg-emerald-200 dark:bg-emerald-700 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer"
+                    className="bg-emerald-200 dark:bg-emerald-700 rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300 cursor-pointer h-fit"
                   >
                     <div className="border-2 border-white/20 rounded-xl w-full h-56 m-4 mb-0 overflow-hidden">
                       {vehicle.fotos?.length ? (
@@ -183,6 +201,16 @@ export default function MarcaPage({
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+                canGoPrev={canGoPrev}
+                canGoNext={canGoNext}
+              />
+              </>
             )}
           </div>
         </div>
