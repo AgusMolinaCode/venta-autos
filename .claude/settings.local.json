@@ -12,7 +12,9 @@
       "Bash(git commit:*)",
       "Bash(npm run build:*)",
       "Bash(node:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
