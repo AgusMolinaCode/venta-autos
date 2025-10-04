@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,11 +10,25 @@ import StepForm from "@/components/dashboard-admin/main/step-form";
 import AddCarModal from "@/components/dashboard-admin/add-car-modal";
 import MainInfo from "@/components/dashboard-admin/main/mainInfo";
 
+// Componente que maneja searchParams (debe estar en Suspense)
+function SearchParamsHandler() {
+  const searchParams = useSearchParams();
+  const { setActiveView } = useDashboardNavigation();
+
+  useEffect(() => {
+    const view = searchParams.get("view");
+    if (view === "vehicles") {
+      setActiveView("vehicles");
+    }
+  }, [searchParams, setActiveView]);
+
+  return null;
+}
+
 // Componente interno que usa el context
 function DashboardContent() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const { activeView, setActiveView } = useDashboardNavigation();
 
@@ -23,15 +37,6 @@ function DashboardContent() {
       router.push("/login");
     }
   }, [user, loading, router]);
-
-  // Handle query parameter for initial view
-  useEffect(() => {
-    const view = searchParams.get("view");
-
-    if (view === "vehicles") {
-      setActiveView("vehicles");
-    }
-  }, [searchParams, setActiveView]);
 
   if (loading) {
     return (
@@ -72,6 +77,9 @@ function DashboardContent() {
         "h-screen" // for your use case, use `h-screen` instead of `h-[60vh]`
       )}
     >
+      <Suspense fallback={null}>
+        <SearchParamsHandler />
+      </Suspense>
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto dark:bg-neutral-900 bg-gray-50">
