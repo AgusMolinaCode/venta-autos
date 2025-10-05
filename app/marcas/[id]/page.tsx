@@ -1,7 +1,6 @@
 'use client'
 import { use } from 'react'
 import { useAllVehicles } from "@/hooks/use-all-vehicles";
-import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { useBrandFilters } from "@/hooks/use-brand-filters";
 import { usePagination } from "@/hooks/use-pagination";
 import { formatCurrency } from "@/utils/currency";
@@ -20,7 +19,6 @@ export default function MarcaPage({
 }) {
   const { id } = use(params)
   const { vehicles, loading, error } = useAllVehicles();
-  const { getVehicleStatus } = useVehicleStatusCache();
   const [viewingVehicle, setViewingVehicle] = useState<VehiculoConFotos | null>(null);
 
   // Convert URL slug back to brand name (e.g., "mercedes-benz" → "Mercedes-Benz")
@@ -28,12 +26,11 @@ export default function MarcaPage({
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
 
-  // Filter vehicles by brand and published status first
+  // Filter vehicles by brand only - useAllVehicles() already filters by estado='publicado'
+  // Works for authenticated and anonymous users
   const brandVehicles = useMemo(() => vehicles.filter(vehicle =>
-    vehicle.id &&
-    getVehicleStatus(vehicle.id) === 'publicado' &&
     vehicle.marca.toLowerCase().replace(/\s+/g, '-') === id.toLowerCase()
-  ), [vehicles, getVehicleStatus, id]);
+  ), [vehicles, id]);
 
   // Currency state for multi-currency filtering
   const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'USD'>('ARS');

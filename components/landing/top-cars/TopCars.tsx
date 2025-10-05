@@ -28,8 +28,8 @@ const TopCars: React.FC = () => {
   if (loading) {
     return (
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-4xl font-bold text-center text-blue-900 mb-12">
-          Los 6 Mejores Autos
+        <h2 className="text-4xl font-bold text-center dark:text-gray-100 text-gray-900 underline mb-12">
+          Ultimos Autos Agregados
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {[...Array(6)].map((_, index) => (
@@ -54,8 +54,8 @@ const TopCars: React.FC = () => {
   if (error) {
     return (
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-4xl font-bold text-center text-blue-900 mb-12">
-          Los 6 Mejores Autos
+        <h2 className="text-4xl font-bold text-center dark:text-gray-100 text-gray-900 underline mb-12">
+          Ultimos Autos Agregados
         </h2>
         <div className="text-center text-red-600">
           Error al cargar los vehículos: {error}

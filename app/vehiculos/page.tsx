@@ -1,7 +1,6 @@
 'use client'
 import { useState, useMemo } from "react";
 import { useAllVehicles } from "@/hooks/use-all-vehicles";
-import { useVehicleStatusCache } from "@/hooks/use-vehicle-status-cache";
 import { useVehicleFilters } from "@/hooks/use-vehicle-filters";
 import { useCurrencyConversion } from "@/hooks/use-currency-conversion";
 import { usePagination } from "@/hooks/use-pagination";
@@ -15,14 +14,12 @@ import Image from "next/image";
 
 export default function VehiculosPage() {
   const { vehicles, loading, error } = useAllVehicles();
-  const { getVehicleStatus } = useVehicleStatusCache();
   const { dollarRate } = useCurrencyConversion();
   const [viewingVehicle, setViewingVehicle] = useState<VehiculoConFotos | null>(null);
 
-  // Filter vehicles by published status only
-  const publishedVehicles = useMemo(() => vehicles.filter(vehicle =>
-    vehicle.id && getVehicleStatus(vehicle.id) === 'publicado'
-  ), [vehicles, getVehicleStatus]);
+  // useAllVehicles() already fetches only published vehicles from database
+  // No additional filtering needed - works for authenticated and anonymous users
+  const publishedVehicles = useMemo(() => vehicles, [vehicles]);
 
   // Use vehicle filters for comprehensive filtering including brands
   const {
